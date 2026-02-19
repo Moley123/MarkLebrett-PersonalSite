@@ -21,19 +21,24 @@ const LandingPage = () => {
   }, []);
 
   useEffect(() => {
-    // 1. Fetch User Location
-    fetch('https://ip-api.com/json/') // Using ip-api.com over HTTPS
-      .then(res => res.json())
-      .then(data => {
-        if(data.status === 'success') { // Check status for ip-api.com
-          setLocation(`${data.city}, ${data.country}`);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-          console.error("Location API failed:", err);
-          setLoading(false);
-      });
+    // 1. Fetch User Location - DISABLED due to CORS issues on free plan with ipwho.is and SSL unavailable for ip-api.com
+    // fetch('https://ip-api.com/json/') // Using ip-api.com over HTTPS
+    //   .then(res => res.json())
+    //   .then(data => {
+    //     if(data.status === 'success') { // Check status for ip-api.com
+    //       setLocation(`${data.city}, ${data.country}`);
+    //     }
+    //     setLoading(false);
+    //   })
+    //   .catch((err) => {
+    //       console.error("Location API failed:", err);
+    //       setLoading(false);
+    //   });
+
+    // Directly set loading to false since we are not fetching location
+    setLoading(false);
+
+    // 2. VISITOR COUNTER
 
     // 2. VISITOR COUNTER
     const namespace = 'marklebrett-portal';
