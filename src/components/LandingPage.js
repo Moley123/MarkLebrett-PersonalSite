@@ -22,7 +22,7 @@ const LandingPage = () => {
 
   useEffect(() => {
     // 1. Fetch User Location
-    fetch('http://ip-api.com/json/') // Using ip-api.com as an alternative
+    fetch('https://ip-api.com/json/') // Using ip-api.com over HTTPS
       .then(res => res.json())
       .then(data => {
         if(data.status === 'success') { // Check status for ip-api.com
