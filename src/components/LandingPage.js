@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Users, ArrowRight, Lock } from 'lucide-react';
+import { MapPin, Users, ArrowRight, Lock, Linkedin, Github } from 'lucide-react';
 
 const LandingPage = () => {
   const [location, setLocation] = useState('Earth');
@@ -8,11 +8,24 @@ const LandingPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Set the favicon for the landing page
+    const favicon = document.createElement('link');
+    favicon.rel = 'icon';
+    favicon.href = '/globe.png';
+    document.head.appendChild(favicon);
+
+    // Cleanup function to remove the favicon when the component unmounts
+    return () => {
+      document.head.removeChild(favicon);
+    };
+  }, []);
+
+  useEffect(() => {
     // 1. Fetch User Location
-    fetch('https://ipwho.is/')
+    fetch('http://ip-api.com/json/') // Using ip-api.com as an alternative
       .then(res => res.json())
       .then(data => {
-        if(data.success) {
+        if(data.status === 'success') { // Check status for ip-api.com
           setLocation(`${data.city}, ${data.country}`);
         }
         setLoading(false);
@@ -83,6 +96,16 @@ const LandingPage = () => {
                 UNIQUE VISITORS: <span className="text-emerald-400 font-mono font-bold">{visitorCount}</span>
             </span>
         </div>
+
+        {/* SOCIAL LINKS */}
+        <div className="flex justify-center gap-6 mt-8">
+            <a href="https://www.linkedin.com/in/mark-l-5baa48160/" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-blue-500 transition-colors duration-200">
+                <Linkedin size={28} />
+            </a>
+            <a href="https://github.com/Moley123" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-gray-200 transition-colors duration-200">
+                <Github size={28} />
+            </a>
+        </div>
       </div>
 
       {/* APPS GRID */}
@@ -141,7 +164,7 @@ const LandingPage = () => {
 
       {/* FOOTER */}
       <footer className="text-center text-gray-600 py-10">
-        <p>&copy; {new Date().getFullYear()} EMEL Systems - Mark Lebrett. All systems operational.</p>
+        <p>&copy; {new Date().getFullYear()} EMEL Solutions - Mark Lebrett. All systems operational.</p>
       </footer>
     </div>
   );

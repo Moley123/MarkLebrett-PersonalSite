@@ -14,6 +14,19 @@ const GematriaApp = () => {
   // --- STATE ---
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Set the favicon for the Gematria app
+    const favicon = document.createElement('link');
+    favicon.rel = 'icon';
+    favicon.href = '/favicon.ico';
+    document.head.appendChild(favicon);
+
+    // Cleanup function to remove the favicon when the component unmounts
+    return () => {
+      document.head.removeChild(favicon);
+    };
+  }, []);
+
   // 1. Navigation & Modes
   const [viewMode, setViewMode] = useState("search"); // 'search', 'trends', 'race'
   
@@ -185,7 +198,7 @@ const GematriaApp = () => {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [gematriaValue, isSearchMode, isMatcherMode, matcherTargetValue, selectedParsha, indexData, isColelMode, isSingleWordMode, viewMode]);
+  }, [gematriaValue, isSearchMode, isMatcherMode, matcherTargetValue, selectedParsha, indexData, isColelMode, isSingleWordMode, viewMode, inputText]);
 
   // E. Common Matches (Did You Know?)
   const commonMatches = useMemo(() => {
