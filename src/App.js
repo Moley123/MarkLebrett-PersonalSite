@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './components/LandingPage';
+import EmelSolutions from './components/EmelSolutions';
 import GematriaApp from './GematriaApp';
 import './App.css'; 
 
@@ -17,7 +18,10 @@ const App = () => {
         {/* 2. Gematria App */}
         <Route path="/gematria" element={<GematriaApp />} />
 
-        {/* 3. DEBUG: Catch-all for 404s */}
+        {/* 3. Emel Solutions */}
+        <Route path="/emelsolutions" element={<EmelSolutions />} />
+
+        {/* 4. DEBUG: Catch-all for 404s */}
         {/* This will show us what URL the router is seeing */}
         <Route path="*" element={
             <div style={{ padding: 50, color: 'red', textAlign: 'center' }}>
