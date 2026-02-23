@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './components/LandingPage';
 import EmelSolutions from './components/EmelSolutions';
+import CertMonitor from './components/CertMonitor';
 import GematriaApp from './GematriaApp';
 import './App.css'; 
 
@@ -20,6 +21,9 @@ const App = () => {
 
         {/* 3. Emel Solutions */}
         <Route path="/emelsolutions" element={<EmelSolutions />} />
+
+        {/* 4. CertStream Monitor */}
+        <Route path="/certmonitor" element={<CertMonitor />} />
 
         {/* 4. DEBUG: Catch-all for 404s */}
         {/* This will show us what URL the router is seeing */}

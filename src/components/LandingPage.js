@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Users, ArrowRight, Lock, Linkedin, Github, Zap } from 'lucide-react';
+import { MapPin, Users, ArrowRight, Lock, Linkedin, Github, Zap, Shield } from 'lucide-react';
 
 const LandingPage = () => {
   const [location, setLocation] = useState('Earth');
@@ -176,23 +176,24 @@ const LandingPage = () => {
             </div>
         </Link>
 
-        {/* APP 3: COMING SOON (BLURRED) */}
-        <div className="relative group grayscale opacity-60 hover:opacity-80 transition-opacity cursor-not-allowed">
-            <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 h-full flex flex-col border-dashed">
-                <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center mb-6">
-                    <Lock className="w-6 h-6 text-gray-500" />
+        {/* APP 3: CERTSTREAM MONITOR (ACTIVE) */}
+        <Link to="/certmonitor" className="group relative">
+            <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+            <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
+                <div className="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center mb-6 text-cyan-400 group-hover:text-white group-hover:bg-cyan-600 transition-colors">
+                    <Shield className="w-6 h-6" />
                 </div>
-                <h3 className="text-2xl font-bold mb-3 text-gray-500 blur-sm select-none">Bible Code</h3>
-                <p className="text-gray-600 mb-8 flex-grow blur-[2px] select-none">
-                    Search for equidistant letter sequences and hidden patterns in the text.
+                <h3 className="text-2xl font-bold mb-3 text-gray-100">CertStream Monitor</h3>
+                <p className="text-gray-400 mb-8 flex-grow">
+                    Live SSL/TLS certificate transparency feed with real-time phishing &amp; brand-abuse keyword detection.
                 </p>
-                <div className="mt-auto inline-flex px-3 py-1 rounded-full bg-gray-800 text-xs font-bold text-gray-500 uppercase tracking-widest w-fit">
-                    Coming Soon
+                <div className="flex items-center text-cyan-400 font-semibold group-hover:translate-x-2 transition-transform">
+                    Launch App <ArrowRight className="ml-2 w-4 h-4" />
                 </div>
             </div>
-        </div>
+        </Link>
 
-        {/* APP 3: COMING SOON (BLURRED) */}
+        {/* APP 4: COMING SOON (BLURRED) */}
         <div className="relative group grayscale opacity-60 hover:opacity-80 transition-opacity cursor-not-allowed">
             <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 h-full flex flex-col border-dashed">
                 <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center mb-6">
