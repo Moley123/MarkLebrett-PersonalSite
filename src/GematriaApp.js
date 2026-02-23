@@ -15,7 +15,10 @@ const GematriaApp = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Gematria favicon: Hebrew letter Alef in blue/indigo
+    // ── Page title ──
+    document.title = 'Gematria Explorer | Mark Lebrett';
+
+    // ── Favicon: Hebrew Alef in blue/indigo ──
     const svgFavicon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
       <defs>
         <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
@@ -31,6 +34,20 @@ const GematriaApp = () => {
     favicon.type = 'image/svg+xml';
     favicon.href = 'data:image/svg+xml,' + encodeURIComponent(svgFavicon);
     document.head.appendChild(favicon);
+
+    // ── OG / Twitter meta tags (dynamic update for client-side nav) ──
+    const metaUpdates = [
+      { sel: 'meta[property="og:title"]',       attr: 'content', val: 'Gematria Explorer | Mark Lebrett' },
+      { sel: 'meta[property="og:description"]', attr: 'content', val: 'Calculate Hebrew Gematria instantly. Search the Torah index by value or word, find bridge words, and discover hidden numerical connections.' },
+      { sel: 'meta[property="og:url"]',          attr: 'content', val: 'https://marklebrett.co.uk/gematria' },
+      { sel: 'meta[name="description"]',         attr: 'content', val: 'Calculate Hebrew Gematria instantly. Search the Torah index by value or word, find bridge words, and discover hidden numerical connections.' },
+      { sel: 'meta[name="twitter:title"]',       attr: 'content', val: 'Gematria Explorer | Mark Lebrett' },
+      { sel: 'meta[name="twitter:description"]', attr: 'content', val: 'Calculate Hebrew Gematria instantly. Search the Torah index by value or word, find bridge words, and discover hidden numerical connections.' },
+    ];
+    metaUpdates.forEach(({ sel, attr, val }) => {
+      const el = document.querySelector(sel);
+      if (el) el.setAttribute(attr, val);
+    });
 
     return () => {
       document.head.removeChild(favicon);
@@ -275,8 +292,7 @@ const GematriaApp = () => {
   return (
     <div className="app-container">
 
-      <title>Gematria Explorer</title>
-      <meta name="description" content="Calculate Hebrew Gematria instantly. Search the Torah index, analyze phrases, and discover hidden numerical connections." />
+      {/* Title & meta are set dynamically in useEffect for correct OG preview support */}
 
       {/* HEADER SECTION */}
       <header className="relative flex items-center justify-center p-4 bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100 mb-6 sticky top-0 z-50">

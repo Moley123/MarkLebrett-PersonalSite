@@ -8,7 +8,10 @@ const LandingPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Portal favicon: ML monogram in blue/emerald
+    // ── Page title ──
+    document.title = 'Mark Lebrett | Portal';
+
+    // ── Favicon: ML monogram in blue/emerald ──
     const svgFavicon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
       <defs>
         <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
@@ -24,6 +27,20 @@ const LandingPage = () => {
     favicon.type = 'image/svg+xml';
     favicon.href = 'data:image/svg+xml,' + encodeURIComponent(svgFavicon);
     document.head.appendChild(favicon);
+
+    // ── OG / Twitter meta tags (dynamic update for client-side nav) ──
+    const metaUpdates = [
+      { sel: 'meta[property="og:title"]',       attr: 'content', val: 'Mark Lebrett | Portal' },
+      { sel: 'meta[property="og:description"]', attr: 'content', val: 'The personal portal of Mark Lebrett — explore tools including the Gematria Explorer, EMEL Solutions, and more.' },
+      { sel: 'meta[property="og:url"]',          attr: 'content', val: 'https://marklebrett.co.uk/' },
+      { sel: 'meta[name="description"]',         attr: 'content', val: 'The personal portal of Mark Lebrett — explore tools including the Gematria Explorer, EMEL Solutions, and more.' },
+      { sel: 'meta[name="twitter:title"]',       attr: 'content', val: 'Mark Lebrett | Portal' },
+      { sel: 'meta[name="twitter:description"]', attr: 'content', val: 'The personal portal of Mark Lebrett — explore tools including the Gematria Explorer, EMEL Solutions, and more.' },
+    ];
+    metaUpdates.forEach(({ sel, attr, val }) => {
+      const el = document.querySelector(sel);
+      if (el) el.setAttribute(attr, val);
+    });
 
     return () => {
       document.head.removeChild(favicon);
@@ -89,8 +106,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-black text-white font-sans selection:bg-blue-500 selection:text-white">
       
-      <title>Mark Lebrett | Portal</title>
-      <meta name="description" content="Welcome to the personal portal of Mark Lebrett. Explore projects, tools, and insights." />
+      {/* Title & meta are set dynamically in useEffect for correct OG preview support */}
 
       {/* HERO SECTION */}
       <div className="flex flex-col items-center justify-center pt-24 px-4 text-center">
