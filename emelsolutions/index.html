@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="EMEL Solutions — AI Automation, WordPress Management, AI Solutions and Hardware Setup services for modern businesses." />
+  <meta name="keywords" content="AI automation, workflow development, WordPress management, AI solutions, hardware setup, EMEL Solutions" />
+  <meta name="author" content="EMEL Solutions" />
+  <title>EMEL Solutions — Technology Services</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══════════════════════════════ BANNER ═══════════════════════════════ -->
+  <header class="banner" id="home" aria-label="EMEL Solutions banner">
+    <div class="banner-bg-grid"></div>
+    <div class="banner-orb banner-orb--1"></div>
+    <div class="banner-orb banner-orb--2"></div>
+    <div class="banner-orb banner-orb--3"></div>
+    <div class="banner-content">
+      <!-- Inline SVG Logo -->
+      <div class="logo-wrap" aria-label="EMEL Solutions logo">
+        <svg class="logo-svg" viewBox="0 0 480 120" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="EMEL Solutions logo">
+          <!-- Hexagon icon group -->
+          <g class="logo-icon">
+            <!-- Outer hex -->
+            <polygon points="52,8 84,26 84,62 52,80 20,62 20,26" fill="none" stroke="#4f8ef7" stroke-width="2.5"/>
+            <!-- Inner hex -->
+            <polygon points="52,22 70,32 70,52 52,62 34,52 34,32" fill="none" stroke="#7cb3ff" stroke-width="1.5" opacity="0.6"/>
+            <!-- Node dots -->
+            <circle cx="52" cy="8"  r="3.5" fill="#4f8ef7"/>
+            <circle cx="84" cy="26" r="3.5" fill="#4f8ef7"/>
+            <circle cx="84" cy="62" r="3.5" fill="#4f8ef7"/>
+            <circle cx="52" cy="80" r="3.5" fill="#4f8ef7"/>
+            <circle cx="20" cy="62" r="3.5" fill="#4f8ef7"/>
+            <circle cx="20" cy="26" r="3.5" fill="#4f8ef7"/>
+            <!-- Centre dot -->
+            <circle cx="52" cy="44" r="6" fill="#4f8ef7" opacity="0.9"/>
+            <!-- Connecting spokes -->
+            <line x1="52" y1="22" x2="52" y2="8"  stroke="#4f8ef7" stroke-width="1" opacity="0.4"/>
+            <line x1="70" y1="32" x2="84" y2="26" stroke="#4f8ef7" stroke-width="1" opacity="0.4"/>
+            <line x1="70" y1="52" x2="84" y2="62" stroke="#4f8ef7" stroke-width="1" opacity="0.4"/>
+            <line x1="52" y1="62" x2="52" y2="80" stroke="#4f8ef7" stroke-width="1" opacity="0.4"/>
+            <line x1="34" y1="52" x2="20" y2="62" stroke="#4f8ef7" stroke-width="1" opacity="0.4"/>
+            <line x1="34" y1="32" x2="20" y2="26" stroke="#4f8ef7" stroke-width="1" opacity="0.4"/>
+          </g>
+          <!-- Wordmark -->
+          <text x="108" y="58" font-family="Space Grotesk, sans-serif" font-size="46" font-weight="700" fill="white" letter-spacing="-1">EMEL</text>
+          <text x="109" y="82" font-family="Inter, sans-serif" font-size="16" font-weight="400" fill="#7cb3ff" letter-spacing="5">SOLUTIONS</text>
+        </svg>
+      </div>
+      <p class="banner-tagline">Intelligent Technology. Seamless Results.</p>
+    </div>
+    <!-- Scroll indicator -->
+    <div class="scroll-hint" aria-hidden="true">
+      <span></span>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════ LIQUID-GLASS NAV ═══════════════════════════ -->
+  <nav class="glass-nav" id="main-nav" aria-label="Main navigation">
+    <ul class="glass-nav__list" role="list">
+      <li><a class="glass-nav__link" href="#ai-automation" id="nav-ai">AI Automation</a></li>
+      <li><a class="glass-nav__link" href="#wordpress"     id="nav-wp">WordPress</a></li>
+      <li><a class="glass-nav__link" href="#ai-solutions"  id="nav-ais">AI Solutions</a></li>
+      <li><a class="glass-nav__link" href="#hardware"      id="nav-hw">Hardware</a></li>
+    </ul>
+  </nav>
+
+  <!-- ═══════════════════════════════ MAIN CONTENT ═══════════════════════════ -->
+  <main>
+
+    <!-- ── Section 1: AI Automation & Workflow Development ── -->
+    <section class="service-section reveal" id="ai-automation" aria-labelledby="ai-heading">
+      <div class="section-inner">
+        <div class="section-tag">Service 01</div>
+        <h2 class="section-title" id="ai-heading">AI Automation &amp; Workflow Development</h2>
+        <div class="section-body">
+          <div class="anim-panel">
+            <!-- n8n-style workflow animation -->
+            <div class="workflow-canvas" aria-label="n8n-style workflow animation" role="img">
+              <svg class="workflow-svg" viewBox="0 0 540 280" xmlns="http://www.w3.org/2000/svg">
+                <!-- Connector paths (animated dashes) -->
+                <path id="conn1" d="M 130 90 C 180 90 190 140 240 140" stroke="#4f8ef7" stroke-width="2" fill="none" stroke-dasharray="6 4" class="wf-conn"/>
+                <path id="conn2" d="M 130 90 C 180 90 190 40  240 40"  stroke="#4f8ef7" stroke-width="2" fill="none" stroke-dasharray="6 4" class="wf-conn"/>
+                <path id="conn3" d="M 320 40  C 370 40  375 90 420 90"  stroke="#7b61ff" stroke-width="2" fill="none" stroke-dasharray="6 4" class="wf-conn wf-conn--delay1"/>
+                <path id="conn4" d="M 320 140 C 370 140 375 90 420 90"  stroke="#7b61ff" stroke-width="2" fill="none" stroke-dasharray="6 4" class="wf-conn wf-conn--delay1"/>
+                <path id="conn5" d="M 500 90  C 540 90  545 200 420 200" stroke="#06d6a0" stroke-width="2" fill="none" stroke-dasharray="6 4" class="wf-conn wf-conn--delay2"/>
+                <!-- Pulse dots travelling along paths -->
+                <circle r="5" fill="#4f8ef7" opacity="0.9">
+                  <animateMotion dur="2.4s" repeatCount="indefinite" begin="0s"><mpath href="#conn1"/></animateMotion>
+                </circle>
+                <circle r="5" fill="#4f8ef7" opacity="0.9">
+                  <animateMotion dur="2.4s" repeatCount="indefinite" begin="0.6s"><mpath href="#conn2"/></animateMotion>
+                </circle>
+                <circle r="5" fill="#7b61ff" opacity="0.9">
+                  <animateMotion dur="2.2s" repeatCount="indefinite" begin="0.8s"><mpath href="#conn3"/></animateMotion>
+                </circle>
+                <circle r="5" fill="#7b61ff" opacity="0.9">
+                  <animateMotion dur="2.2s" repeatCount="indefinite" begin="1.2s"><mpath href="#conn4"/></animateMotion>
+                </circle>
+                <circle r="5" fill="#06d6a0" opacity="0.9">
+                  <animateMotion dur="2.8s" repeatCount="indefinite" begin="1.5s"><mpath href="#conn5"/></animateMotion>
+                </circle>
+
+                <!-- Node: Trigger -->
+                <g class="wf-node wf-node--trigger" transform="translate(50,65)">
+                  <rect width="80" height="50" rx="10" fill="#1a2744" stroke="#f97316" stroke-width="2"/>
+                  <circle cx="8" cy="8" r="4" fill="#f97316" class="wf-pulse"/>
+                  <text x="40" y="20" text-anchor="middle" fill="#f97316" font-size="9" font-family="Inter" font-weight="600">TRIGGER</text>
+                  <text x="40" y="34" text-anchor="middle" fill="#8ca0c8" font-size="8" font-family="Inter">Webhook</text>
+                </g>
+
+                <!-- Node: HTTP -->
+                <g class="wf-node" transform="translate(200,15)">
+                  <rect width="80" height="50" rx="10" fill="#1a2744" stroke="#4f8ef7" stroke-width="2"/>
+                  <text x="40" y="20" text-anchor="middle" fill="#4f8ef7" font-size="9" font-family="Inter" font-weight="600">HTTP</text>
+                  <text x="40" y="34" text-anchor="middle" fill="#8ca0c8" font-size="8" font-family="Inter">Request</text>
+                </g>
+
+                <!-- Node: Code -->
+                <g class="wf-node" transform="translate(200,115)">
+                  <rect width="80" height="50" rx="10" fill="#1a2744" stroke="#4f8ef7" stroke-width="2"/>
+                  <text x="40" y="20" text-anchor="middle" fill="#4f8ef7" font-size="9" font-family="Inter" font-weight="600">CODE</text>
+                  <text x="40" y="34" text-anchor="middle" fill="#8ca0c8" font-size="8" font-family="Inter">Transform</text>
+                </g>
+
+                <!-- Node: AI Agent -->
+                <g class="wf-node wf-node--ai" transform="translate(380,65)">
+                  <rect width="80" height="50" rx="10" fill="#1a2744" stroke="#7b61ff" stroke-width="2.5"/>
+                  <text x="40" y="18" text-anchor="middle" fill="#7b61ff" font-size="9" font-family="Inter" font-weight="700">AI AGENT</text>
+                  <text x="40" y="30" text-anchor="middle" fill="#8ca0c8" font-size="7.5" font-family="Inter">GPT-4o</text>
+                  <circle cx="40" cy="42" r="4" fill="#7b61ff" class="wf-pulse-ai"/>
+                </g>
+
+                <!-- Node: Result -->
+                <g class="wf-node wf-node--done" transform="translate(370,175)">
+                  <rect width="100" height="50" rx="10" fill="#0d2a1f" stroke="#06d6a0" stroke-width="2"/>
+                  <text x="50" y="20" text-anchor="middle" fill="#06d6a0" font-size="9" font-family="Inter" font-weight="600">✓ COMPLETE</text>
+                  <text x="50" y="34" text-anchor="middle" fill="#8ca0c8" font-size="7.5" font-family="Inter">Slack Notification</text>
+                </g>
+              </svg>
+            </div>
+          </div>
+          <div class="section-text">
+            <p>We design and deploy intelligent automation pipelines that eliminate repetitive tasks and unlock your team's potential. From webhook-triggered multi-step workflows to AI-augmented data processing, our solutions connect your tools seamlessly — whether that's a CRM, third-party API, database, or communication platform.</p>
+            <p>Using cutting-edge orchestration frameworks, we build workflows that adapt, self-correct, and scale with your business — reducing overhead and accelerating decision-making across every department.</p>
+            <ul class="feature-list" aria-label="AI Automation features">
+              <li>Custom n8n &amp; Make workflow design</li>
+              <li>API integration &amp; data transformation</li>
+              <li>LLM-powered decision nodes</li>
+              <li>Real-time monitoring &amp; alerting</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Section 2: WordPress Management & Custom Plugins ── -->
+    <section class="service-section service-section--alt reveal" id="wordpress" aria-labelledby="wp-heading">
+      <div class="section-inner">
+        <div class="section-tag">Service 02</div>
+        <h2 class="section-title" id="wp-heading">WordPress Management &amp; Custom Plugins</h2>
+        <div class="section-body section-body--reversed">
+          <div class="section-text">
+            <p>From bespoke plugin development to full-site management, we bring enterprise-grade reliability to your WordPress platform. Our team handles everything from performance optimisation and security hardening to custom Gutenberg blocks and complex WooCommerce integrations.</p>
+            <p>Whether you need a purpose-built plugin to automate a unique business process, or ongoing management to keep your site fast, secure and up to date — we've got you covered with a proactive, hands-on approach.</p>
+            <ul class="feature-list" aria-label="WordPress features">
+              <li>Custom plugin development</li>
+              <li>Theme &amp; Gutenberg customisation</li>
+              <li>Security &amp; performance audits</li>
+              <li>WooCommerce &amp; membership integrations</li>
+            </ul>
+          </div>
+          <div class="anim-panel">
+            <!-- WordPress admin sidebar animation -->
+            <div class="wp-mockup" aria-label="WordPress admin interface animation" role="img">
+              <div class="wp-topbar">
+                <span class="wp-logo-icon">W</span>
+                <span class="wp-site-name">My Business Site</span>
+                <span class="wp-topbar-right">+ New</span>
+              </div>
+              <div class="wp-layout">
+                <nav class="wp-sidebar" aria-label="WordPress sidebar simulation">
+                  <div class="wp-menu-item" id="wpm-dashboard">
+                    <span class="wp-menu-icon">⊞</span><span>Dashboard</span>
+                  </div>
+                  <div class="wp-menu-item wp-menu-item--active" id="wpm-plugins">
+                    <span class="wp-menu-icon">🔌</span><span>Plugins</span>
+                    <span class="wp-caret">›</span>
+                  </div>
+                  <div class="wp-submenu" id="wp-submenu">
+                    <div class="wp-submenu-item wp-submenu-item--highlight" id="wpsub-installed">Installed Plugins</div>
+                    <div class="wp-submenu-item" id="wpsub-add">Add New</div>
+                    <div class="wp-submenu-item" id="wpsub-editor">Plugin Editor</div>
+                  </div>
+                  <div class="wp-menu-item" id="wpm-pages">
+                    <span class="wp-menu-icon">📄</span><span>Pages</span>
+                  </div>
+                  <div class="wp-menu-item" id="wpm-appearance">
+                    <span class="wp-menu-icon">🎨</span><span>Appearance</span>
+                  </div>
+                  <div class="wp-menu-item" id="wpm-settings">
+                    <span class="wp-menu-icon">⚙️</span><span>Settings</span>
+                  </div>
+                </nav>
+                <div class="wp-content-area" aria-label="WordPress plugin content area">
+                  <div class="wp-content-title">Installed Plugins</div>
+                  <div class="wp-plugin-row wp-plugin-row--active" id="wpp-1">
+                    <div class="wp-plugin-info">
+                      <strong>EMEL Smart Forms</strong>
+                      <span class="wp-plugin-badge">Active</span>
+                    </div>
+                    <div class="wp-plugin-desc">Custom AI-powered form builder with CRM sync.</div>
+                  </div>
+                  <div class="wp-plugin-row" id="wpp-2">
+                    <div class="wp-plugin-info">
+                      <strong>EMEL SEO Booster</strong>
+                      <span class="wp-plugin-badge wp-plugin-badge--inactive">Inactive</span>
+                    </div>
+                    <div class="wp-plugin-desc">Automated meta-tags, schema markup &amp; sitemaps.</div>
+                  </div>
+                  <div class="wp-plugin-row wp-plugin-row--active" id="wpp-3">
+                    <div class="wp-plugin-info">
+                      <strong>EMEL WooSync</strong>
+                      <span class="wp-plugin-badge">Active</span>
+                    </div>
+                    <div class="wp-plugin-desc">Real-time inventory sync with external warehouses.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Section 3: AI Solutions ── -->
+    <section class="service-section reveal" id="ai-solutions" aria-labelledby="ais-heading">
+      <div class="section-inner">
+        <div class="section-tag">Service 03</div>
+        <h2 class="section-title" id="ais-heading">AI Solutions</h2>
+        <div class="section-body">
+          <div class="anim-panel">
+            <!-- Neural network / particle animation -->
+            <div class="neural-canvas" aria-label="AI neural network animation" role="img">
+              <canvas id="neuralCanvas" width="480" height="280" aria-hidden="true"></canvas>
+              <div class="neural-label">
+                <span class="nl-chip">GPT-4o</span>
+                <span class="nl-chip">Claude 3.5</span>
+                <span class="nl-chip">Vision AI</span>
+              </div>
+            </div>
+          </div>
+          <div class="section-text">
+            <p>We bring the power of large language models and computer vision directly into your operations. From intelligent chatbots and document-processing pipelines to predictive analytics and custom fine-tuned models — our AI solutions are built for real-world impact, not proof-of-concept demos.</p>
+            <p>We work with the latest frontier models (OpenAI, Anthropic, Google Gemini) and open-source alternatives to design solutions that are cost-effective, secure, and deeply integrated with your existing tech stack.</p>
+            <ul class="feature-list" aria-label="AI Solutions features">
+              <li>Custom LLM chatbots &amp; assistants</li>
+              <li>Document extraction &amp; classification</li>
+              <li>RAG (Retrieval-Augmented Generation) pipelines</li>
+              <li>AI fine-tuning &amp; model evaluation</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Section 4: Hardware Setup & Troubleshooting ── -->
+    <section class="service-section service-section--alt reveal" id="hardware" aria-labelledby="hw-heading">
+      <div class="section-inner">
+        <div class="section-tag">Service 04</div>
+        <h2 class="section-title" id="hw-heading">Hardware Setup &amp; Troubleshooting</h2>
+        <div class="section-body section-body--reversed">
+          <div class="section-text">
+            <p>Reliable infrastructure is the backbone of any successful technology strategy. Whether you're fitting out a new office, upgrading your server room, or troubleshooting a critical hardware failure — our engineers are on hand to diagnose, resolve, and future-proof your setup.</p>
+            <p>From network configuration and workstation deployment to NAS storage, Raspberry Pi servers, and smart-device integration, we handle the physical layer so your team can focus on what matters most.</p>
+            <ul class="feature-list" aria-label="Hardware features">
+              <li>Office &amp; home network setup</li>
+              <li>Server &amp; NAS configuration</li>
+              <li>Workstation builds &amp; upgrades</li>
+              <li>Remote &amp; on-site troubleshooting</li>
+            </ul>
+          </div>
+          <div class="anim-panel">
+            <!-- Circuit board animation -->
+            <div class="hw-canvas" aria-label="Circuit board animation" role="img">
+              <svg class="hw-svg" viewBox="0 0 480 280" xmlns="http://www.w3.org/2000/svg">
+                <!-- PCB background -->
+                <rect width="480" height="280" rx="16" fill="#0b1a12"/>
+                <!-- Grid lines (PCB trace style) -->
+                <g stroke="#0e2918" stroke-width="1" opacity="0.8">
+                  <line x1="0"   y1="40"  x2="480" y2="40"/>
+                  <line x1="0"   y1="80"  x2="480" y2="80"/>
+                  <line x1="0"   y1="120" x2="480" y2="120"/>
+                  <line x1="0"   y1="160" x2="480" y2="160"/>
+                  <line x1="0"   y1="200" x2="480" y2="200"/>
+                  <line x1="0"   y1="240" x2="480" y2="240"/>
+                  <line x1="60"  y1="0"   x2="60"  y2="280"/>
+                  <line x1="120" y1="0"   x2="120" y2="280"/>
+                  <line x1="180" y1="0"   x2="180" y2="280"/>
+                  <line x1="240" y1="0"   x2="240" y2="280"/>
+                  <line x1="300" y1="0"   x2="300" y2="280"/>
+                  <line x1="360" y1="0"   x2="360" y2="280"/>
+                  <line x1="420" y1="0"   x2="420" y2="280"/>
+                </g>
+                <!-- PCB traces -->
+                <polyline points="30,140 60,140 60,80 120,80 180,80 180,120 240,120 300,120 300,160 360,160 420,160 420,200" fill="none" stroke="#06d6a0" stroke-width="2.5" stroke-linecap="round"/>
+                <polyline points="30,200 60,200 60,240 120,240 180,240 180,160 240,160 240,120" fill="none" stroke="#4f8ef7" stroke-width="2.5" stroke-linecap="round"/>
+                <polyline points="240,80 300,80  300,40  360,40  420,40 420,80 450,80" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round"/>
+                <polyline points="120,160 120,200 180,200" fill="none" stroke="#7b61ff" stroke-width="2" stroke-linecap="round"/>
+                <!-- Chips -->
+                <g transform="translate(195,95)">
+                  <rect width="90" height="50" rx="4" fill="#0f3020" stroke="#06d6a0" stroke-width="1.5"/>
+                  <text x="45" y="22" text-anchor="middle" fill="#06d6a0" font-size="8" font-family="Inter" font-weight="700">EMEL-MCU</text>
+                  <text x="45" y="36" text-anchor="middle" fill="#4a7c5c" font-size="7" font-family="Inter">Rev 2.4</text>
+                  <!-- IC pins -->
+                  <line x1="0" y1="12" x2="-6" y2="12" stroke="#06d6a0" stroke-width="1.5"/>
+                  <line x1="0" y1="22" x2="-6" y2="22" stroke="#06d6a0" stroke-width="1.5"/>
+                  <line x1="0" y1="32" x2="-6" y2="32" stroke="#06d6a0" stroke-width="1.5"/>
+                  <line x1="90" y1="12" x2="96" y2="12" stroke="#06d6a0" stroke-width="1.5"/>
+                  <line x1="90" y1="22" x2="96" y2="22" stroke="#06d6a0" stroke-width="1.5"/>
+                  <line x1="90" y1="32" x2="96" y2="32" stroke="#06d6a0" stroke-width="1.5"/>
+                  <line x1="20" y1="0" x2="20" y2="-6" stroke="#06d6a0" stroke-width="1.5"/>
+                  <line x1="45" y1="0" x2="45" y2="-6" stroke="#06d6a0" stroke-width="1.5"/>
+                  <line x1="70" y1="0" x2="70" y2="-6" stroke="#06d6a0" stroke-width="1.5"/>
+                  <line x1="20" y1="50" x2="20" y2="56" stroke="#06d6a0" stroke-width="1.5"/>
+                  <line x1="45" y1="50" x2="45" y2="56" stroke="#06d6a0" stroke-width="1.5"/>
+                  <line x1="70" y1="50" x2="70" y2="56" stroke="#06d6a0" stroke-width="1.5"/>
+                </g>
+                <!-- Capacitors -->
+                <g fill="none" stroke="#f97316" stroke-width="1.5">
+                  <rect x="350" y="55"  width="14" height="22" rx="2" fill="#1a0e02" stroke="#f97316"/>
+                  <rect x="370" y="55"  width="14" height="22" rx="2" fill="#1a0e02" stroke="#f97316"/>
+                  <rect x="52"  y="152" width="14" height="22" rx="2" fill="#1a0e02" stroke="#f97316"/>
+                  <text x="357" y="70" fill="#f97316" font-size="6" font-family="Inter">+</text>
+                  <text x="377" y="70" fill="#f97316" font-size="6" font-family="Inter">+</text>
+                </g>
+                <!-- Resistors -->
+                <g>
+                  <rect x="108" y="72" width="20" height="10" rx="3" fill="#1a1220" stroke="#7b61ff" stroke-width="1.5"/>
+                  <rect x="108" y="152" width="20" height="10" rx="3" fill="#1a1220" stroke="#7b61ff" stroke-width="1.5"/>
+                  <rect x="168" y="232" width="20" height="10" rx="3" fill="#1a1220" stroke="#4f8ef7" stroke-width="1.5"/>
+                </g>
+                <!-- LED indicator -->
+                <circle cx="420" cy="200" r="8" fill="#06d6a0" opacity="0.2">
+                  <animate attributeName="opacity" values="0.2;0.9;0.2" dur="1.6s" repeatCount="indefinite"/>
+                </circle>
+                <circle cx="420" cy="200" r="4" fill="#06d6a0">
+                  <animate attributeName="opacity" values="0.6;1;0.6" dur="1.6s" repeatCount="indefinite"/>
+                </circle>
+                <!-- Pulse dots travelling along traces -->
+                <circle r="4" fill="#06d6a0" opacity="0.9">
+                  <animateMotion dur="3.2s" repeatCount="indefinite" path="M 30,140 60,140 60,80 120,80 180,80 180,120 240,120 300,120 300,160 360,160 420,160 420,200"/>
+                </circle>
+                <circle r="4" fill="#4f8ef7" opacity="0.9">
+                  <animateMotion dur="4s" repeatCount="indefinite" begin="1s" path="M 30,200 60,200 60,240 120,240 180,240 180,160 240,160 240,120"/>
+                </circle>
+                <circle r="3" fill="#f97316" opacity="0.9">
+                  <animateMotion dur="2.8s" repeatCount="indefinite" begin="0.5s" path="M 240,80 300,80 300,40 360,40 420,40 420,80 450,80"/>
+                </circle>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══════════════════════════════ FOOTER ════════════════════════════════ -->
+  <footer class="site-footer" aria-label="Site footer">
+    <div class="footer-inner">
+      <div class="footer-logo" aria-label="EMEL Solutions">
+        <svg viewBox="0 0 200 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="160" aria-hidden="true">
+          <polygon points="22,4 34,11 34,25 22,32 10,25 10,11" fill="none" stroke="#4f8ef7" stroke-width="2"/>
+          <circle cx="22" cy="18" r="4" fill="#4f8ef7"/>
+          <text x="44" y="24" font-family="Space Grotesk, sans-serif" font-size="20" font-weight="700" fill="white">EMEL</text>
+          <text x="45" y="36" font-family="Inter, sans-serif" font-size="7" fill="#7cb3ff" letter-spacing="3">SOLUTIONS</text>
+        </svg>
+      </div>
+      <p class="footer-copy">&copy; 2026 EMEL Solutions. All rights reserved.</p>
+      <p class="footer-url">marklebrett.co.uk/emelsolutions</p>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>

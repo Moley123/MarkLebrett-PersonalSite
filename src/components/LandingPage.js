@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Users, ArrowRight, Lock, Linkedin, Github } from 'lucide-react';
+import { MapPin, Users, ArrowRight, Lock, Linkedin, Github, Zap } from 'lucide-react';
 
 const LandingPage = () => {
   const [location, setLocation] = useState('Earth');
@@ -114,7 +114,7 @@ const LandingPage = () => {
       </div>
 
       {/* APPS GRID */}
-      <div className="max-w-6xl mx-auto px-4 py-20 grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="max-w-6xl mx-auto px-4 py-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         
         {/* APP 1: GEMATRIA (ACTIVE) */}
         <Link to="/gematria" className="group relative">
@@ -133,7 +133,24 @@ const LandingPage = () => {
             </div>
         </Link>
 
-        {/* APP 2: COMING SOON (BLURRED) */}
+        {/* APP 2: EMEL SOLUTIONS (ACTIVE) */}
+        <Link to="/emelsolutions" className="group relative">
+            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-violet-600 to-indigo-600 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+            <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
+                <div className="w-12 h-12 bg-violet-500/20 rounded-lg flex items-center justify-center mb-6 text-violet-400 group-hover:text-white group-hover:bg-violet-600 transition-colors">
+                    <Zap className="w-6 h-6" />
+                </div>
+                <h3 className="text-2xl font-bold mb-3 text-gray-100">EMEL Solutions</h3>
+                <p className="text-gray-400 mb-8 flex-grow">
+                    AI automation, WordPress management, hardware setup &amp; bespoke technology services.
+                </p>
+                <div className="flex items-center text-violet-400 font-semibold group-hover:translate-x-2 transition-transform">
+                    Visit Site <ArrowRight className="ml-2 w-4 h-4" />
+                </div>
+            </div>
+        </Link>
+
+        {/* APP 3: COMING SOON (BLURRED) */}
         <div className="relative group grayscale opacity-60 hover:opacity-80 transition-opacity cursor-not-allowed">
             <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 h-full flex flex-col border-dashed">
                 <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center mb-6">
