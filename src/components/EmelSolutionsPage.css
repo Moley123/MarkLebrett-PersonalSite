@@ -276,13 +276,14 @@
    LIQUID-GLASS NAV
 ══════════════════════════════════════════ */
 .emel-page .glass-nav {
-    position: sticky;
+    position: fixed;
     top: 18px;
+    left: 0;
+    right: 0;
     z-index: 100;
     display: flex;
     justify-content: center;
     pointer-events: none;
-    margin-top: -60px;
 }
 
 .emel-page .glass-nav__list {

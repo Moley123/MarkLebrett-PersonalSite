@@ -286,15 +286,14 @@ body {
    LIQUID-GLASS NAV BAR
 ══════════════════════════════════════════ */
 .glass-nav {
-    position: sticky;
+    position: fixed;
     top: 18px;
+    left: 0;
+    right: 0;
     z-index: 100;
     display: flex;
     justify-content: center;
     pointer-events: none;
-    /* only the pill is interactive */
-    margin-top: -60px;
-    /* pull up over the first section */
 }
 
 .glass-nav__list {
