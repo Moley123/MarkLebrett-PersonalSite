@@ -15,13 +15,23 @@ const GematriaApp = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set the favicon for the Gematria app
+    // Gematria favicon: Hebrew letter Alef in blue/indigo
+    const svgFavicon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#3b82f6"/>
+          <stop offset="100%" stop-color="#6366f1"/>
+        </linearGradient>
+      </defs>
+      <rect width="32" height="32" rx="7" fill="#f8fafc"/>
+      <text x="4" y="25" font-family="serif" font-size="24" font-weight="700" fill="url(#g)">א</text>
+    </svg>`;
     const favicon = document.createElement('link');
     favicon.rel = 'icon';
-    favicon.href = '/favicon.ico';
+    favicon.type = 'image/svg+xml';
+    favicon.href = 'data:image/svg+xml,' + encodeURIComponent(svgFavicon);
     document.head.appendChild(favicon);
 
-    // Cleanup function to remove the favicon when the component unmounts
     return () => {
       document.head.removeChild(favicon);
     };

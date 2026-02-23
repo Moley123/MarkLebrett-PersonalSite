@@ -8,13 +8,23 @@ const LandingPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set the favicon for the landing page
+    // Portal favicon: ML monogram in blue/emerald
+    const svgFavicon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#60a5fa"/>
+          <stop offset="100%" stop-color="#34d399"/>
+        </linearGradient>
+      </defs>
+      <rect width="32" height="32" rx="7" fill="#111827"/>
+      <text x="4" y="22" font-family="system-ui,sans-serif" font-size="16" font-weight="800" fill="url(#g)">ML</text>
+    </svg>`;
     const favicon = document.createElement('link');
     favicon.rel = 'icon';
-    favicon.href = '/globe.png';
+    favicon.type = 'image/svg+xml';
+    favicon.href = 'data:image/svg+xml,' + encodeURIComponent(svgFavicon);
     document.head.appendChild(favicon);
 
-    // Cleanup function to remove the favicon when the component unmounts
     return () => {
       document.head.removeChild(favicon);
     };
