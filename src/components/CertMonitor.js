@@ -34,19 +34,20 @@ let idCounter = 0;
 
 const CertMonitor = () => {
   const navigate = useNavigate();
-  const wsRef        = useRef(null);
-  const bufferRef    = useRef([]);   // pending entries not yet flushed to state
-  const autoScrollRef= useRef(true);
-  const feedRef      = useRef(null);
-  const tickRef      = useRef(null);
+  const bufferRef        = useRef([]);
+  const autoScrollRef    = useRef(true);
+  const feedRef          = useRef(null);
+  const tickRef          = useRef(null);
+  const intentionalRef   = useRef(false);  // true when WE close (no auto-retry)
+  const [retryToken, setRetryToken] = useState(0);
 
-  const [entries,      setEntries]      = useState([]);
-  const [status,       setStatus]       = useState('connecting'); // connecting|live|paused|error
-  const [paused,       setPaused]       = useState(false);
-  const [filter,       setFilter]       = useState('');
-  const [suspOnly,     setSuspOnly]     = useState(false);
-  const [autoScroll,   setAutoScroll]   = useState(true);
-  const [stats,        setStats]        = useState({ total: 0, ok: 0, warn: 0, critical: 0 });
+  const [entries,    setEntries]  = useState([]);
+  const [status,     setStatus]   = useState('connecting');
+  const [paused,     setPaused]   = useState(false);
+  const [filter,     setFilter]   = useState('');
+  const [suspOnly,   setSuspOnly] = useState(false);
+  const [autoScroll, setAutoScroll] = useState(true);
+  const [stats,      setStats]    = useState({ total: 0, ok: 0, warn: 0, critical: 0 });
 
   /* ── Title / favicon ── */
   useEffect(() => {
@@ -92,25 +93,40 @@ const CertMonitor = () => {
     });
   }, []);
 
-  /* ── WebSocket connection ── */
-  const connect = useCallback(() => {
-    if (wsRef.current) wsRef.current.close();
+  /* ── UI tick (independent of connection) ── */
+  useEffect(() => {
+    tickRef.current = setInterval(flushBuffer, UI_TICK_MS);
+    return () => clearInterval(tickRef.current);
+  }, [flushBuffer]);
+
+  /* ── Single connection effect ──
+     Keyed on [paused, retryToken].
+     - paused=true  → just set status, no socket (cleanup from last run closed it)
+     - paused=false → open socket; cleanup marks close intentional to stop retry   */
+  useEffect(() => {
+    if (paused) {
+      setStatus('paused');
+      return;
+    }
+
+    intentionalRef.current = false;
     setStatus('connecting');
-
     const ws = new WebSocket('wss://certstream.calidog.io/');
-    wsRef.current = ws;
 
-    ws.onopen = () => setStatus('live');
-    ws.onerror = () => setStatus('error');
+    ws.onopen = () => {
+      if (intentionalRef.current) { ws.close(); return; }
+      setStatus('live');
+    };
+    ws.onerror = () => { /* onclose fires next */ };
     ws.onclose = () => {
+      if (intentionalRef.current) return;     // deliberate — no retry
       setStatus('error');
-      // Retry after 5 s
       setTimeout(() => {
-        if (wsRef.current === ws) connect();
+        if (!intentionalRef.current) setRetryToken(t => t + 1);
       }, 5000);
     };
-
     ws.onmessage = (event) => {
+      if (intentionalRef.current) return;
       try {
         const msg = JSON.parse(event.data);
         if (msg.message_type !== 'certificate_update') return;
@@ -118,35 +134,19 @@ const CertMonitor = () => {
         if (!domains || domains.length === 0) return;
         const domain = domains[0];
         const severity = classify(domain);
-        const now = new Date();
-        const time = now.toTimeString().slice(0, 8);
+        const time = new Date().toTimeString().slice(0, 8);
         bufferRef.current.push({ id: ++idCounter, time, domain, severity });
-      } catch { /* ignore parse errors */ }
+      } catch { /* ignore */ }
     };
-  }, []);
 
-  /* ── Lifecycle: connect on mount ── */
-  useEffect(() => {
-    connect();
-    tickRef.current = setInterval(flushBuffer, UI_TICK_MS);
     return () => {
-      clearInterval(tickRef.current);
-      if (wsRef.current) wsRef.current.close();
+      intentionalRef.current = true;
+      if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+        ws.close();
+      }
     };
-  }, [connect, flushBuffer]);
-
-  /* ── Pause / resume ── */
-  useEffect(() => {
-    if (!wsRef.current) return;
-    if (paused) {
-      wsRef.current.close();
-      clearInterval(tickRef.current);
-      setStatus('paused');
-    } else {
-      connect();
-      tickRef.current = setInterval(flushBuffer, UI_TICK_MS);
-    }
-  }, [paused, connect, flushBuffer]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paused, retryToken]);
 
   /* ── Auto-scroll ── */
   useEffect(() => {
@@ -260,7 +260,7 @@ const CertMonitor = () => {
           Clear
         </button>
         {status === 'error' && (
-          <button className="cert-btn" onClick={() => { setPaused(false); connect(); }}>
+          <button className="cert-btn" onClick={() => { setPaused(false); setRetryToken(t => t + 1); }}>
             ↺ Reconnect
           </button>
         )}
