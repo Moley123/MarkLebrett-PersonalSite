@@ -885,6 +885,10 @@ body {
         font-size: 0.72rem;
         padding: 0.4rem 0.65rem;
     }
+
+    .glass-nav {
+        top: 68px;
+    }
 }
 
 @media (max-width: 540px) {
