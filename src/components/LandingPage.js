@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Users, ArrowRight, Lock, Linkedin, Github, Zap, Shield } from 'lucide-react';
+import { MapPin, Users, ArrowRight, Lock, Linkedin, Github, Zap, Shield, Clock } from 'lucide-react';
 
 const LandingPage = () => {
   const [location, setLocation] = useState('Earth');
@@ -139,76 +139,104 @@ const LandingPage = () => {
         </div>
       </div>
 
-      {/* APPS GRID */}
-      <div className="max-w-6xl mx-auto px-4 py-20 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        
-        {/* APP 1: GEMATRIA (ACTIVE) */}
-        <Link to="/gematria" className="group relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-            <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
-                <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center mb-6 text-blue-400 group-hover:text-white group-hover:bg-blue-600 transition-colors">
-                    <span className="text-2xl font-bold">א</span>
-                </div>
-                <h3 className="text-2xl font-bold mb-3 text-gray-100">Gematria Tool</h3>
-                <p className="text-gray-400 mb-8 flex-grow">
-                    Advanced Torah text analysis, trend tracking, and word occurrence races.
-                </p>
-                <div className="flex items-center text-blue-400 font-semibold group-hover:translate-x-2 transition-transform">
-                    Launch App <ArrowRight className="ml-2 w-4 h-4" />
-                </div>
+      {/* ═══════════ FEATURED: EMEL SOLUTIONS ═══════════ */}
+      <div className="max-w-6xl mx-auto px-4 pt-20 pb-6">
+        <p className="text-xs font-semibold tracking-widest uppercase text-gray-500 mb-5">Business</p>
+        <Link to="/emelsolutions" className="group relative block">
+          <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-violet-600 to-indigo-600 rounded-2xl blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+          <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-10 hover:-translate-y-1 transition-transform duration-300 flex flex-col md:flex-row md:items-center gap-8">
+            <div className="flex-shrink-0 w-16 h-16 bg-violet-500/20 rounded-xl flex items-center justify-center text-violet-400 group-hover:text-white group-hover:bg-violet-600 transition-colors">
+              <Zap className="w-8 h-8" />
             </div>
+            <div className="flex-1">
+              <h3 className="text-3xl font-bold mb-2 text-gray-100">EMEL Solutions</h3>
+              <p className="text-gray-400 max-w-2xl">
+                AI automation, WordPress management, hardware setup &amp; bespoke technology services for modern businesses.
+              </p>
+            </div>
+            <div className="flex items-center text-violet-400 font-semibold group-hover:translate-x-2 transition-transform flex-shrink-0">
+              Visit Site <ArrowRight className="ml-2 w-5 h-5" />
+            </div>
+          </div>
         </Link>
+      </div>
 
-        {/* APP 2: EMEL SOLUTIONS (ACTIVE) */}
-        <Link to="/emelsolutions" className="group relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-violet-600 to-indigo-600 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-            <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
-                <div className="w-12 h-12 bg-violet-500/20 rounded-lg flex items-center justify-center mb-6 text-violet-400 group-hover:text-white group-hover:bg-violet-600 transition-colors">
-                    <Zap className="w-6 h-6" />
-                </div>
-                <h3 className="text-2xl font-bold mb-3 text-gray-100">EMEL Solutions</h3>
-                <p className="text-gray-400 mb-8 flex-grow">
-                    AI automation, WordPress management, hardware setup &amp; bespoke technology services.
-                </p>
-                <div className="flex items-center text-violet-400 font-semibold group-hover:translate-x-2 transition-transform">
-                    Visit Site <ArrowRight className="ml-2 w-4 h-4" />
-                </div>
-            </div>
-        </Link>
-
-        {/* APP 3: CERTSTREAM MONITOR (ACTIVE) */}
-        <Link to="/certmonitor" className="group relative">
-            <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
-            <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
-                <div className="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center mb-6 text-cyan-400 group-hover:text-white group-hover:bg-cyan-600 transition-colors">
-                    <Shield className="w-6 h-6" />
-                </div>
-                <h3 className="text-2xl font-bold mb-3 text-gray-100">CertStream Monitor</h3>
-                <p className="text-gray-400 mb-8 flex-grow">
-                    Live SSL/TLS certificate transparency feed with real-time phishing &amp; brand-abuse keyword detection.
-                </p>
-                <div className="flex items-center text-cyan-400 font-semibold group-hover:translate-x-2 transition-transform">
-                    Launch App <ArrowRight className="ml-2 w-4 h-4" />
-                </div>
-            </div>
-        </Link>
-
-        {/* APP 4: COMING SOON (BLURRED) */}
-        <div className="relative group grayscale opacity-60 hover:opacity-80 transition-opacity cursor-not-allowed">
-            <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 h-full flex flex-col border-dashed">
-                <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center mb-6">
-                    <Lock className="w-6 h-6 text-gray-500" />
-                </div>
-                <h3 className="text-2xl font-bold mb-3 text-gray-500 blur-sm select-none">Notarikon</h3>
-                <p className="text-gray-600 mb-8 flex-grow blur-[2px] select-none">
-                    Acronym generator and reverse lookup for initials and final letters.
-                </p>
-                <div className="mt-auto inline-flex px-3 py-1 rounded-full bg-gray-800 text-xs font-bold text-gray-500 uppercase tracking-widest w-fit">
-                    Coming Soon
-                </div>
-            </div>
+      {/* ═══════════ PROJECTS & TOOLS GRID ═══════════ */}
+      <div className="max-w-6xl mx-auto px-4 pb-20">
+        <div className="flex items-center gap-4 mb-5">
+          <p className="text-xs font-semibold tracking-widest uppercase text-gray-500">Projects &amp; Tools</p>
+          <div className="flex-1 h-px bg-gray-800"></div>
         </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
 
+          {/* Gematria */}
+          <Link to="/gematria" className="group relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+              <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
+                  <div className="w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center mb-6 text-blue-400 group-hover:text-white group-hover:bg-blue-600 transition-colors">
+                      <span className="text-2xl font-bold">א</span>
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3 text-gray-100">Gematria Tool</h3>
+                  <p className="text-gray-400 mb-8 flex-grow">
+                      Advanced Torah text analysis, trend tracking, and word occurrence races.
+                  </p>
+                  <div className="flex items-center text-blue-400 font-semibold group-hover:translate-x-2 transition-transform">
+                      Launch App <ArrowRight className="ml-2 w-4 h-4" />
+                  </div>
+              </div>
+          </Link>
+
+          {/* CertStream Monitor */}
+          <Link to="/certmonitor" className="group relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+              <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
+                  <div className="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center mb-6 text-cyan-400 group-hover:text-white group-hover:bg-cyan-600 transition-colors">
+                      <Shield className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3 text-gray-100">CertStream Monitor</h3>
+                  <p className="text-gray-400 mb-8 flex-grow">
+                      Live SSL/TLS certificate transparency feed with real-time phishing &amp; brand-abuse detection.
+                  </p>
+                  <div className="flex items-center text-cyan-400 font-semibold group-hover:translate-x-2 transition-transform">
+                      Launch App <ArrowRight className="ml-2 w-4 h-4" />
+                  </div>
+              </div>
+          </Link>
+
+          {/* Prayer Times — external link */}
+          <a href="https://davening-times.netlify.app/" target="_blank" rel="noopener noreferrer" className="group relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+              <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
+                  <div className="w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center mb-6 text-orange-400 group-hover:text-white group-hover:bg-orange-500 transition-colors">
+                      <Clock className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3 text-gray-100">Prayer Times</h3>
+                  <p className="text-gray-400 mb-8 flex-grow">
+                      Live Halacha zmanim and congregation davening schedule for Machzike Hadath, with mobile &amp; landscape views.
+                  </p>
+                  <div className="flex items-center text-orange-400 font-semibold group-hover:translate-x-2 transition-transform">
+                      Open App <ArrowRight className="ml-2 w-4 h-4" />
+                  </div>
+              </div>
+          </a>
+
+          {/* Coming Soon */}
+          <div className="relative group grayscale opacity-50 hover:opacity-70 transition-opacity cursor-not-allowed">
+              <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 h-full flex flex-col border-dashed">
+                  <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center mb-6">
+                      <Lock className="w-6 h-6 text-gray-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3 text-gray-600 blur-sm select-none">Lorem Ipsum</h3>
+                  <p className="text-gray-700 mb-8 flex-grow blur-[2px] select-none text-sm">
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  </p>
+                  <div className="mt-auto inline-flex px-3 py-1 rounded-full bg-gray-800 text-xs font-bold text-gray-600 uppercase tracking-widest w-fit">
+                      Coming Soon
+                  </div>
+              </div>
+          </div>
+
+        </div>
       </div>
 
       {/* FOOTER */}
