@@ -1,0 +1,800 @@
+/* ═══════════════════════════════════════════════════════════════
+   EMEL Solutions React Component — EmelSolutionsPage.css
+   ═══════════════════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+/* ── Design tokens ── */
+.emel-page {
+    --clr-bg: #060c1a;
+    --clr-bg-alt: #080e20;
+    --clr-surface: #0d1530;
+    --clr-primary: #4f8ef7;
+    --clr-accent: #7b61ff;
+    --clr-green: #06d6a0;
+    --clr-orange: #f97316;
+    --clr-text: #eef2ff;
+    --clr-text-muted: #8ca0c8;
+    --clr-border: rgba(79, 142, 247, 0.18);
+    --nav-glass-bg: rgba(10, 18, 40, 0.55);
+    --nav-glass-border: rgba(79, 142, 247, 0.28);
+    --radius-card: 20px;
+    --radius-pill: 999px;
+    --font-body: 'Inter', system-ui, sans-serif;
+    --font-display: 'Space Grotesk', system-ui, sans-serif;
+    --transition: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+
+    background: var(--clr-bg);
+    color: var(--clr-text);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.7;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* ── Portal back button ── */
+.emel-page .portal-back-btn {
+    position: fixed;
+    top: 18px;
+    left: 20px;
+    z-index: 200;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.45rem 1rem 0.45rem 0.75rem;
+    border-radius: var(--radius-pill);
+    background: var(--nav-glass-bg);
+    border: 1.5px solid var(--nav-glass-border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: var(--clr-text-muted);
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 500;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+    transition: color var(--transition), background var(--transition),
+        box-shadow var(--transition), transform var(--transition);
+    animation: emel-navAppear 1.2s 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+    background: none;
+}
+
+.emel-page .portal-back-btn {
+    background: rgba(10, 18, 40, 0.55);
+    border: 1.5px solid rgba(79, 142, 247, 0.28);
+}
+
+.emel-page .portal-back-btn:hover {
+    color: var(--clr-text);
+    background: rgba(79, 142, 247, 0.15);
+    box-shadow: 0 6px 28px rgba(79, 142, 247, 0.2);
+    transform: translateX(-2px);
+}
+
+.emel-page .portal-back-btn svg {
+    transition: transform var(--transition);
+}
+
+.emel-page .portal-back-btn:hover svg {
+    transform: translateX(-3px);
+}
+
+/* ══════════════════════════════════════════
+   BANNER
+══════════════════════════════════════════ */
+.emel-page .banner {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, #0d1f4a 0%, #060c1a 70%);
+}
+
+.emel-page .banner-bg-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(79, 142, 247, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(79, 142, 247, 0.05) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: emel-gridScroll 20s linear infinite;
+}
+
+@keyframes emel-gridScroll {
+    0% {
+        transform: translateY(0);
+    }
+
+    100% {
+        transform: translateY(60px);
+    }
+}
+
+.emel-page .banner-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+}
+
+.emel-page .banner-orb--1 {
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(79, 142, 247, 0.18) 0%, transparent 70%);
+    top: -200px;
+    left: -150px;
+    animation: emel-orbFloat1 12s ease-in-out infinite;
+}
+
+.emel-page .banner-orb--2 {
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(123, 97, 255, 0.15) 0%, transparent 70%);
+    top: -100px;
+    right: -100px;
+    animation: emel-orbFloat2 15s ease-in-out infinite;
+}
+
+.emel-page .banner-orb--3 {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(6, 214, 160, 0.10) 0%, transparent 70%);
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: emel-orbFloat3 18s ease-in-out infinite;
+}
+
+@keyframes emel-orbFloat1 {
+
+    0%,
+    100% {
+        transform: translate(0, 0)
+    }
+
+    50% {
+        transform: translate(40px, 30px)
+    }
+}
+
+@keyframes emel-orbFloat2 {
+
+    0%,
+    100% {
+        transform: translate(0, 0)
+    }
+
+    50% {
+        transform: translate(-30px, 40px)
+    }
+}
+
+@keyframes emel-orbFloat3 {
+
+    0%,
+    100% {
+        transform: translateX(-50%) translateY(0)
+    }
+
+    50% {
+        transform: translateX(-50%) translateY(-20px)
+    }
+}
+
+.emel-page .banner-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    text-align: center;
+    padding: 2rem 1.5rem;
+}
+
+.emel-page .logo-wrap {
+    display: inline-block;
+    animation: emel-logoAppear 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    opacity: 0;
+    transform: translateY(24px);
+}
+
+@keyframes emel-logoAppear {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.emel-page .logo-svg {
+    width: min(480px, 90vw);
+    height: auto;
+    filter: drop-shadow(0 0 32px rgba(79, 142, 247, 0.4));
+}
+
+.emel-page .banner-tagline {
+    font-family: var(--font-display);
+    font-size: clamp(1rem, 2.5vw, 1.35rem);
+    font-weight: 400;
+    color: var(--clr-text-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    animation: emel-fadeUp 1.4s 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes emel-fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.emel-page .scroll-hint {
+    position: absolute;
+    bottom: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+}
+
+.emel-page .scroll-hint span {
+    display: block;
+    width: 26px;
+    height: 26px;
+    border-right: 2px solid var(--clr-primary);
+    border-bottom: 2px solid var(--clr-primary);
+    transform: rotate(45deg);
+    animation: emel-scrollBounce 1.8s ease-in-out infinite;
+    opacity: 0.7;
+}
+
+@keyframes emel-scrollBounce {
+
+    0%,
+    100% {
+        transform: rotate(45deg) translateY(0);
+        opacity: 0.7;
+    }
+
+    50% {
+        transform: rotate(45deg) translateY(8px);
+        opacity: 0.3;
+    }
+}
+
+/* ══════════════════════════════════════════
+   LIQUID-GLASS NAV
+══════════════════════════════════════════ */
+.emel-page .glass-nav {
+    position: sticky;
+    top: 18px;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    margin-top: -60px;
+}
+
+.emel-page .glass-nav__list {
+    pointer-events: all;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    list-style: none;
+    padding: 0.45rem 1.2rem;
+    margin: 0;
+    border-radius: var(--radius-pill);
+    background: var(--nav-glass-bg);
+    border: 1.5px solid var(--nav-glass-border);
+    backdrop-filter: blur(24px) saturate(1.6);
+    -webkit-backdrop-filter: blur(24px) saturate(1.6);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 0 0.5px rgba(255, 255, 255, 0.04) inset;
+    animation: emel-navAppear 1.2s 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes emel-navAppear {
+    from {
+        opacity: 0;
+        transform: translateY(-16px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.emel-page .glass-nav__link {
+    display: inline-block;
+    padding: 0.45rem 1rem;
+    border-radius: var(--radius-pill);
+    color: var(--clr-text-muted);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    transition: color var(--transition), background var(--transition);
+    white-space: nowrap;
+}
+
+.emel-page .glass-nav__link:hover,
+.emel-page .glass-nav__link.active {
+    color: var(--clr-primary);
+    background: rgba(79, 142, 247, 0.18);
+}
+
+.emel-page .glass-nav--scrolled .glass-nav__list {
+    background: rgba(6, 12, 28, 0.75);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.65);
+}
+
+/* ══════════════════════════════════════════
+   SCROLL REVEAL
+══════════════════════════════════════════ */
+.emel-page .reveal {
+    opacity: 0;
+    transform: translateY(48px);
+    transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.emel-page .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ══════════════════════════════════════════
+   SERVICE SECTIONS
+══════════════════════════════════════════ */
+.emel-page .service-section {
+    padding: 7rem 1.5rem 6rem;
+    background: var(--clr-bg);
+}
+
+.emel-page .service-section--alt {
+    background: var(--clr-bg-alt);
+}
+
+.emel-page .section-inner {
+    max-width: 1120px;
+    margin: 0 auto;
+}
+
+.emel-page .section-tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--clr-primary);
+    margin-bottom: 0.75rem;
+    opacity: 0.8;
+}
+
+.emel-page .section-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 2.5rem;
+    background: linear-gradient(120deg, #fff 30%, var(--clr-primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.emel-page .section-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+.emel-page .section-body--reversed {
+    direction: rtl;
+}
+
+.emel-page .section-body--reversed>* {
+    direction: ltr;
+}
+
+.emel-page .section-text p {
+    color: var(--clr-text-muted);
+    margin-bottom: 1.1rem;
+    font-size: 0.97rem;
+    line-height: 1.8;
+}
+
+.emel-page .feature-list {
+    list-style: none;
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.emel-page .feature-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    color: var(--clr-text);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.emel-page .feature-list li::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--clr-primary), var(--clr-accent));
+    flex-shrink: 0;
+    box-shadow: 0 0 8px rgba(79, 142, 247, 0.6);
+}
+
+/* ══════════════════════════════════════════
+   ANIMATION PANELS
+══════════════════════════════════════════ */
+.emel-page .anim-panel {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+    transition: box-shadow var(--transition), transform var(--transition);
+}
+
+.emel-page .anim-panel:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 48px rgba(79, 142, 247, 0.15);
+}
+
+/* Workflow */
+.emel-page .workflow-canvas {
+    padding: 1.5rem;
+    background: #08112a;
+    border-radius: var(--radius-card);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.emel-page .workflow-svg {
+    width: 100%;
+    height: auto;
+    max-height: 280px;
+}
+
+.emel-page .wf-conn {
+    animation: emel-flowDash 1.8s linear infinite;
+}
+
+.emel-page .wf-conn--delay1 {
+    animation-delay: 0.4s;
+}
+
+.emel-page .wf-conn--delay2 {
+    animation-delay: 0.9s;
+}
+
+@keyframes emel-flowDash {
+    to {
+        stroke-dashoffset: -20;
+    }
+}
+
+.emel-page .wf-pulse {
+    animation: emel-wfPulse 2s ease-in-out infinite;
+}
+
+@keyframes emel-wfPulse {
+
+    0%,
+    100% {
+        opacity: 1
+    }
+
+    50% {
+        opacity: 0.3
+    }
+}
+
+.emel-page .wf-pulse-ai {
+    animation: emel-wfPulseAi 1.4s ease-in-out infinite;
+}
+
+@keyframes emel-wfPulseAi {
+
+    0%,
+    100% {
+        opacity: 0.9
+    }
+
+    50% {
+        opacity: 0.3
+    }
+}
+
+/* WordPress */
+.emel-page .wp-mockup {
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    background: #1d2327;
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.emel-page .wp-topbar {
+    background: #1d2327;
+    border-bottom: 1px solid #333;
+    padding: 0.55rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #a7aaad;
+}
+
+.emel-page .wp-logo-icon {
+    background: #3858e9;
+    color: white;
+    font-weight: 800;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+}
+
+.emel-page .wp-site-name {
+    color: #eee;
+    font-weight: 500;
+}
+
+.emel-page .wp-topbar-right {
+    margin-left: auto;
+    color: #72aee6;
+    font-size: 0.78rem;
+}
+
+.emel-page .wp-layout {
+    display: flex;
+    height: 260px;
+}
+
+.emel-page .wp-sidebar {
+    width: 140px;
+    flex-shrink: 0;
+    background: #23282d;
+    border-right: 1px solid #1a1a1a;
+    padding: 0.5rem 0;
+    overflow: hidden;
+}
+
+.emel-page .wp-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.52rem 0.8rem;
+    color: #a7aaad;
+    cursor: pointer;
+    font-size: 0.78rem;
+    transition: background 0.2s, color 0.2s;
+    border-left: 3px solid transparent;
+}
+
+.emel-page .wp-menu-item--active {
+    background: #2c3338;
+    color: #72aee6;
+    border-left-color: #72aee6;
+}
+
+.emel-page .wp-menu-icon {
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.emel-page .wp-caret {
+    margin-left: auto;
+    opacity: 0.5;
+}
+
+.emel-page .wp-submenu {
+    background: #32373c;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+.emel-page .wp-submenu-item {
+    padding: 0.42rem 0.8rem 0.42rem 1.6rem;
+    color: #a7aaad;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.emel-page .wp-submenu-item--highlight {
+    color: #72aee6;
+    font-weight: 500;
+}
+
+.emel-page .wp-content-area {
+    flex: 1;
+    padding: 0.9rem 1rem;
+    overflow: hidden;
+    background: #f0f0f1;
+    color: #1d2327;
+}
+
+.emel-page .wp-content-title {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #1d2327;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid #c3c4c7;
+}
+
+.emel-page .wp-plugin-row {
+    background: white;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    padding: 0.5rem 0.7rem;
+    margin-bottom: 0.45rem;
+}
+
+.emel-page .wp-plugin-row--active {
+    border-left: 3px solid #3858e9;
+}
+
+.emel-page .wp-plugin-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.2rem;
+}
+
+.emel-page .wp-plugin-info strong {
+    font-size: 0.78rem;
+    color: #1d2327;
+}
+
+.emel-page .wp-plugin-badge {
+    font-size: 0.65rem;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: #d7f7c2;
+    color: #00a32a;
+}
+
+.emel-page .wp-plugin-badge--inactive {
+    background: #efefef;
+    color: #646970;
+}
+
+.emel-page .wp-plugin-desc {
+    font-size: 0.7rem;
+    color: #646970;
+}
+
+/* Neural net */
+.emel-page .neural-canvas {
+    position: relative;
+    background: #07111f;
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.emel-page #neuralCanvas {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.emel-page .neural-label {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.emel-page .nl-chip {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    padding: 0.3rem 0.85rem;
+    border-radius: var(--radius-pill);
+    border: 1px solid rgba(79, 142, 247, 0.35);
+    color: var(--clr-primary);
+    background: rgba(79, 142, 247, 0.08);
+}
+
+/* Hardware */
+.emel-page .hw-canvas {
+    border-radius: var(--radius-card);
+    overflow: hidden;
+    display: block;
+}
+
+.emel-page .hw-svg {
+    width: 100%;
+    height: auto;
+    max-height: 280px;
+    display: block;
+}
+
+/* ══════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════ */
+.emel-page .site-footer {
+    padding: 3rem 1.5rem 2rem;
+    background: #040810;
+    border-top: 1px solid var(--clr-border);
+    text-align: center;
+}
+
+.emel-page .footer-inner {
+    max-width: 600px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.emel-page .footer-copy {
+    color: var(--clr-text-muted);
+    font-size: 0.82rem;
+}
+
+.emel-page .footer-url {
+    color: var(--clr-primary);
+    font-size: 0.78rem;
+    opacity: 0.7;
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media (max-width: 860px) {
+
+    .emel-page .section-body,
+    .emel-page .section-body--reversed {
+        grid-template-columns: 1fr;
+        direction: ltr;
+        gap: 2.5rem;
+    }
+
+    .emel-page .glass-nav__link {
+        font-size: 0.72rem;
+        padding: 0.4rem 0.65rem;
+    }
+}
+
+@media (max-width: 540px) {
+    .emel-page .glass-nav__list {
+        gap: 0;
+        padding: 0.35rem 0.5rem;
+    }
+
+    .emel-page .glass-nav__link {
+        padding: 0.35rem 0.45rem;
+        font-size: 0.67rem;
+    }
+}
