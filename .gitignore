@@ -21,3 +21,19 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# ── Local dev tools (not part of the deployed site) ──
+certmonitor-test.html
+certmonitor-proxy.js
+certmonitor_ctlog.js
+certmonitor_server.py
+
+# ── Prototype / scratch folders ──
+/emelsolutions
+
+# ── IDE / workspace files ──
+*.code-workspace
+
+# ── Misc root-level test assets ──
+gimmel1.jpeg
+gimmel2.jpeg

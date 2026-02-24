@@ -1,185 +1,120 @@
-# Gematria Explorer
+# Mark Lebrett — Personal Site
 
-A powerful, interactive Gematria calculator and research tool built with
-React. This application allows users to calculate Hebrew Gematria,
-discover significant matching numbers, and search the entire Torah for
-words, phrases, and verses with equivalent values.
+A full-stack personal portfolio and toolset built with **React**. Deployed via **Docker + Nginx** on DigitalOcean, with CI/CD through GitHub Actions.
 
-## ✨ Features
+---
 
--   **Real-time Calculation:** Instantly calculates the Gematria value
-    of Hebrew text as you type.
--   **Torah Search:** Indexes the entire Torah (Pentateuch) to find
-    words or phrases matching your calculated value.
-    -   **Parsha Filtering:** Limit search results to specific Torah
-        portions.
-    -   **Whole Verse Matching:** Detects when an entire Pasuk (verse)
-        sums to the target number.
-    -   **Colel Mode (±1):** Optional search for values plus or minus
-        one.
-    -   **Single Word Mode:** Filter to show only single-word matches.
--   **Wedding / Bridge Calculator:** A unique "Matchmaker" mode that
-    calculates the numerical bridge needed to connect two names to a
-    target goal (e.g., *Names + X = Mazel Tov*).
--   **Common Gematria Discovery:** "Did you know?" cards that highlight
-    culturally significant numbers (e.g., 18 = Chai, 26 = Hashem).
--   **Virtual Hebrew Keyboard:** Built-in on-screen keyboard for users
-    without Hebrew support.
--   **Data & Stats:** Displays verse counts for Parshas and highlights
-    structural matches.
+## 🌐 Live Site
+
+> **[marklebrett.com](https://marklebrett.com)**
+
+---
+
+## 📦 What's Inside
+
+### 🏠 Landing Page
+Personal portfolio homepage — links to all projects and tools.
+
+### 🔢 Gematria Explorer
+An interactive Hebrew Gematria calculator and Torah research tool.
+
+- Real-time Gematria calculation as you type
+- Full Torah (Pentateuch) search — find words, phrases, and verses matching a value
+- Parsha filtering, Colel mode (±1), whole-verse and single-word matching
+- Wedding / Matchmaker calculator — finds the numerical bridge between two names
+- "Did you know?" cards for culturally significant numbers (18 = Chai, 26 = Hashem…)
+- Built-in virtual Hebrew keyboard
+
+### 🏢 Emel Solutions
+Marketing and product page for Emel Solutions — a startup in the AI automation space.
+
+### 🔐 CertStream Monitor
+A live SSL/TLS certificate transparency log monitor with phishing and brand-abuse detection.
+
+- Polls Google's Certificate Transparency log REST APIs directly (no third-party dependency)
+- Parses DER-encoded certificates in the browser to extract domains, issuer, and SAN fields
+- Keyword-based risk classification (clean / suspicious / high-risk)
+- Side detail panel on click: all covered domains, CA, log source, cert index, issued date
+- Investigate links: crt.sh, VirusTotal, Shodan
+
+---
 
 ## 🛠️ Tech Stack
 
--   **Frontend:** React.js, CSS3\
--   **Data Processing:** Python (for indexing and generating JSON
-    databases)\
--   **Data Source:** Sefaria API\
--   **Deployment:** Docker, Nginx
+| Layer | Tech |
+|---|---|
+| Frontend | React 19, React Router, CSS3 |
+| Data (Gematria) | Python — fetches from the [Sefaria API](https://www.sefaria.org/developers) |
+| Deployment | Docker, Nginx |
+| CI/CD | GitHub Actions → DigitalOcean (SSH deploy) |
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
+- Node.js v18+
+- npm
 
--   **Node.js** (v14 or higher)
--   **Python 3.x** (for generating the data index)
--   **npm** or **yarn**
+### Install & Run
 
-------------------------------------------------------------------------
-
-### 1. Installation
-
-Clone the repository and install dependencies:
-
-``` bash
-git clone https://github.com/your-username/gematria-explorer.git
-cd gematria-explorer
+```bash
+git clone https://github.com/Moley123/MarkLebrett-PersonalSite.git
+cd MarkLebrett-PersonalSite
 npm install
-```
-
-------------------------------------------------------------------------
-
-### 2. Generate the Data Index (Crucial Step)
-
-The app relies on a pre-built index of the Torah. You must generate this
-locally before running the app.
-
-Navigate to the backend tools folder:
-
-``` bash
-cd backend_tools
-```
-
-Install the Python requests library:
-
-``` bash
-pip install requests
-```
-
-Run the builder scripts in order:
-
-**Build the Torah Index:** Fetches text from Sefaria and creates the
-search database.
-
-``` bash
-python build_index.py
-```
-
-Output: `public/torah_index.json` (approx. 50MB+)
-
-**Build Parsha Map:** Fetches verse counts and ranges for all 54
-Parshas.
-
-``` bash
-python build_parshas.py
-```
-
-Output: `src/utils/parshas.js`
-
-**Build Common Dictionary:** Generates the list of common Jewish
-concepts.
-
-``` bash
-python build_common_offline.py
-```
-
-Output: `src/data/common_gematria.json`
-
-Return to the root folder:
-
-``` bash
-cd ..
-```
-
-------------------------------------------------------------------------
-
-### 3. Run the App
-
-Start the development server:
-
-``` bash
 npm start
 ```
 
 Open: `http://localhost:3000`
 
-------------------------------------------------------------------------
+---
 
-## 🐳 Deployment (Docker & Nginx)
+## 📊 Gematria Data Setup
 
-This app is configured for production deployment using Docker and Nginx.
-It is set up to run in a subdirectory (e.g.,
-`yourdomain.com/gematria-explorer`).
+The Gematria tool relies on a pre-built Torah index. Generate it before running:
 
-### Configuration
-
--   **Homepage:** Ensure `package.json` contains
-
-    ``` json
-    "homepage": "/gematria-explorer"
-    ```
-
--   **Proxy:** Verify your Nginx proxy passes the correct headers.
-
-### Build and Run with Docker Compose
-
-Make sure you have `docker-compose.yml`, `Dockerfile`, and `nginx.conf`
-in your root directory.
-
-Run the build command:
-
-``` bash
-docker-compose up -d --build
+```bash
+cd backend_tools
+pip install requests
+python build_index.py          # → public/torah_index.json  (~50 MB)
+python build_parshas.py        # → src/utils/parshas.js
+python build_common_offline.py # → src/data/common_gematria.json
+cd ..
 ```
 
-The app will be served on **Port 80** (or whichever port is configured).
+---
 
-------------------------------------------------------------------------
+## 🐳 Production Deployment (Docker + Nginx)
 
-## 📁 Directory Structure
-
-``` plaintext
-/gematria-explorer
-|-- /backend_tools        # Python scripts to generate data
-|-- /public               # Static assets & Large DB (torah_index.json)
-|-- /src
-|   |-- /data             # Smaller JSON data (common_gematria.json)
-|   |-- /utils            # Logic (calculator, filter, keyboard)
-|   |-- App.js            # Main Component
-|   |-- App.css           # Styling
-|-- Dockerfile            # Production build instructions
-|-- nginx.conf            # Nginx server config
-|-- package.json
+```bash
+docker compose up -d --build
 ```
 
-------------------------------------------------------------------------
+The app is served on port 80 via Nginx. GitHub Actions automatically deploys on every push to `main`.
 
-## 🤝 Acknowledgements
+---
 
--   **Sefaria:** For providing an incredible open API for Jewish texts.\
--   **Open Source:** Built with React and Python.
+## 📁 Project Structure
 
-------------------------------------------------------------------------
+```
+/
+├── src/
+│   ├── components/          # React page components
+│   │   ├── LandingPage.js   # Portfolio homepage
+│   │   ├── GematriaApp.js   # Gematria calculator
+│   │   ├── EmelSolutions.js # Emel Solutions page
+│   │   └── CertMonitor.js   # CT log monitor + detail panel
+│   ├── data/                # Static JSON (common_gematria.json)
+│   └── utils/               # Logic helpers (calculator, parshas, keyboard)
+├── public/                  # Static assets + torah_index.json
+├── backend_tools/           # Python scripts for data generation
+├── Dockerfile
+├── nginx.conf
+└── package.json
+```
+
+---
 
 ## 📄 License
 
-This project is licensed under the **MIT License**.
+MIT
