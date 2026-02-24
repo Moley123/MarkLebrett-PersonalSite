@@ -803,3 +803,71 @@
         font-size: 0.67rem;
     }
 }
+
+/* ══════════════════════════════════════════
+   CONTACT SECTION
+══════════════════════════════════════════ */
+.emel-page .contact-section {
+    padding: 7rem 1.5rem 6rem;
+    background: var(--clr-bg-alt);
+    text-align: center;
+}
+
+.emel-page .contact-inner {
+    max-width: 640px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.emel-page .contact-sub {
+    color: var(--clr-text-muted);
+    font-size: 1rem;
+    line-height: 1.8;
+    max-width: 520px;
+    margin: 0;
+}
+
+.emel-page .contact-mailto-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.9rem 2.2rem;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(135deg, var(--clr-primary) 0%, var(--clr-accent) 100%);
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    box-shadow: 0 4px 24px rgba(79, 142, 247, 0.35);
+    transition: transform var(--transition), box-shadow var(--transition), filter var(--transition);
+}
+
+.emel-page .contact-mailto-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 40px rgba(79, 142, 247, 0.55);
+    filter: brightness(1.1);
+}
+
+.emel-page .contact-mailto-btn:active {
+    transform: translateY(0);
+}
+
+.emel-page .contact-direct {
+    font-size: 0.82rem;
+    color: var(--clr-text-muted);
+    margin: 0;
+}
+
+.emel-page .contact-direct a {
+    color: var(--clr-primary);
+    text-decoration: none;
+}
+
+.emel-page .contact-direct a:hover {
+    text-decoration: underline;
+}

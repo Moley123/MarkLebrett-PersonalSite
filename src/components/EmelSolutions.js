@@ -219,6 +219,7 @@ const EmelSolutions = () => {
           <li><a className="glass-nav__link" href="#wordpress"     onClick={e=>smoothScroll(e,'#wordpress')}>WordPress</a></li>
           <li><a className="glass-nav__link" href="#ai-solutions"  onClick={e=>smoothScroll(e,'#ai-solutions')}>AI Solutions</a></li>
           <li><a className="glass-nav__link" href="#hardware"      onClick={e=>smoothScroll(e,'#hardware')}>Hardware</a></li>
+          <li><a className="glass-nav__link" href="#contact"       onClick={e=>smoothScroll(e,'#contact')}>Contact</a></li>
         </ul>
       </nav>
 
@@ -441,6 +442,30 @@ const EmelSolutions = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* ══════════ CONTACT ══════════ */}
+        <section className="contact-section reveal" id="contact" aria-labelledby="contact-heading">
+          <div className="contact-inner">
+            <div className="section-tag">Get In Touch</div>
+            <h2 className="section-title" id="contact-heading">Let's Work Together</h2>
+            <p className="contact-sub">
+              Have a project in mind, or just want to find out more about what we do?
+              Drop us a message and we'll get back to you.
+            </p>
+            <a
+              className="contact-mailto-btn"
+              href="mailto:mark@lebrett.com?subject=EMEL%20Solutions%20Enquiry"
+              aria-label="Email EMEL Solutions"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" strokeWidth="1.8"/>
+                <path d="M2 7l10 7 10-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+              </svg>
+              Send Us a Message
+            </a>
+            <p className="contact-direct">Or email us directly at <a href="mailto:mark@lebrett.com">mark@lebrett.com</a></p>
           </div>
         </section>
 
