@@ -19,7 +19,7 @@ jobs:
             cd /home/marklebrett/n8n-docker-caddy/gematria-app
 
             # Ensure remote points to new repo name (safe to re-run)
-            git remote set-url origin git@github.com:Moley123/MarkLebrett-PersonalSite.git
+            git remote set-url origin https://github.com/Moley123/MarkLebrett-PersonalSite.git
 
             # 1. Stop Containers FIRST to free up RAM
             echo "Stopping containers to free memory..."
