@@ -16,7 +16,8 @@ const LIBRARIES = ['places', 'geometry'];
 
 const MAP_CENTER = { lat: 47.376, lng: 8.541 };
 const MAP_OPTIONS = {
-  mapTypeControl: false,
+  mapTypeControl: true,
+  mapTypeControlOptions: { style: 2 }, // DROPDOWN_MENU style — compact
   streetViewControl: false,
   fullscreenControl: true,
   styles: [
@@ -88,7 +89,7 @@ function getInteriorWaypoints() {
 
   const poly   = makePoly();
   const inside = [];
-  const G = 12; // 12×12 = 144 candidates
+  const G = 20; // 20×20 = 400 candidates
 
   for (let i = 0; i <= G; i++) {
     for (let j = 0; j <= G; j++) {
@@ -201,10 +202,11 @@ const EruvMap = () => {
     libraries: LIBRARIES,
   });
 
-  const mapRef      = useRef(null);
-  const originRef   = useRef(null);
-  const destRef     = useRef(null);
-  const locationRef = useRef(null);
+  const mapRef         = useRef(null);
+  const originRef      = useRef(null);
+  const destRef        = useRef(null);
+  const locationRef    = useRef(null);
+  const dirRendererRef = useRef(null);
 
   const [tab,          setTab]          = useState('check');
   const [marker,       setMarker]       = useState(null);
@@ -227,6 +229,23 @@ const EruvMap = () => {
     setInsideStatus(pointInEruv(latLng) ? 'inside' : 'outside');
     mapRef.current?.panTo(latLng);
     mapRef.current?.setZoom(15);
+  };
+
+  /* ── Route Dragging (User modified) ── */
+  const handleDirectionsChanged = () => {
+    if (!dirRendererRef.current) return;
+    const result = dirRendererRef.current.getDirections();
+    if (!result) return;
+    
+    // Check the new dragged route against the eruv boundary
+    const stays = routeStaysInEruv(result);
+    if (stays) {
+      setRouteStatus('inside');
+      setRouteMsg('Modified route stays within the Eruv boundary.');
+    } else {
+      setRouteStatus('outside');
+      setRouteMsg('This modified walking route crosses outside the Eruv boundary.');
+    }
   };
 
   /* ── Route Planner ── */
@@ -405,10 +424,16 @@ const EruvMap = () => {
           )}
 
           {tab === 'route' && directions && (
-            <DirectionsRenderer directions={directions} options={{
-              polylineOptions: { strokeColor: '#3b82f6', strokeWeight: 5 },
-              suppressMarkers: false,
-            }} />
+            <DirectionsRenderer
+              directions={directions}
+              onLoad={ref => { dirRendererRef.current = ref; }}
+              onDirectionsChanged={handleDirectionsChanged}
+              options={{
+                draggable: true,
+                polylineOptions: { strokeColor: '#3b82f6', strokeWeight: 5 },
+                suppressMarkers: false,
+              }}
+            />
           )}
         </GoogleMap>
 
