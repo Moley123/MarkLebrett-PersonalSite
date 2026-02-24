@@ -243,6 +243,34 @@
     color: #86efac;
 }
 
+.eruv-alert--info {
+    background: rgba(59, 130, 246, 0.08);
+    border: 1px solid rgba(59, 130, 246, 0.25);
+    color: #93c5fd;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Inline spinner (inside button or alert) */
+.eruv-btn-spinner {
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: eruv-spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 4px;
+    flex-shrink: 0;
+}
+
+.eruv-btn-spinner--dark {
+    border-color: rgba(59, 130, 246, 0.25);
+    border-top-color: var(--blue);
+}
+
 /* ── Map ── */
 .eruv-map-wrap {
     flex: 1;
