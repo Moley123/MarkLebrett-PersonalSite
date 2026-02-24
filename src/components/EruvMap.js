@@ -4,10 +4,12 @@ import {
   useJsApiLoader,
   Autocomplete,
   Polygon,
+  Polyline,
   Marker,
   DirectionsRenderer,
 } from '@react-google-maps/api';
 import ERUV_BOUNDARY from '../data/eruv_boundary';
+import ERUV_SEGMENTS from '../data/eruv_segments';
 import './EruvMap.css';
 
 const LIBRARIES = ['places', 'geometry'];
@@ -24,11 +26,15 @@ const MAP_OPTIONS = {
 };
 
 const POLYGON_OPTIONS = {
-  strokeColor: '#1a1a1a',
+  strokeOpacity: 0,   // invisible — only exists for containsLocation()
+  fillOpacity: 0.06,
+  fillColor: '#3b82f6',
+};
+
+const POLYLINE_OPTIONS = {
+  strokeColor: '#111111',
   strokeOpacity: 1,
   strokeWeight: 3,
-  fillColor: '#3b82f6',
-  fillOpacity: 0.08,
 };
 
 /* ══════════════════════════════════════════════════════════════
@@ -351,7 +357,14 @@ const EruvMap = () => {
       {/* ── Map ── */}
       <div className="eruv-map-wrap">
         <GoogleMap mapContainerClassName="eruv-map" center={MAP_CENTER} zoom={13} options={MAP_OPTIONS} onLoad={onMapLoad}>
+          {/* Invisible polygon — used only for containsLocation() point-in-polygon checks */}
           <Polygon paths={ERUV_BOUNDARY} options={POLYGON_OPTIONS} />
+
+          {/* All GeoJSON segments rendered as polylines — shows every boundary
+              section including river stubs that can't form closed rings */}
+          {ERUV_SEGMENTS.map((seg, i) => (
+            <Polyline key={i} path={seg} options={POLYLINE_OPTIONS} />
+          ))}
 
           {tab === 'check' && marker && (
             <Marker position={marker} icon={{
