@@ -2,57 +2,173 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './CertMonitorPage.css';
 
-/* ── Keyword lists ── */
+/* ══════════════════════════════════════════════════════════════
+   CT Log sources (browser-accessible, CORS-enabled REST APIs)
+   No certstream.calidog.io dependency.
+══════════════════════════════════════════════════════════════ */
+const CT_LOGS = [
+  { host: 'ct.googleapis.com/logs/us1/argon2026h1', name: 'Google Argon 2026h1' },
+  { host: 'ct.googleapis.com/logs/eu1/xenon2026h1', name: 'Google Xenon 2026h1' },
+  { host: 'ct.googleapis.com/logs/us1/argon2026h2', name: 'Google Argon 2026h2' },
+  { host: 'ct.googleapis.com/logs/eu1/xenon2026h2', name: 'Google Xenon 2026h2' },
+];
+const POLL_INTERVAL_MS = 2000;
+
+/* ── Keyword classification ── */
 const CRITICAL_KEYWORDS = [
-  'paypal', 'banking', 'credential', 'password', 'wallet', 'bitcoin',
-  'crypto', 'coinbase', 'binance', 'bank-', '-bank', 'bankof',
+  'paypal','banking','credential','password','wallet','bitcoin',
+  'crypto','coinbase','binance','bank-','-bank','bankof',
 ];
 const WARN_KEYWORDS = [
-  'login', 'signin', 'sign-in', 'log-in', 'secure', 'verify', 'verification',
-  'account', 'update', 'confirm', 'support', 'helpdesk', 'admin',
-  'recovery', 'alert', 'suspended', 'unusual', 'amazon', 'apple',
-  'google', 'microsoft', 'netflix', 'facebook', 'instagram', 'payroll',
+  'login','signin','sign-in','log-in','secure','verify','verification',
+  'account','update','confirm','support','helpdesk','admin',
+  'recovery','alert','suspended','unusual','amazon','apple',
+  'google','microsoft','netflix','facebook','instagram','payroll',
 ];
 
 function classify(domain) {
   const d = domain.toLowerCase();
   if (CRITICAL_KEYWORDS.some(k => d.includes(k))) return 'critical';
-  if (WARN_KEYWORDS.some(k => d.includes(k)))    return 'warn';
+  if (WARN_KEYWORDS.some(k => d.includes(k)))     return 'warn';
   return 'ok';
 }
-
-function badgeLabel(severity) {
-  if (severity === 'critical') return '⚠ HIGH';
-  if (severity === 'warn')     return '◆ WARN';
-  return '✓ OK';
+function badgeLabel(s) {
+  return s === 'critical' ? '⚠ HIGH' : s === 'warn' ? '◆ WARN' : '✓ OK';
+}
+function severityLabel(s) {
+  return s === 'critical' ? '⚠ High Risk' : s === 'warn' ? '◆ Suspicious' : '✓ Clean';
 }
 
-const MAX_ENTRIES = 500;
-const UI_TICK_MS  = 150; // batch UI updates
+/* ══════════════════════════════════════════════════════════════
+   Browser-compatible DER / CT leaf parsing
+══════════════════════════════════════════════════════════════ */
+const KNOWN_ISSUERS = [
+  ["Let's Encrypt", ["Let's Encrypt", "ISRG"]],
+  ['Google Trust',  ['Google Trust Services', 'GTS']],
+  ['DigiCert',      ['DigiCert']],
+  ['Sectigo',       ['Sectigo', 'Comodo']],
+  ['ZeroSSL',       ['ZeroSSL']],
+  ['Entrust',       ['Entrust']],
+  ['GlobalSign',    ['GlobalSign']],
+  ['Amazon',        ['Amazon']],
+  ['Buypass',       ['Buypass']],
+];
 
+function u16be(buf, i) { return (buf[i] << 8) | buf[i + 1]; }
+function u24be(buf, i) { return (buf[i] << 16) | (buf[i + 1] << 8) | buf[i + 2]; }
+function u64beMs(buf, i) {
+  // Read 8-byte big-endian timestamp (in ms). JS loses precision above 53 bits
+  // but CT timestamps are well within safe range for years 2024+.
+  const hi = ((buf[i] << 24) | (buf[i+1] << 16) | (buf[i+2] << 8) | buf[i+3]) >>> 0;
+  const lo = ((buf[i+4] << 24) | (buf[i+5] << 16) | (buf[i+6] << 8) | buf[i+7]) >>> 0;
+  return hi * 0x100000000 + lo;
+}
+
+function bufToLatin1(buf) {
+  // Convert Uint8Array to string without TextDecoder (works on all browsers)
+  let s = '';
+  for (let i = 0; i < buf.length; i++) s += String.fromCharCode(buf[i]);
+  return s;
+}
+
+function detectIssuer(buf) {
+  const text = bufToLatin1(buf.subarray(0, Math.min(buf.length, 600)));
+  for (const [label, needles] of KNOWN_ISSUERS) {
+    if (needles.some(n => text.includes(n))) return label;
+  }
+  return 'Unknown CA';
+}
+
+function extractDomainsFromDer(buf) {
+  const domains = new Set();
+  let wildcard = false;
+
+  // Scan for ASN.1 context-specific tag 0x82 (dNSName in SubjectAltName)
+  for (let i = 0; i < buf.length - 2; i++) {
+    if (buf[i] === 0x82) {
+      const len = buf[i + 1];
+      if (len > 0x7f || i + 2 + len > buf.length) continue;
+      let str = '';
+      for (let j = 0; j < len; j++) str += String.fromCharCode(buf[i + 2 + j]);
+      if (/^[\w\-*.]+\.\w{2,}$/.test(str)) {
+        if (str.startsWith('*.')) wildcard = true;
+        domains.add(str.startsWith('*.') ? str.slice(2) : str);
+      }
+    }
+  }
+
+  // Regex fallback over raw bytes
+  const text = bufToLatin1(buf);
+  const re = /([a-z0-9](?:[a-z0-9\-]{0,61}[a-z0-9])?\.)+[a-z]{2,}/g;
+  let m;
+  while ((m = re.exec(text)) !== null) {
+    const d = m[0].toLowerCase();
+    if (d.length > 4 && d.length < 100 && !d.includes('..')) domains.add(d);
+  }
+
+  return { domains: [...domains].slice(0, 10), wildcard };
+}
+
+function parseLeafInput(base64) {
+  try {
+    const bin = atob(base64);
+    const buf = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+
+    if (buf.length < 15) return null;
+    const tsMs      = u64beMs(buf, 2);
+    const entryType = u16be(buf, 10);
+
+    let certBuf;
+    if (entryType === 0) {          // x509_entry
+      const certLen = u24be(buf, 12);
+      certBuf = buf.subarray(15, 15 + certLen);
+    } else if (entryType === 1) {   // precert_entry
+      const certLen = u24be(buf, 44);
+      certBuf = buf.subarray(47, 47 + certLen);
+    } else return null;
+
+    const { domains, wildcard } = extractDomainsFromDer(certBuf);
+    const issuer    = detectIssuer(certBuf);
+    const notBefore = new Date(tsMs).toISOString().slice(0, 10);
+    return { domains, wildcard, issuer, notBefore };
+  } catch { return null; }
+}
+
+async function fetchJson(url) {
+  const res = await fetch(url, { signal: AbortSignal.timeout(8000) });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Component
+══════════════════════════════════════════════════════════════ */
+const MAX_ENTRIES  = 500;
+const UI_TICK_MS   = 150;
 let idCounter = 0;
 
 const CertMonitor = () => {
-  const navigate = useNavigate();
-  const bufferRef        = useRef([]);
-  const autoScrollRef    = useRef(true);
-  const feedRef          = useRef(null);
-  const tickRef          = useRef(null);
-  const intentionalRef   = useRef(false);  // true when WE close (no auto-retry)
-  const [retryToken, setRetryToken] = useState(0);
+  const navigate       = useNavigate();
+  const bufferRef      = useRef([]);
+  const autoScrollRef  = useRef(true);
+  const feedRef        = useRef(null);
+  const cursorsRef     = useRef({});
+  const logIdxRef      = useRef(0);
 
-  const [entries,    setEntries]  = useState([]);
-  const [status,     setStatus]   = useState('connecting');
-  const [paused,     setPaused]   = useState(false);
-  const [filter,     setFilter]   = useState('');
-  const [suspOnly,   setSuspOnly] = useState(false);
-  const [autoScroll, setAutoScroll] = useState(true);
-  const [stats,      setStats]    = useState({ total: 0, ok: 0, warn: 0, critical: 0 });
+  const [entries,      setEntries]     = useState([]);
+  const [status,       setStatus]      = useState('connecting');
+  const [paused,       setPaused]      = useState(false);
+  const [filter,       setFilter]      = useState('');
+  const [suspOnly,     setSuspOnly]    = useState(false);
+  const [autoScroll,   setAutoScroll]  = useState(true);
+  const [stats,        setStats]       = useState({ total: 0, ok: 0, warn: 0, critical: 0 });
+  const [selectedCert, setSelectedCert] = useState(null);
 
   /* ── Title / favicon ── */
   useEffect(() => {
     document.title = 'CertStream Monitor | Mark Lebrett';
-    const svgFavicon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
       <rect width="32" height="32" rx="7" fill="#080b10"/>
       <circle cx="16" cy="16" r="10" fill="none" stroke="#22d3ee" stroke-width="2"/>
       <circle cx="16" cy="16" r="4" fill="#22d3ee">
@@ -60,22 +176,16 @@ const CertMonitor = () => {
         <animate attributeName="opacity" values="1;0.4;1" dur="1.4s" repeatCount="indefinite"/>
       </circle>
     </svg>`;
-    const favicon = document.createElement('link');
-    favicon.rel = 'icon'; favicon.type = 'image/svg+xml';
-    favicon.href = 'data:image/svg+xml,' + encodeURIComponent(svgFavicon);
-    document.head.appendChild(favicon);
-    const metas = [
-      { sel: 'meta[property="og:title"]',       val: 'CertStream Monitor | Mark Lebrett' },
-      { sel: 'meta[property="og:description"]', val: 'Live SSL/TLS certificate transparency log monitor with phishing keyword detection.' },
-      { sel: 'meta[name="twitter:title"]',       val: 'CertStream Monitor | Mark Lebrett' },
-    ];
-    metas.forEach(({ sel, val }) => { const el = document.querySelector(sel); if (el) el.setAttribute('content', val); });
-    return () => { document.head.removeChild(favicon); };
+    const fav = document.createElement('link');
+    fav.rel = 'icon'; fav.type = 'image/svg+xml';
+    fav.href = 'data:image/svg+xml,' + encodeURIComponent(svg);
+    document.head.appendChild(fav);
+    return () => { try { document.head.removeChild(fav); } catch {} };
   }, []);
 
-  /* ── Flush buffer to state on a tick ── */
+  /* ── Flush buffer to React state ── */
   const flushBuffer = useCallback(() => {
-    if (bufferRef.current.length === 0) return;
+    if (!bufferRef.current.length) return;
     const incoming = bufferRef.current.splice(0);
     setEntries(prev => {
       const next = [...incoming, ...prev];
@@ -93,73 +203,81 @@ const CertMonitor = () => {
     });
   }, []);
 
-  /* ── UI tick (independent of connection) ── */
   useEffect(() => {
-    tickRef.current = setInterval(flushBuffer, UI_TICK_MS);
-    return () => clearInterval(tickRef.current);
+    const t = setInterval(flushBuffer, UI_TICK_MS);
+    return () => clearInterval(t);
   }, [flushBuffer]);
 
-  /* ── Single connection effect ──
-     Keyed on [paused, retryToken].
-     - paused=true  → just set status, no socket (cleanup from last run closed it)
-     - paused=false → open socket; cleanup marks close intentional to stop retry   */
+  /* ── CT Log polling ── */
   useEffect(() => {
-    if (paused) {
-      setStatus('paused');
-      return;
+    if (paused) { setStatus('paused'); return; }
+
+    let stopped = false;
+
+    async function tick() {
+      if (stopped) return;
+      const log = CT_LOGS[logIdxRef.current % CT_LOGS.length];
+      logIdxRef.current++;
+
+      try {
+        const sth      = await fetchJson(`https://${log.host}/ct/v1/get-sth`);
+        const treeSize = sth.tree_size;
+
+        if (cursorsRef.current[log.host] === undefined) {
+          cursorsRef.current[log.host] = Math.max(0, treeSize - 50);
+        }
+
+        const cursor = cursorsRef.current[log.host];
+        if (cursor >= treeSize) return;
+
+        const end  = Math.min(cursor + 49, treeSize - 1);
+        const data = await fetchJson(
+          `https://${log.host}/ct/v1/get-entries?start=${cursor}&end=${end}`
+        );
+        if (!data.entries?.length) return;
+
+        if (!stopped) setStatus('live');
+
+        data.entries.forEach((entry, i) => {
+          if (stopped) return;
+          const info = parseLeafInput(entry.leaf_input);
+          if (!info || !info.domains.length) return;
+
+          const domain   = info.domains[0];
+          const severity = classify(domain);
+          const time     = new Date().toTimeString().slice(0, 8);
+
+          bufferRef.current.push({
+            id:         ++idCounter,
+            time,
+            domain,
+            severity,
+            allDomains: info.domains,
+            sans:       info.domains.slice(1),
+            issuer:     info.issuer,
+            wildcard:   info.wildcard,
+            logName:    log.name,
+            certIndex:  cursor + i,
+            notBefore:  info.notBefore,
+          });
+        });
+
+        cursorsRef.current[log.host] = end + 1;
+      } catch (e) {
+        if (!stopped) setStatus('error');
+      }
     }
 
-    intentionalRef.current = false;
     setStatus('connecting');
-    const ws = new WebSocket('wss://certstream.calidog.io/');
-
-    ws.onopen = () => {
-      if (intentionalRef.current) { ws.close(); return; }
-      setStatus('live');
-    };
-    ws.onerror = () => { /* onclose fires next */ };
-    ws.onclose = () => {
-      if (intentionalRef.current) return;     // deliberate — no retry
-      setStatus('error');
-      setTimeout(() => {
-        if (!intentionalRef.current) setRetryToken(t => t + 1);
-      }, 5000);
-    };
-    ws.onmessage = (event) => {
-      if (intentionalRef.current) return;
-      try {
-        const msg = JSON.parse(event.data);
-        if (msg.message_type !== 'certificate_update') return;
-        const domains = msg?.data?.leaf_cert?.all_domains;
-        if (!domains || domains.length === 0) return;
-        const domain = domains[0];
-        const severity = classify(domain);
-        const time = new Date().toTimeString().slice(0, 8);
-        bufferRef.current.push({ id: ++idCounter, time, domain, severity });
-      } catch { /* ignore */ }
-    };
-
-    return () => {
-      intentionalRef.current = true;
-      if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
-        ws.close();
-      }
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paused, retryToken]);
+    tick();
+    const timer = setInterval(tick, POLL_INTERVAL_MS);
+    return () => { stopped = true; clearInterval(timer); };
+  }, [paused]);
 
   /* ── Auto-scroll ── */
   useEffect(() => {
-    if (autoScrollRef.current && feedRef.current) {
-      feedRef.current.scrollTop = 0; // new entries prepend, so top = newest
-    }
+    if (autoScrollRef.current && feedRef.current) feedRef.current.scrollTop = 0;
   }, [entries]);
-
-  const toggleAutoScroll = () => {
-    const next = !autoScroll;
-    setAutoScroll(next);
-    autoScrollRef.current = next;
-  };
 
   /* ── Filtered view ── */
   const displayed = entries.filter(e => {
@@ -182,8 +300,101 @@ const CertMonitor = () => {
     );
   };
 
+  const toggleAutoScroll = () => {
+    const next = !autoScroll;
+    setAutoScroll(next);
+    autoScrollRef.current = next;
+  };
+
   return (
     <div className="cert-page">
+
+      {/* ── Detail panel ── */}
+      <div className={`cert-detail-panel ${selectedCert ? 'open' : ''}`}>
+        <div className="cert-detail-panel__header">
+          <span className="cert-detail-panel__title">Certificate Detail</span>
+          <button
+            className="cert-detail-panel__close"
+            onClick={() => setSelectedCert(null)}
+            aria-label="Close panel"
+          >✕</button>
+        </div>
+        {selectedCert && (
+          <div className="cert-detail-panel__body">
+            <div>
+              <div className={`cert-detail-badge cert-detail-badge--${selectedCert.severity}`}>
+                {severityLabel(selectedCert.severity)}
+              </div>
+              <div className="cert-detail-domain">{selectedCert.domain}</div>
+            </div>
+
+            <hr className="cert-detail-divider" />
+
+            <div className="cert-detail-section">
+              <div className="cert-detail-label">
+                All Covered Domains ({selectedCert.allDomains?.length ?? 1})
+              </div>
+              <div className="cert-detail-pills">
+                {(selectedCert.allDomains ?? [selectedCert.domain]).map(d => (
+                  <span key={d} className="cert-detail-pill">{d}</span>
+                ))}
+              </div>
+            </div>
+
+            {selectedCert.wildcard && <>
+              <hr className="cert-detail-divider" />
+              <div className="cert-detail-section">
+                <div className="cert-detail-label">Wildcard</div>
+                <span className="cert-detail-pill cert-detail-pill--wc">
+                  ★ Covers all subdomains
+                </span>
+              </div>
+            </>}
+
+            <hr className="cert-detail-divider" />
+
+            <div className="cert-detail-section">
+              <div className="cert-detail-label">Certificate Authority</div>
+              <div className="cert-detail-value">{selectedCert.issuer || '—'}</div>
+            </div>
+
+            <div className="cert-detail-section">
+              <div className="cert-detail-label">CT Log Source</div>
+              <div className="cert-detail-value">{selectedCert.logName || '—'}</div>
+            </div>
+
+            {selectedCert.certIndex != null && (
+              <div className="cert-detail-section">
+                <div className="cert-detail-label">Log Entry Index</div>
+                <div className="cert-detail-value">#{selectedCert.certIndex.toLocaleString()}</div>
+              </div>
+            )}
+
+            {selectedCert.notBefore && (
+              <div className="cert-detail-section">
+                <div className="cert-detail-label">Issued</div>
+                <div className="cert-detail-value">{selectedCert.notBefore}</div>
+              </div>
+            )}
+
+            <div className="cert-detail-section">
+              <div className="cert-detail-label">Observed At</div>
+              <div className="cert-detail-value">{selectedCert.time}</div>
+            </div>
+
+            <hr className="cert-detail-divider" />
+
+            <div className="cert-detail-section">
+              <div className="cert-detail-label">Investigate</div>
+              <div className="cert-detail-links">
+                <a href={`https://crt.sh/?q=${encodeURIComponent(selectedCert.domain)}`} target="_blank" rel="noopener noreferrer">🔍 Search crt.sh</a>
+                <a href={`https://www.virustotal.com/gui/domain/${encodeURIComponent(selectedCert.domain)}`} target="_blank" rel="noopener noreferrer">🛡 VirusTotal</a>
+                <a href={`https://www.shodan.io/search?query=${encodeURIComponent(selectedCert.domain)}`} target="_blank" rel="noopener noreferrer">📡 Shodan</a>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* ── Top bar ── */}
       <div className="cert-topbar">
@@ -193,84 +404,47 @@ const CertMonitor = () => {
           </svg>
           Portal
         </button>
-
         <div className="cert-topbar__title">
           <div>
             <h1>🔐 CertStream Monitor</h1>
-            <p>Live SSL/TLS Certificate Transparency Log — Phishing &amp; Brand Abuse Detection</p>
+            <p>Live Certificate Transparency — Phishing &amp; Brand Abuse Detection</p>
           </div>
         </div>
-
         <div className={`cert-status cert-status--${status}`}>
           <span className="cert-status__dot"></span>
           {status === 'connecting' && 'Connecting…'}
           {status === 'live'       && 'Live'}
           {status === 'paused'     && 'Paused'}
-          {status === 'error'      && 'Disconnected — retrying…'}
+          {status === 'error'      && 'Retrying…'}
         </div>
       </div>
 
       {/* ── Stats ── */}
       <div className="cert-stats">
-        <div className="cert-stat">
-          <span className="cert-stat__label">Total Seen</span>
-          <span className="cert-stat__value cert-stat__value--total">{stats.total.toLocaleString()}</span>
-        </div>
-        <div className="cert-stat">
-          <span className="cert-stat__label">Clean</span>
-          <span className="cert-stat__value cert-stat__value--ok">{stats.ok.toLocaleString()}</span>
-        </div>
-        <div className="cert-stat">
-          <span className="cert-stat__label">Suspicious</span>
-          <span className="cert-stat__value cert-stat__value--warn">{stats.warn.toLocaleString()}</span>
-        </div>
-        <div className="cert-stat">
-          <span className="cert-stat__label">High Risk</span>
-          <span className="cert-stat__value cert-stat__value--critical">{stats.critical.toLocaleString()}</span>
-        </div>
+        <div className="cert-stat"><span className="cert-stat__label">Total Seen</span><span className="cert-stat__value cert-stat__value--total">{stats.total.toLocaleString()}</span></div>
+        <div className="cert-stat"><span className="cert-stat__label">Clean</span><span className="cert-stat__value cert-stat__value--ok">{stats.ok.toLocaleString()}</span></div>
+        <div className="cert-stat"><span className="cert-stat__label">Suspicious</span><span className="cert-stat__value cert-stat__value--warn">{stats.warn.toLocaleString()}</span></div>
+        <div className="cert-stat"><span className="cert-stat__label">High Risk</span><span className="cert-stat__value cert-stat__value--critical">{stats.critical.toLocaleString()}</span></div>
       </div>
 
       {/* ── Controls ── */}
       <div className="cert-controls">
-        <input
-          className="cert-search"
-          type="text"
-          placeholder="Filter domains…"
-          value={filter}
-          onChange={e => setFilter(e.target.value)}
-          aria-label="Filter domains"
-        />
-        <button
-          className={`cert-btn cert-btn--suspicious ${suspOnly ? 'active' : ''}`}
-          onClick={() => setSuspOnly(p => !p)}
-          aria-pressed={suspOnly}
-        >
+        <input className="cert-search" type="text" placeholder="Filter domains…" value={filter} onChange={e => setFilter(e.target.value)} aria-label="Filter domains" />
+        <button className={`cert-btn cert-btn--suspicious ${suspOnly ? 'active' : ''}`} onClick={() => setSuspOnly(p => !p)} aria-pressed={suspOnly}>
           {suspOnly ? '⚠ Suspicious Only' : '⚠ All Domains'}
         </button>
-        <button
-          className={`cert-btn ${paused ? 'cert-btn--resume' : 'cert-btn--pause'}`}
-          onClick={() => setPaused(p => !p)}
-        >
+        <button className={`cert-btn ${paused ? 'cert-btn--resume' : 'cert-btn--pause'}`} onClick={() => setPaused(p => !p)}>
           {paused ? '▶ Resume' : '⏸ Pause'}
         </button>
-        <button
-          className="cert-btn cert-btn--clear"
-          onClick={() => { setEntries([]); setStats({ total: 0, ok: 0, warn: 0, critical: 0 }); bufferRef.current = []; }}
-        >
-          Clear
-        </button>
-        {status === 'error' && (
-          <button className="cert-btn" onClick={() => { setPaused(false); setRetryToken(t => t + 1); }}>
-            ↺ Reconnect
-          </button>
-        )}
+        <button className="cert-btn cert-btn--clear" onClick={() => { setEntries([]); setStats({ total: 0, ok: 0, warn: 0, critical: 0 }); bufferRef.current = []; setSelectedCert(null); }}>Clear</button>
       </div>
 
       {/* ── Legend ── */}
       <div className="cert-legend">
-        <span className="cert-legend__item"><span className="cert-legend__dot" style={{background:'#4ade80'}}></span> Clean certificate</span>
-        <span className="cert-legend__item"><span className="cert-legend__dot" style={{background:'#fb923c'}}></span> Suspicious keyword (login, secure, verify…)</span>
-        <span className="cert-legend__item"><span className="cert-legend__dot" style={{background:'#f87171'}}></span> High-risk keyword (paypal, banking, wallet, crypto…)</span>
+        <span className="cert-legend__item"><span className="cert-legend__dot" style={{background:'#4ade80'}}></span>Clean certificate</span>
+        <span className="cert-legend__item"><span className="cert-legend__dot" style={{background:'#fb923c'}}></span>Suspicious keyword</span>
+        <span className="cert-legend__item"><span className="cert-legend__dot" style={{background:'#f87171'}}></span>High-risk keyword</span>
+        <span className="cert-legend__item cert-legend__hint">Click any entry to inspect</span>
       </div>
 
       {/* ── Feed ── */}
@@ -280,23 +454,24 @@ const CertMonitor = () => {
             <div className="cert-feed__empty">
               <span className="cert-feed__empty-icon">📡</span>
               <span className="cert-feed__empty-text">
-                {status === 'connecting' ? 'Connecting to CertStream…' : 'No entries match your filter.'}
+                {status === 'connecting' ? 'Connecting to CT logs…' : 'No entries match your filter.'}
               </span>
             </div>
           ) : (
             displayed.map(e => (
-              <div key={e.id} className={`cert-entry cert-entry--${e.severity}`}>
+              <div
+                key={e.id}
+                className={`cert-entry cert-entry--${e.severity} ${selectedCert?.id === e.id ? 'cert-entry--active' : ''}`}
+                onClick={() => setSelectedCert(selectedCert?.id === e.id ? null : e)}
+              >
                 <span className="cert-entry__time">{e.time}</span>
                 <span className="cert-entry__badge">{badgeLabel(e.severity)}</span>
                 <span className="cert-entry__domain">{highlight(e.domain)}</span>
+                {e.wildcard && <span className="cert-entry__wc">★WC</span>}
               </div>
             ))
           )}
-          <button
-            className={`cert-autoscroll ${autoScroll ? 'on' : ''}`}
-            onClick={toggleAutoScroll}
-            title="Toggle auto-scroll to newest"
-          >
+          <button className={`cert-autoscroll ${autoScroll ? 'on' : ''}`} onClick={toggleAutoScroll} title="Toggle auto-scroll">
             {autoScroll ? '⬆ Auto' : '⬆ Manual'}
           </button>
         </div>
