@@ -3,8 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LandingPage from './components/LandingPage';
 import EmelSolutions from './components/EmelSolutions';
 import CertMonitor from './components/CertMonitor';
+import EruvMap from './components/EruvMap';
 import GematriaApp from './GematriaApp';
-import './App.css'; 
+import './App.css';
 
 const App = () => {
   // Debug: Log to console so we know the App is actually running
@@ -24,6 +25,9 @@ const App = () => {
 
         {/* 4. CertStream Monitor */}
         <Route path="/certmonitor" element={<CertMonitor />} />
+
+        {/* 5. Eruv Map */}
+        <Route path="/eruv" element={<EruvMap />} />
 
         {/* 4. DEBUG: Catch-all for 404s */}
         {/* This will show us what URL the router is seeing */}

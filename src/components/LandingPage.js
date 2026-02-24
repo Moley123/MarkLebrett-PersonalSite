@@ -220,21 +220,24 @@ const LandingPage = () => {
               </div>
           </a>
 
-          {/* Coming Soon */}
-          <div className="relative group grayscale opacity-50 hover:opacity-70 transition-opacity cursor-not-allowed">
-              <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-8 h-full flex flex-col border-dashed">
-                  <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center mb-6">
-                      <Lock className="w-6 h-6 text-gray-600" />
+
+          {/* Zurich Eruv Route Planner */}
+          <Link to="/eruv" className="group relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+              <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
+                  <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center mb-6 text-emerald-400 group-hover:text-white group-hover:bg-emerald-600 transition-colors">
+                      <MapPin className="w-6 h-6" />
                   </div>
-                  <h3 className="text-2xl font-bold mb-3 text-gray-600 blur-sm select-none">Lorem Ipsum</h3>
-                  <p className="text-gray-700 mb-8 flex-grow blur-[2px] select-none text-sm">
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                  <h3 className="text-2xl font-bold mb-3 text-gray-100">Zurich Eruv Route Planner</h3>
+                  <p className="text-gray-400 mb-8 flex-grow">
+                      Check locations against the Zurich Eruv boundary and plan walking routes that stay within the permitted area.
                   </p>
-                  <div className="mt-auto inline-flex px-3 py-1 rounded-full bg-gray-800 text-xs font-bold text-gray-600 uppercase tracking-widest w-fit">
-                      Coming Soon
+                  <div className="flex items-center text-emerald-400 font-semibold group-hover:translate-x-2 transition-transform">
+                      Launch App <ArrowRight className="ml-2 w-4 h-4" />
                   </div>
               </div>
-          </div>
+          </Link>
+
 
         </div>
       </div>

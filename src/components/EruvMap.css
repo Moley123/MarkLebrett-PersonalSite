@@ -1,0 +1,321 @@
+/* ═══════════════════════════════════════════════════════
+   EruvMap — dark dashboard aesthetic
+═══════════════════════════════════════════════════════ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+.eruv-page {
+    --bg: #080b10;
+    --bg-card: #0d1117;
+    --border: rgba(59, 130, 246, 0.15);
+    --border-hi: rgba(59, 130, 246, 0.4);
+    --blue: #3b82f6;
+    --green: #22c55e;
+    --red: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --radius: 10px;
+    --font: 'Inter', system-ui, sans-serif;
+    --ease: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+/* ── Loading / Error ── */
+.eruv-loading,
+.eruv-error {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    color: var(--muted);
+}
+
+.eruv-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--border);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: eruv-spin 0.8s linear infinite;
+}
+
+@keyframes eruv-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ── Header ── */
+.eruv-header {
+    padding: 2rem 1.5rem 1rem;
+    text-align: center;
+}
+
+.eruv-title {
+    font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 700;
+    margin: 0 0 0.4rem;
+    background: linear-gradient(120deg, #fff 40%, var(--blue) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.eruv-subtitle {
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin: 0;
+    max-width: 560px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* ── Tabs ── */
+.eruv-tabs {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem 0;
+}
+
+.eruv-tab {
+    padding: 0.5rem 1.4rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--muted);
+    font-family: var(--font);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--ease);
+}
+
+.eruv-tab:hover {
+    border-color: var(--border-hi);
+    color: var(--text);
+}
+
+.eruv-tab--active {
+    background: rgba(59, 130, 246, 0.12);
+    border-color: var(--border-hi);
+    color: var(--blue);
+}
+
+/* ── Controls ── */
+.eruv-controls {
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.eruv-control-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.eruv-route-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+/* Autocomplete wrapper must match input width */
+.eruv-control-row>div {
+    flex: 1;
+    min-width: 200px;
+}
+
+.eruv-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.6rem 0.9rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color var(--ease);
+}
+
+.eruv-input::placeholder {
+    color: var(--muted);
+}
+
+.eruv-input:focus {
+    border-color: var(--border-hi);
+}
+
+.eruv-btn {
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    font-family: var(--font);
+    font-size: 0.83rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all var(--ease);
+    flex-shrink: 0;
+}
+
+.eruv-btn--primary {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+}
+
+.eruv-btn--primary:hover:not(:disabled) {
+    opacity: 0.88;
+}
+
+.eruv-btn--primary:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.eruv-btn--ghost {
+    background: var(--bg-card);
+    color: var(--muted);
+}
+
+.eruv-btn--ghost:hover {
+    border-color: var(--border-hi);
+    color: var(--text);
+}
+
+/* ── Badges ── */
+.eruv-badge {
+    padding: 0.35rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.eruv-badge--inside {
+    background: rgba(34, 197, 94, 0.12);
+    color: var(--green);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.eruv-badge--outside {
+    background: rgba(239, 68, 68, 0.10);
+    color: var(--red);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* ── Alerts ── */
+.eruv-alert {
+    padding: 0.65rem 1rem;
+    border-radius: var(--radius);
+    font-size: 0.83rem;
+    font-weight: 500;
+}
+
+.eruv-alert--error {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.25);
+    color: #fca5a5;
+}
+
+.eruv-alert--success {
+    background: rgba(34, 197, 94, 0.08);
+    border: 1px solid rgba(34, 197, 94, 0.25);
+    color: #86efac;
+}
+
+/* ── Map ── */
+.eruv-map-wrap {
+    flex: 1;
+    position: relative;
+    padding: 0 1.5rem 1.5rem;
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.eruv-map {
+    width: 100%;
+    height: 500px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+/* ── Legend ── */
+.eruv-legend {
+    position: absolute;
+    bottom: 2.4rem;
+    left: 2.3rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    background: rgba(8, 11, 16, 0.82);
+    backdrop-filter: blur(8px);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.55rem 0.8rem;
+    pointer-events: none;
+}
+
+.eruv-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.72rem;
+    color: var(--muted);
+}
+
+.eruv-legend-line {
+    display: inline-block;
+    width: 24px;
+    height: 3px;
+    background: #1a1a1a;
+    border-radius: 2px;
+    border: 1px solid #555;
+}
+
+.eruv-legend-fill {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    background: rgba(59, 130, 246, 0.15);
+    border: 1.5px solid #3b82f6;
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+    .eruv-control-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .eruv-control-row>div {
+        min-width: unset;
+    }
+
+    .eruv-map {
+        height: 380px;
+    }
+}
