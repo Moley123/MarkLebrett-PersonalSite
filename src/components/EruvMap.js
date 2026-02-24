@@ -69,9 +69,8 @@ function routeStaysInEruv(result) {
 
 /* ══════════════════════════════════════════════════════════════
    Interior waypoint grid
-   Generates a 7×7 candidate grid over the eruv bounding box,
-   keeps only points inside the polygon.
-   Run lazily once after the Maps API is loaded.
+   12×12 = 144 candidates → finer coverage in narrow eruv sections.
+   Lazily computed and cached after the Maps API loads.
 ══════════════════════════════════════════════════════════════ */
 let _cachedWaypoints = null;
 
@@ -89,7 +88,7 @@ function getInteriorWaypoints() {
 
   const poly   = makePoly();
   const inside = [];
-  const G = 7; // 7×7 = 49 candidates
+  const G = 12; // 12×12 = 144 candidates
 
   for (let i = 0; i <= G; i++) {
     for (let j = 0; j <= G; j++) {
@@ -104,6 +103,22 @@ function getInteriorWaypoints() {
 
   _cachedWaypoints = inside;
   return inside;
+}
+
+/* Find the first lat/lng on a route that exits the eruv polygon. */
+function firstCrossingPoint(result) {
+  const poly = makePoly();
+  for (const leg of result.routes[0].legs) {
+    for (const step of leg.steps) {
+      const pts = decodePath(step.polyline?.points || '');
+      for (const pt of pts) {
+        if (!window.google.maps.geometry.poly.containsLocation(pt, poly)) {
+          return { lat: pt.lat(), lng: pt.lng() };
+        }
+      }
+    }
+  }
+  return null;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -130,36 +145,48 @@ function requestRoute(origin, dest, waypointLatLngs, service) {
 /* ══════════════════════════════════════════════════════════════
    Multi-attempt in-boundary routing
    Strategy:
-   1. Direct route (0 waypoints)
-   2. Via the N interior points closest to the route midpoint (1 waypoint each)
-   3. Via pairs of the closest points (2 waypoints)
-   Returns { result, indirect } or null if no valid route found.
+   1. Try direct route — if valid, done.
+   2. Find where the direct route FIRST crosses outside the eruv.
+   3. Sort all interior waypoints by distance to that crossing point
+      (not the midpoint!) — this picks waypoints nearest to the
+      problematic street, keeping the detour minimal.
+   4. Try 1-waypoint routes with the 10 nearest such waypoints.
+   5. Try 2-waypoint pairs from the 5 nearest.
+   Returns { result, indirect } or null.
 ══════════════════════════════════════════════════════════════ */
 async function findInBoundaryRoute(originLoc, destLoc, service) {
   const waypoints = getInteriorWaypoints();
 
-  // Sort waypoints by proximity to the route midpoint so we try the
-  // most geographically relevant ones first → minimal detour.
-  const midLat = (originLoc.lat() + destLoc.lat()) / 2;
-  const midLng = (originLoc.lng() + destLoc.lng()) / 2;
-  const sorted = [...waypoints].sort((a, b) => {
-    const dA = Math.hypot(a.lat - midLat, a.lng - midLng);
-    const dB = Math.hypot(b.lat - midLat, b.lng - midLng);
-    return dA - dB;
-  });
+  // Attempt 1: direct route
+  const direct = await requestRoute(originLoc, destLoc, [], service);
+  if (direct && routeStaysInEruv(direct)) return { result: direct, indirect: false };
 
-  // Build attempt list: first direct, then 1-waypoint tries, then 2-waypoint pairs
-  const attempts = [
-    { wps: [],                              indirect: false },
-    ...sorted.slice(0, 8).map(wp => ({ wps: [wp], indirect: true })),
-    ...sorted.slice(0, 4).flatMap((a, i) =>
-      sorted.slice(i + 1, 5).map(b => ({ wps: [a, b], indirect: true }))
-    ),
-  ];
+  // Find the first crossing point to use as the reference for waypoint selection
+  const crossing = direct ? firstCrossingPoint(direct) : null;
+  const ref = crossing || {
+    lat: (originLoc.lat() + destLoc.lat()) / 2,
+    lng: (originLoc.lng() + destLoc.lng()) / 2,
+  };
 
-  for (const { wps, indirect } of attempts) {
-    const result = await requestRoute(originLoc, destLoc, wps, service);
-    if (result && routeStaysInEruv(result)) return { result, indirect };
+  // Sort by proximity to the crossing point — nearest = minimal detour first
+  const sorted = [...waypoints].sort((a, b) =>
+    Math.hypot(a.lat - ref.lat, a.lng - ref.lng) -
+    Math.hypot(b.lat - ref.lat, b.lng - ref.lng)
+  );
+
+  // Try 1-waypoint routes with the 10 nearest interior points
+  for (const wp of sorted.slice(0, 10)) {
+    const result = await requestRoute(originLoc, destLoc, [wp], service);
+    if (result && routeStaysInEruv(result)) return { result, indirect: true };
+  }
+
+  // Try 2-waypoint combinations from the 6 nearest
+  const near6 = sorted.slice(0, 6);
+  for (let i = 0; i < near6.length; i++) {
+    for (let j = i + 1; j < near6.length; j++) {
+      const result = await requestRoute(originLoc, destLoc, [near6[i], near6[j]], service);
+      if (result && routeStaysInEruv(result)) return { result, indirect: true };
+    }
   }
 
   return null;
