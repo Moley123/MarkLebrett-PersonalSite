@@ -444,11 +444,11 @@ const EruvMap = () => {
           {/* Special cutout polygons (like river banks / Tel HaMislaket) */}
           {ERUV_POLYGONS.map((polyItem, i) => (
              <Polygon key={`poly-${i}`} paths={polyItem.paths} options={{
-               strokeColor: '#000000',
+               strokeColor: '#ef4444',
                strokeOpacity: polyItem.properties['stroke-opacity'] || 1,
                strokeWeight: polyItem.properties['stroke-width'] || 2,
-               fillColor: '#000000',
-               fillOpacity: polyItem.properties['fill-opacity'] || 0.4,
+               fillColor: '#ef4444',
+               fillOpacity: 0.2, // Custom override for a clear red wash
              }} />
           ))}
 
