@@ -63,21 +63,42 @@
 }
 
 .eruv-back-btn {
-    position: absolute;
-    left: 1.5rem;
-    top: 2rem;
+    position: fixed;
+    top: 18px;
+    left: 20px;
+    z-index: 200;
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    color: var(--muted);
-    font-size: 0.9rem;
+    gap: 0.45rem;
+    padding: 0.45rem 1rem 0.45rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(10, 18, 40, 0.55);
+    border: 1.5px solid rgba(79, 142, 247, 0.28);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    color: #8ca0c8;
+    font-size: 0.82rem;
     font-weight: 500;
     text-decoration: none;
-    transition: color var(--ease);
+    letter-spacing: 0.02em;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+    transition: color var(--ease), background var(--ease),
+        box-shadow var(--ease), transform var(--ease);
 }
 
 .eruv-back-btn:hover {
     color: var(--text);
+    background: rgba(79, 142, 247, 0.15);
+    box-shadow: 0 6px 28px rgba(79, 142, 247, 0.2);
+    transform: translateX(-2px);
+}
+
+.eruv-back-btn svg {
+    transition: transform var(--ease);
+}
+
+.eruv-back-btn:hover svg {
+    transform: translateX(-3px);
 }
 
 .eruv-title {
