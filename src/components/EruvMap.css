@@ -57,6 +57,27 @@
 .eruv-header {
     padding: 2rem 1.5rem 1rem;
     text-align: center;
+    position: relative;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.eruv-back-btn {
+    position: absolute;
+    left: 1.5rem;
+    top: 2rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color var(--ease);
+}
+
+.eruv-back-btn:hover {
+    color: var(--text);
 }
 
 .eruv-title {

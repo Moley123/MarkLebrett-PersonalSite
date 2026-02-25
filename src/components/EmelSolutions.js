@@ -218,6 +218,7 @@ const EmelSolutions = () => {
           <li><a className="glass-nav__link" href="#ai-automation" onClick={e=>smoothScroll(e,'#ai-automation')}>AI Automation</a></li>
           <li><a className="glass-nav__link" href="#wordpress"     onClick={e=>smoothScroll(e,'#wordpress')}>WordPress</a></li>
           <li><a className="glass-nav__link" href="#ai-solutions"  onClick={e=>smoothScroll(e,'#ai-solutions')}>AI Solutions</a></li>
+          <li><a className="glass-nav__link" href="#data-analytics"onClick={e=>smoothScroll(e,'#data-analytics')}>Data Analytics</a></li>
           <li><a className="glass-nav__link" href="#hardware"      onClick={e=>smoothScroll(e,'#hardware')}>Hardware</a></li>
           <li><a className="glass-nav__link" href="#contact"       onClick={e=>smoothScroll(e,'#contact')}>Contact</a></li>
         </ul>
@@ -377,9 +378,93 @@ const EmelSolutions = () => {
         </section>
 
         {/* ── Section 4: Hardware ── */}
-        <section className="service-section service-section--alt reveal" id="hardware" aria-labelledby="hw-heading">
+        {/* ── Section 4: Data Analytics ── */}
+        <section className="service-section reveal" id="data-analytics" aria-labelledby="data-heading">
           <div className="section-inner">
             <div className="section-tag">Service 04</div>
+            <h2 className="section-title" id="data-heading">Data Analytics &amp; Custom Dashboards</h2>
+            <div className="section-body">
+              <div className="anim-panel">
+                <div className="data-canvas" aria-label="Grafana style dashboard animation" role="img">
+                  <svg className="data-svg" viewBox="0 0 540 280" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="540" height="280" rx="12" fill="#0f172a" />
+                    {/* Header bar */}
+                    <rect x="0" y="0" width="540" height="30" fill="#1e293b" />
+                    <circle cx="20" cy="15" r="4" fill="#ef4444" />
+                    <circle cx="35" cy="15" r="4" fill="#eab308" />
+                    <circle cx="50" cy="15" r="4" fill="#22c55e" />
+                    <text x="70" y="20" fill="#94a3b8" fontSize="11" fontFamily="sans-serif">Analytics Portal View</text>
+
+                    {/* Left panel - Metric 1 */}
+                    <rect x="15" y="45" width="160" height="100" rx="6" fill="#1e293b" stroke="#334155" />
+                    <text x="30" y="70" fill="#cbd5e1" fontSize="10" fontFamily="sans-serif">SYSTEM LOAD</text>
+                    <text x="30" y="105" fill="#3b82f6" fontSize="26" fontFamily="sans-serif" fontWeight="bold">
+                      78%
+                      <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite" />
+                    </text>
+                    <polyline points="30,125 60,115 90,130 120,105 150,110" fill="none" stroke="#3b82f6" strokeWidth="2" />
+
+                    {/* Left panel - Metric 2 */}
+                    <rect x="15" y="155" width="160" height="105" rx="6" fill="#1e293b" stroke="#334155" />
+                    <text x="30" y="180" fill="#cbd5e1" fontSize="10" fontFamily="sans-serif">ACTIVE USERS</text>
+                    <text x="30" y="215" fill="#10b981" fontSize="26" fontFamily="sans-serif" fontWeight="bold">
+                      1,204
+                      <animate attributeName="opacity" values="1;0.8;1" dur="3s" repeatCount="indefinite" />
+                    </text>
+                    <path d="M 30,240 Q 60,210 90,230 T 150,220 V 250 H 30 Z" fill="url(#g-green)" opacity="0.3" />
+                    <path d="M 30,240 Q 60,210 90,230 T 150,220" fill="none" stroke="#10b981" strokeWidth="2" />
+
+                    {/* Main Chart Panel */}
+                    <rect x="190" y="45" width="335" height="215" rx="6" fill="#1e293b" stroke="#334155" />
+                    <text x="210" y="70" fill="#cbd5e1" fontSize="10" fontFamily="sans-serif">DATA PIPELINE THROUGHPUT</text>
+                    <g transform="translate(210, 85)">
+                      {/* Grid lines */}
+                      <line x1="0" y1="0" x2="295" y2="0" stroke="#334155" strokeWidth="1" strokeDasharray="4 4"/>
+                      <line x1="0" y1="40" x2="295" y2="40" stroke="#334155" strokeWidth="1" strokeDasharray="4 4"/>
+                      <line x1="0" y1="80" x2="295" y2="80" stroke="#334155" strokeWidth="1" strokeDasharray="4 4"/>
+                      <line x1="0" y1="120" x2="295" y2="120" stroke="#334155" strokeWidth="1"/>
+                      {/* Bar chart animations */}
+                      {[0,1,2,3,4,5,6,7].map(i => (
+                        <rect key={i} x={i*35 + 10} y="120" width="15" height="40" fill="#8b5cf6" rx="2">
+                          <animate attributeName="y" values={`${120 - (40 + Math.random()*60)};${120 - (20 + Math.random()*80)};${120 - (40 + Math.random()*60)}`} dur={`${2 + Math.random()}s`} repeatCount="indefinite"/>
+                          <animate attributeName="height" values={`${40 + Math.random()*60};${20 + Math.random()*80};${40 + Math.random()*60}`} dur={`${2 + Math.random()}s`} repeatCount="indefinite"/>
+                        </rect>
+                      ))}
+                      {[0,1,2,3,4,5,6,7].map(i => (
+                        <rect key={`2-${i}`} x={i*35 + 28} y="120" width="15" height="30" fill="#f59e0b" rx="2">
+                          <animate attributeName="y" values={`${120 - (30 + Math.random()*50)};${120 - (10 + Math.random()*70)};${120 - (30 + Math.random()*50)}`} dur={`${2.5 + Math.random()}s`} repeatCount="indefinite"/>
+                          <animate attributeName="height" values={`${30 + Math.random()*50};${10 + Math.random()*70};${30 + Math.random()*50}`} dur={`${2.5 + Math.random()}s`} repeatCount="indefinite"/>
+                        </rect>
+                      ))}
+                    </g>
+
+                    <defs>
+                      <linearGradient id="g-green" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="#10b981" />
+                        <stop offset="100%" stopColor="transparent" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
+              </div>
+              <div className="section-text">
+                <p>We transform raw information into actionable intelligence. With robust data pipelines, dynamic reporting platforms, and tailored dashboards (like Grafana and Power BI), we provide total visibility into your operations.</p>
+                <p>By breaking down silos, cleaning messy datasets, and automating report generation, we empower you to make data-driven decisions seamlessly and accurately in real-time.</p>
+                <ul className="feature-list" aria-label="Data Analytics features">
+                  <li>Automated ETL data pipelines</li>
+                  <li>Custom Grafana &amp; Power BI dashboards</li>
+                  <li>Real-time reporting &amp; alerting</li>
+                  <li>Database modeling &amp; warehousing</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Section 5: Hardware ── */}
+        <section className="service-section service-section--alt reveal" id="hardware" aria-labelledby="hw-heading">
+          <div className="section-inner">
+            <div className="section-tag">Service 05</div>
             <h2 className="section-title" id="hw-heading">Hardware Setup &amp; Troubleshooting</h2>
             <div className="section-body section-body--reversed">
               <div className="section-text">

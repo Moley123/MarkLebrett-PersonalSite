@@ -1,4 +1,6 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import {
   GoogleMap,
   useJsApiLoader,
@@ -10,6 +12,7 @@ import {
 } from '@react-google-maps/api';
 import ERUV_BOUNDARY from '../data/eruv_boundary';
 import ERUV_SEGMENTS from '../data/eruv_segments';
+import ERUV_POLYGONS from '../data/eruv_polygons';
 import './EruvMap.css';
 
 const LIBRARIES = ['places', 'geometry'];
@@ -20,10 +23,7 @@ const MAP_OPTIONS = {
   mapTypeControlOptions: { style: 2 }, // DROPDOWN_MENU style — compact
   streetViewControl: false,
   fullscreenControl: true,
-  styles: [
-    { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-    { featureType: 'transit', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
-  ],
+  /* Removed POI hidden styles so landmarks and restaurants appear */
 };
 
 const POLYGON_OPTIONS = {
@@ -219,6 +219,36 @@ const EruvMap = () => {
 
   const onMapLoad = useCallback(map => { mapRef.current = map; }, []);
 
+  useEffect(() => {
+    // ── Page title ──
+    document.title = 'Zurich Eruv Route Planner | Mark Lebrett';
+
+    // ── Favicon: Map Pin / House motif with Emerald-Blue gradient ──
+    const svgFavicon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#10b981"/>
+          <stop offset="100%" stop-color="#3b82f6"/>
+        </linearGradient>
+      </defs>
+      <rect width="32" height="32" rx="7" fill="#0f172a"/>
+      <!-- A simple eruv/house shape -->
+      <path d="M16 6 L6 14 v12 h20 V14 Z" fill="none" stroke="url(#g)" stroke-width="2.5" stroke-linejoin="round"/>
+      <circle cx="16" cy="18" r="3" fill="url(#g)"/>
+    </svg>`;
+    const favicon = document.createElement('link');
+    favicon.rel = 'icon';
+    favicon.type = 'image/svg+xml';
+    favicon.href = 'data:image/svg+xml,' + encodeURIComponent(svgFavicon);
+    document.head.appendChild(favicon);
+
+    return () => {
+      if (document.head.contains(favicon)) {
+        document.head.removeChild(favicon);
+      }
+    };
+  }, []);
+
   /* ── Location Check ── */
   const handleLocationSearch = () => {
     if (!locationRef.current) return;
@@ -332,6 +362,10 @@ const EruvMap = () => {
 
       {/* ── Header ── */}
       <div className="eruv-header">
+        <Link to="/" className="eruv-back-btn">
+          <ArrowLeft size={18} />
+          Back to Portal
+        </Link>
         <h1 className="eruv-title">🕍 Zurich Eruv Route Planner</h1>
         <p className="eruv-subtitle">
           Check if an address is within the Eruv, or plan a walking route that stays inside the boundary.
@@ -405,6 +439,17 @@ const EruvMap = () => {
         <GoogleMap mapContainerClassName="eruv-map" center={MAP_CENTER} zoom={13} options={MAP_OPTIONS} onLoad={onMapLoad}>
           {/* Invisible polygon — used only for containsLocation() point-in-polygon checks */}
           <Polygon paths={ERUV_BOUNDARY} options={POLYGON_OPTIONS} />
+
+          {/* Special cutout polygons (like river banks / Tel HaMislaket) */}
+          {ERUV_POLYGONS.map((polyItem, i) => (
+             <Polygon key={`poly-${i}`} paths={polyItem.paths} options={{
+               strokeColor: '#000000',
+               strokeOpacity: polyItem.properties['stroke-opacity'] || 1,
+               strokeWeight: polyItem.properties['stroke-width'] || 2,
+               fillColor: '#000000',
+               fillOpacity: polyItem.properties['fill-opacity'] || 0.4,
+             }} />
+          ))}
 
           {/* All GeoJSON segments rendered as polylines — shows every boundary
               section including river stubs that can't form closed rings */}

@@ -151,7 +151,7 @@ const LandingPage = () => {
             <div className="flex-1">
               <h3 className="text-3xl font-bold mb-2 text-gray-100">EMEL Solutions</h3>
               <p className="text-gray-400 max-w-2xl">
-                AI automation, WordPress management, hardware setup &amp; bespoke technology services for modern businesses.
+                AI automation, WordPress management, data analytics, custom dashboards &amp; bespoke technology services for modern businesses.
               </p>
             </div>
             <div className="flex items-center text-violet-400 font-semibold group-hover:translate-x-2 transition-transform flex-shrink-0">

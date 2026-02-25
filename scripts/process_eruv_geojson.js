@@ -113,4 +113,24 @@ export default ERUV_SEGMENTS;
 const segOutput = OUTPUT.replace('eruv_boundary', 'eruv_segments');
 fs.writeFileSync(segOutput, segJs, 'utf8');
 
-console.log(`\nWritten:\n  ${OUTPUT}\n  ${segOutput}`);
+// Export all Polygon features (river boundaries, Tel HaMislaket, etc.)
+// These have specific geometry arrays and styling.
+const polygonFeatures = geojson.features.filter(f => f.geometry.type === 'Polygon');
+
+// Convert Polygon [lng, lat] to {lat, lng} for Google Maps API
+const parsedPolygons = polygonFeatures.map(f => {
+  return {
+    paths: f.geometry.coordinates.map(ring => ring.map(c => ({ lat: c[1], lng: c[0] }))),
+    properties: f.properties || {}
+  };
+});
+
+const polyJs = `// Auto-generated — ${parsedPolygons.length} GeoJSON Polygon features.
+const ERUV_POLYGONS = ${JSON.stringify(parsedPolygons, null, 2)};
+
+export default ERUV_POLYGONS;
+`;
+const polyOutput = OUTPUT.replace('eruv_boundary', 'eruv_polygons');
+fs.writeFileSync(polyOutput, polyJs, 'utf8');
+
+console.log(`\nWritten:\n  ${OUTPUT}\n  ${segOutput}\n  ${polyOutput}`);
