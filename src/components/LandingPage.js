@@ -238,6 +238,23 @@ const LandingPage = () => {
               </div>
           </Link>
 
+          {/* NW London Eiruvim Network */}
+          <Link to="/nwlondon" className="group relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+              <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
+                  <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center mb-6 text-purple-400 group-hover:text-white group-hover:bg-purple-600 transition-colors">
+                      <MapPin className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3 text-gray-100">NW London Eiruvim</h3>
+                  <p className="text-gray-400 mb-8 flex-grow">
+                      Check boundaries and calculate complex walking routes across the 9 intersecting Eiruvim in North West London.
+                  </p>
+                  <div className="flex items-center text-purple-400 font-semibold group-hover:translate-x-2 transition-transform">
+                      Launch App <ArrowRight className="ml-2 w-4 h-4" />
+                  </div>
+              </div>
+          </Link>
+
 
         </div>
       </div>
