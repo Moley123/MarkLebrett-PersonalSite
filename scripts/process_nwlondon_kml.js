@@ -111,67 +111,77 @@ function chainSegments(segments) {
   if (!segments || segments.length === 0) return [];
 
   let remaining = segments.map(s => [...s]);
-  const allChains = [];
-  const TOL = 0.001; // ~100m tolerance for snapping
+  let chains = [];
+  const SEG_TOL = 0.001; // ~100m tolerance for snapping individual segments
 
-  // Build multiple independent chains
+  // Phase 1: Build multiple independent chains from segments
   while (remaining.length > 0) {
     let chain = [...remaining.shift()];
-
-    // Keep extending this chain as long as we find matching segments
     let changed = true;
     while (changed && remaining.length > 0) {
       changed = false;
-      let bestIdx = -1;
-      let bestDist = TOL;
-      let bestMode = '';
-
-      const chainHead = chain[0];
-      const chainTail = chain[chain.length - 1];
-
+      let bestIdx = -1, bestDist = SEG_TOL, bestMode = '';
+      const cH = chain[0], cT = chain[chain.length - 1];
       for (let i = 0; i < remaining.length; i++) {
-        const seg = remaining[i];
-        const segHead = seg[0];
-        const segTail = seg[seg.length - 1];
-
-        const d1 = dist(chainTail, segHead);
-        const d2 = dist(chainTail, segTail);
-        const d3 = dist(chainHead, segTail);
-        const d4 = dist(chainHead, segHead);
-
-        const minD = Math.min(d1, d2, d3, d4);
-        if (minD < bestDist) {
-          bestDist = minD;
-          bestIdx = i;
-          if (minD === d1) bestMode = 'tail-head';
-          else if (minD === d2) bestMode = 'tail-tail';
-          else if (minD === d3) bestMode = 'head-tail';
-          else bestMode = 'head-head';
+        const s = remaining[i], sH = s[0], sT = s[s.length - 1];
+        const d1 = dist(cT, sH), d2 = dist(cT, sT), d3 = dist(cH, sT), d4 = dist(cH, sH);
+        const m = Math.min(d1, d2, d3, d4);
+        if (m < bestDist) {
+          bestDist = m; bestIdx = i;
+          bestMode = m === d1 ? 'th' : m === d2 ? 'tt' : m === d3 ? 'ht' : 'hh';
         }
       }
-
       if (bestIdx >= 0) {
-        const seg = remaining.splice(bestIdx, 1)[0];
-        switch (bestMode) {
-          case 'tail-head': seg.shift(); chain = chain.concat(seg); break;
-          case 'tail-tail': seg.pop(); seg.reverse(); chain = chain.concat(seg); break;
-          case 'head-tail': seg.pop(); chain = seg.concat(chain); break;
-          case 'head-head': seg.shift(); seg.reverse(); chain = seg.concat(chain); break;
-        }
+        const s = remaining.splice(bestIdx, 1)[0];
+        if (bestMode === 'th') { s.shift(); chain = chain.concat(s); }
+        else if (bestMode === 'tt') { s.pop(); s.reverse(); chain = chain.concat(s); }
+        else if (bestMode === 'ht') { s.pop(); chain = s.concat(chain); }
+        else { s.shift(); s.reverse(); chain = s.concat(chain); }
         changed = true;
       }
     }
-
-    allChains.push(chain);
+    chains.push(chain);
   }
 
-  // Sort chains by length — pick the longest as the containment polygon
-  allChains.sort((a, b) => b.length - a.length);
-  const best = allChains[0];
+  // Phase 2: Merge chains together by connecting at nearest endpoints (~500m tolerance)
+  const MERGE_TOL = 0.005;
+  while (chains.length > 1) {
+    let merged = false;
+    for (let i = 0; i < chains.length && !merged; i++) {
+      const cA = chains[i];
+      let bestJ = -1, bestDist = MERGE_TOL, bestMode = '';
+      for (let j = 0; j < chains.length; j++) {
+        if (j === i) continue;
+        const cB = chains[j];
+        const d1 = dist(cA[cA.length - 1], cB[0]);      // A.tail → B.head
+        const d2 = dist(cA[cA.length - 1], cB[cB.length - 1]); // A.tail → B.tail
+        const d3 = dist(cA[0], cB[cB.length - 1]);      // A.head ← B.tail
+        const d4 = dist(cA[0], cB[0]);                   // A.head ← B.head
+        const m = Math.min(d1, d2, d3, d4);
+        if (m < bestDist) {
+          bestDist = m; bestJ = j;
+          bestMode = m === d1 ? 'th' : m === d2 ? 'tt' : m === d3 ? 'ht' : 'hh';
+        }
+      }
+      if (bestJ >= 0) {
+        const cB = chains.splice(bestJ, 1)[0];
+        if (bestMode === 'th') chains[i] = cA.concat(cB);
+        else if (bestMode === 'tt') { cB.reverse(); chains[i] = cA.concat(cB); }
+        else if (bestMode === 'ht') chains[i] = cB.concat(cA);
+        else { cB.reverse(); chains[i] = cB.concat(cA); }
+        merged = true;
+        console.log(`    -> Merged chains (gap=${bestDist.toFixed(5)}), now ${chains[i].length} pts, ${chains.length} chains left`);
+      }
+    }
+    if (!merged) break; // No more merges possible
+  }
 
-  if (allChains.length > 1) {
-    const otherPts = allChains.slice(1).reduce((s, c) => s + c.length, 0);
-    console.log(`    -> Built ${allChains.length} chains. Using longest (${best.length} pts), dropped ${otherPts} pts in ${allChains.length - 1} smaller chains`);
+  // Use merged result (or longest if multiple remain)
+  chains.sort((a, b) => b.length - a.length);
+  const best = chains[0];
+  if (chains.length > 1) {
+    const otherPts = chains.slice(1).reduce((s, c) => s + c.length, 0);
+    console.log(`    -> ${chains.length} chains remain. Using longest (${best.length} pts), dropped ${otherPts} pts`);
   }
 
   // Close the loop
