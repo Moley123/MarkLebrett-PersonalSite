@@ -27,11 +27,11 @@ const App = () => {
         {/* 4. CertStream Monitor */}
         <Route path="/certmonitor" element={<CertMonitor />} />
 
-        {/* 5. Eruv Map */}
-        <Route path="/eruv" element={<EruvMap />} />
+        {/* 5. Zurich Eiruv */}
+        <Route path="/zurich-eiruv" element={<EruvMap />} />
         
         {/* 6. NW London Eiruvim */}
-        <Route path="/nwlondon" element={<NWLondonMap />} />
+        <Route path="/nwlondon-eiruv" element={<NWLondonMap />} />
 
         {/* 4. DEBUG: Catch-all for 404s */}
         {/* This will show us what URL the router is seeing */}

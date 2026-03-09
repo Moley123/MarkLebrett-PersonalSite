@@ -55,18 +55,24 @@
 
 /* ── Header ── */
 .eruv-header {
-    padding: 2rem 1.5rem 1rem;
-    text-align: center;
-    position: relative;
+    padding: 1rem 1.5rem;
     max-width: 900px;
     margin: 0 auto;
 }
 
+.eruv-header-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.eruv-header-text {
+    flex: 1;
+    text-align: center;
+    padding-right: 80px;
+}
+
 .eruv-back-btn {
-    position: fixed;
-    top: 18px;
-    left: 20px;
-    z-index: 200;
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
@@ -82,23 +88,19 @@
     text-decoration: none;
     letter-spacing: 0.02em;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-    transition: color var(--ease), background var(--ease),
-        box-shadow var(--ease), transform var(--ease);
+    transition: color var(--ease), background var(--ease), box-shadow var(--ease);
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .eruv-back-btn:hover {
     color: var(--text);
     background: rgba(79, 142, 247, 0.15);
     box-shadow: 0 6px 28px rgba(79, 142, 247, 0.2);
-    transform: translateX(-2px);
 }
 
 .eruv-back-btn svg {
     transition: transform var(--ease);
-}
-
-.eruv-back-btn:hover svg {
-    transform: translateX(-3px);
 }
 
 .eruv-title {

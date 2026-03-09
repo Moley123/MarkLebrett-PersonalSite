@@ -4,204 +4,181 @@ const { DOMParser } = require('xmldom');
 
 console.log("---- NW London KML Parser ----");
 
-// 1. Read the raw KML file
 const kmlPath = path.join(__dirname, '..', 'The Edgware Eruv & Surrounding Eruvin.kml');
 const kmlText = fs.readFileSync(kmlPath, 'utf8');
 
 const parser = new DOMParser();
 const doc = parser.parseFromString(kmlText, 'text/xml');
 
-const folders = doc.getElementsByTagName('Folder');
+// Only iterate TOP-LEVEL folders (direct children of Document)
+const documentEl = doc.getElementsByTagName('Document')[0];
+const topFolders = [];
+for (let i = 0; i < documentEl.childNodes.length; i++) {
+  const child = documentEl.childNodes[i];
+  if (child.nodeName === 'Folder') topFolders.push(child);
+}
 
 const eruvimData = [];
 const crossingPoints = [];
 
-// Helper: parse coordinates string "lng,lat,alt lng,lat,alt" into array of {lat, lng}
 function parseCoordinates(coordStr) {
   if (!coordStr) return [];
   return coordStr.trim().split(/\s+/).map(pair => {
     const parts = pair.split(',');
     if (parts.length >= 2) {
-      return {
-        lat: parseFloat(parts[1]),
-        lng: parseFloat(parts[0])
-      };
+      return { lat: parseFloat(parts[1]), lng: parseFloat(parts[0]) };
     }
     return null;
   }).filter(Boolean);
 }
 
-// 2. Extract Data by Folder
-for (let i = 0; i < folders.length; i++) {
-  const folder = folders[i];
+// Collect only DIRECT Placemark children of a folder (not nested sub-folder placemarks)
+function getDirectPlacemarks(folder) {
+  const result = [];
+  for (let i = 0; i < folder.childNodes.length; i++) {
+    if (folder.childNodes[i].nodeName === 'Placemark') {
+      result.push(folder.childNodes[i]);
+    }
+  }
+  return result;
+}
+
+for (let i = 0; i < topFolders.length; i++) {
+  const folder = topFolders[i];
   const nameNode = folder.getElementsByTagName('name')[0];
   if (!nameNode) continue;
-  
   const folderName = nameNode.textContent.trim();
 
-  // Handle the specific Crossing Points folder
+  // Skip the LABELS folder entirely
+  if (folderName === 'LABELS') continue;
+
+  // Handle Crossing Points
   if (folderName === 'Crossing Points') {
-    const placemarks = folder.getElementsByTagName('Placemark');
+    const placemarks = getDirectPlacemarks(folder);
     for (let j = 0; j < placemarks.length; j++) {
       const pm = placemarks[j];
       const pmName = pm.getElementsByTagName('name')[0]?.textContent || 'Crossing';
-      
-      // Some crossings might be Points, others might be short LineStrings
       const point = pm.getElementsByTagName('Point')[0];
       const lineString = pm.getElementsByTagName('LineString')[0];
-      
       if (point) {
         const coords = parseCoordinates(point.getElementsByTagName('coordinates')[0]?.textContent);
         if (coords.length > 0) crossingPoints.push({ name: pmName, pos: coords[0] });
       } else if (lineString) {
         const coords = parseCoordinates(lineString.getElementsByTagName('coordinates')[0]?.textContent);
-        if (coords.length > 0) crossingPoints.push({ name: pmName, pos: coords[Math.floor(coords.length / 2)] }); // Take midpoint
+        if (coords.length > 0) crossingPoints.push({ name: pmName, pos: coords[Math.floor(coords.length / 2)] });
       }
     }
-    continue; // Skip the rest, this isn't an Eruv boundary
+    continue;
   }
 
-  // Not crossing points, so assume it's an Eruv folder
-  const placemarks = folder.getElementsByTagName('Placemark');
-  const segments = [];
-  const preclosedPolygons = [];
-  
+  // Eruv folder — extract raw segments AND polygons
+  const placemarks = getDirectPlacemarks(folder);
+  const rawSegments = [];
+  const polygonPaths = [];
+
   for (let j = 0; j < placemarks.length; j++) {
-    const lineString = placemarks[j].getElementsByTagName('LineString')[0];
-    const polygon = placemarks[j].getElementsByTagName('Polygon')[0];
+    const pm = placemarks[j];
+    const lineString = pm.getElementsByTagName('LineString')[0];
+    const polygon = pm.getElementsByTagName('Polygon')[0];
 
     if (lineString) {
       const coordNode = lineString.getElementsByTagName('coordinates')[0];
       if (coordNode) {
-         segments.push(parseCoordinates(coordNode.textContent));
+        const seg = parseCoordinates(coordNode.textContent);
+        if (seg.length > 1) rawSegments.push(seg);
       }
     }
-    
     if (polygon) {
       const outerRing = polygon.getElementsByTagName('outerBoundaryIs')[0];
       if (outerRing) {
         const coordNode = outerRing.getElementsByTagName('coordinates')[0];
         if (coordNode) {
-          preclosedPolygons.push(parseCoordinates(coordNode.textContent));
+          const poly = parseCoordinates(coordNode.textContent);
+          if (poly.length > 2) polygonPaths.push(poly);
         }
       }
     }
   }
 
-  if (segments.length > 0 || preclosedPolygons.length > 0) {
-    eruvimData.push({
-      name: folderName,
-      segments: segments,
-      polygons: preclosedPolygons
-    });
+  if (rawSegments.length > 0 || polygonPaths.length > 0) {
+    eruvimData.push({ name: folderName, rawSegments, polygonPaths });
   }
 }
 
-// 3. Simple Chaining Logic (borrowed from Zurich map logic)
+// Chaining algorithm — used ONLY for building containment polygons, not for rendering
 function chainSegments(segments) {
   if (!segments || segments.length === 0) return [];
-
-  let remaining = [...segments];
+  let remaining = segments.map(s => [...s]);
   let currentChain = [...remaining.shift()];
 
-  // Helper to check if two points are close
-  const pointsAreClose = (p1, p2) => {
-    const diffLat = Math.abs(p1.lat - p2.lat);
-    const diffLng = Math.abs(p1.lng - p2.lng);
-    return diffLat < 0.0001 && diffLng < 0.0001; 
-  };
+  const close = (p1, p2) => Math.abs(p1.lat - p2.lat) < 0.0005 && Math.abs(p1.lng - p2.lng) < 0.0005;
 
-  while (remaining.length > 0) {
-    let lastPoint = currentChain[currentChain.length - 1];
-    let firstPoint = currentChain[0];
-
-    let foundMatch = false;
+  let maxIter = remaining.length * remaining.length + 10;
+  while (remaining.length > 0 && maxIter-- > 0) {
+    let last = currentChain[currentChain.length - 1];
+    let first = currentChain[0];
+    let found = false;
 
     for (let i = 0; i < remaining.length; i++) {
-        let candidate = remaining[i];
-        let cFirst = candidate[0];
-        let cLast = candidate[candidate.length - 1];
-
-        if (pointsAreClose(lastPoint, cFirst)) {
-            candidate.shift();
-            currentChain = currentChain.concat(candidate);
-            remaining.splice(i, 1);
-            foundMatch = true;
-            break;
-        } else if (pointsAreClose(lastPoint, cLast)) {
-            candidate.pop();
-            candidate.reverse();
-            currentChain = currentChain.concat(candidate);
-            remaining.splice(i, 1);
-            foundMatch = true;
-            break;
-        } else if (pointsAreClose(firstPoint, cLast)) {
-            candidate.pop();
-            currentChain = candidate.concat(currentChain);
-            remaining.splice(i, 1);
-            foundMatch = true;
-            break;
-        } else if (pointsAreClose(firstPoint, cFirst)) {
-            candidate.shift();
-            candidate.reverse();
-            currentChain = candidate.concat(currentChain);
-            remaining.splice(i, 1);
-            foundMatch = true;
-            break;
-        }
+      let c = remaining[i];
+      if (close(last, c[0])) {
+        c.shift(); currentChain = currentChain.concat(c); remaining.splice(i, 1); found = true; break;
+      } else if (close(last, c[c.length - 1])) {
+        c.pop(); c.reverse(); currentChain = currentChain.concat(c); remaining.splice(i, 1); found = true; break;
+      } else if (close(first, c[c.length - 1])) {
+        c.pop(); currentChain = c.concat(currentChain); remaining.splice(i, 1); found = true; break;
+      } else if (close(first, c[0])) {
+        c.shift(); c.reverse(); currentChain = c.concat(currentChain); remaining.splice(i, 1); found = true; break;
+      }
     }
-
-    if (!foundMatch) {
-       // Just append the next segment if we can't find a clean mathematical snap.
-       currentChain = currentChain.concat(remaining.shift());
-    }
+    if (!found) break; // Don't force-append bad segments; just stop
   }
 
-  // Ensure closed loop
-  if (!pointsAreClose(currentChain[0], currentChain[currentChain.length - 1])) {
-       currentChain.push(currentChain[0]); 
+  // Close the loop
+  if (currentChain.length > 2 && !close(currentChain[0], currentChain[currentChain.length - 1])) {
+    currentChain.push(currentChain[0]);
   }
-
   return currentChain;
 }
 
-// Colors for the distinct Eiruvim
-const COLORS = [
-  '#3b82f6', // blue
-  '#ef4444', // red
-  '#10b981', // green
-  '#f59e0b', // amber
-  '#8b5cf6', // purple
-  '#ec4899', // pink
-  '#14b8a6', // teal
-  '#f97316', // orange
-  '#06b6d4'  // cyan
-];
+// Colors matching the Google My Maps reference
+const COLORS = {
+  'Edgware Eruv Area': '#e91e63',   // pink/red
+  'Woodside Park Eruv': '#ff9800',  // orange
+  'NW London Eruv': '#4caf50',      // green
+  'Mill Hill': '#2196f3',           // blue
+  'Borehamwood Eruv': '#3f51b5',    // indigo
+  'Bushey Eruv': '#9c27b0',         // purple
+  'Stanmore Eruv': '#795548',       // brown
+  'Pinner Eruv': '#f44336',         // red
+};
+const DEFAULT_COLOR = '#607d8b';
 
-const mappedEruvim = eruvimData.map((e, index) => {
-  const allRings = e.polygons ? [...e.polygons] : [];
-  if (e.segments && e.segments.length > 0) {
-    allRings.push(chainSegments(e.segments));
+const mappedEruvim = eruvimData.map(e => {
+  // Build a containment polygon from polygonPaths OR chained segments
+  let containmentPath = [];
+  if (e.polygonPaths.length > 0) {
+    containmentPath = e.polygonPaths[0]; // Use the first polygon boundary
+  } else if (e.rawSegments.length > 0) {
+    containmentPath = chainSegments(e.rawSegments);
   }
-  
+
   return {
     name: e.name,
-    color: COLORS[index % COLORS.length],
-    paths: allRings.length === 1 ? allRings[0] : allRings // support single vs multi-polygon
+    color: COLORS[e.name] || DEFAULT_COLOR,
+    rawSegments: e.rawSegments,       // For Polyline rendering (visual)
+    polygonPaths: e.polygonPaths,     // For Polygon rendering (pre-closed areas)
+    containmentPath: containmentPath, // For containsLocation() checks
   };
 });
 
-console.log(`Successfully extracted ${mappedEruvim.length} Eruv boundaries.`);
-console.log(`Successfully extracted ${crossingPoints.length} Crossing Points.`);
+console.log(`Extracted ${mappedEruvim.length} Eruv boundaries.`);
+mappedEruvim.forEach(e => console.log(`  ${e.name}: ${e.rawSegments.length} segments, ${e.polygonPaths.length} polygons, containment: ${e.containmentPath.length} pts`));
+console.log(`Extracted ${crossingPoints.length} Crossing Points.`);
 
 const outputFile = path.join(__dirname, '..', 'src', 'data', 'nwlondon_data.js');
-
 const finalCode = `// AUTO-GENERATED from process_nwlondon_kml.js
-
-// 1. Array of all 9 Eruvin boundaries
 export const NWLONDON_ERUVIM = ${JSON.stringify(mappedEruvim, null, 2)};
-
-// 2. List of explicitly defined Crossing Points allowing transition between boundary zones
 export const CROSSING_POINTS = ${JSON.stringify(crossingPoints, null, 2)};
 `;
 

@@ -167,7 +167,7 @@ const LandingPage = () => {
           <p className="text-xs font-semibold tracking-widest uppercase text-gray-500">Projects &amp; Tools</p>
           <div className="flex-1 h-px bg-gray-800"></div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
           {/* Gematria */}
           <Link to="/gematria" className="group relative">
@@ -220,17 +220,16 @@ const LandingPage = () => {
               </div>
           </a>
 
-
-          {/* Zurich Eruv Route Planner */}
-          <Link to="/eruv" className="group relative">
+          {/* Zurich Eiruv Route Planner */}
+          <Link to="/zurich-eiruv" className="group relative">
               <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 via-green-500 to-teal-500 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
               <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
                   <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center mb-6 text-emerald-400 group-hover:text-white group-hover:bg-emerald-600 transition-colors">
                       <MapPin className="w-6 h-6" />
                   </div>
-                  <h3 className="text-2xl font-bold mb-3 text-gray-100">Zurich Eruv Route Planner</h3>
+                  <h3 className="text-2xl font-bold mb-3 text-gray-100">Zurich Eiruv Route Planner</h3>
                   <p className="text-gray-400 mb-8 flex-grow">
-                      Check locations against the Zurich Eruv boundary and plan walking routes that stay within the permitted area.
+                      Check locations against the Zurich Eiruv boundary and plan walking routes that stay within the permitted area.
                   </p>
                   <div className="flex items-center text-emerald-400 font-semibold group-hover:translate-x-2 transition-transform">
                       Launch App <ArrowRight className="ml-2 w-4 h-4" />
@@ -239,7 +238,7 @@ const LandingPage = () => {
           </Link>
 
           {/* NW London Eiruvim Network */}
-          <Link to="/nwlondon" className="group relative">
+          <Link to="/nwlondon-eiruv" className="group relative">
               <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
               <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
                   <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center mb-6 text-purple-400 group-hover:text-white group-hover:bg-purple-600 transition-colors">
@@ -255,6 +254,23 @@ const LandingPage = () => {
               </div>
           </Link>
 
+          {/* Coming Soon */}
+          <div className="group relative cursor-default">
+              <div className="absolute -inset-1 bg-gradient-to-r from-gray-600 to-gray-700 rounded-2xl blur opacity-15"></div>
+              <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-8 h-full flex flex-col overflow-hidden">
+                  <div className="absolute top-4 right-4 bg-gray-700/80 text-gray-400 text-xs font-semibold px-3 py-1 rounded-full backdrop-blur-sm">
+                      Coming Soon
+                  </div>
+                  <div className="w-12 h-12 bg-gray-700/30 rounded-lg flex items-center justify-center mb-6 text-gray-600">
+                      <Lock className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3 text-gray-600">New Project</h3>
+                  <div className="flex-grow" style={{ filter: 'blur(4px)', userSelect: 'none' }}>
+                      <p className="text-gray-600 mb-2">Something exciting is being built. Stay tuned for the next addition to the portal lineup.</p>
+                      <p className="text-gray-700 text-sm">Full-stack integration with real-time data feeds, responsive dashboards, and interactive analytics modules.</p>
+                  </div>
+              </div>
+          </div>
 
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState, useEffect } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   GoogleMap,
@@ -14,10 +14,10 @@ import './NWLondonMap.css';
 
 const LIBRARIES = ['places', 'geometry'];
 
-const MAP_CENTER = { lat: 51.614, lng: -0.276 }; // Centered near Edgware/Mill Hill
+const MAP_CENTER = { lat: 51.614, lng: -0.276 };
 const MAP_OPTIONS = {
   mapTypeControl: true,
-  mapTypeControlOptions: { style: 2 }, 
+  mapTypeControlOptions: { style: 2 },
   streetViewControl: false,
   fullscreenControl: true,
 };
@@ -25,29 +25,30 @@ const MAP_OPTIONS = {
 const GOLDERS_GREEN_PLACEHOLDER = {
   name: 'Golders Green Eruv (Coming Soon)',
   color: '#888888',
-  paths: [],
-  disabled: true
+  disabled: true,
 };
 
-const ALL_ERUVIM_OPTIONS = [...NWLONDON_ERUVIM, GOLDERS_GREEN_PLACEHOLDER];
+const ALL_TOGGLE_OPTIONS = [
+  ...NWLONDON_ERUVIM,
+  { name: '── Crossing Points', color: '#ffffff', isCrossing: true },
+  GOLDERS_GREEN_PLACEHOLDER,
+];
 
-// Helper to convert data paths to google.maps.Polygon objects for geometry calculations
-function makePolys(activeNames) {
-  if (!window.google || !window.google.maps) return [];
+/* ═══════ Geometry helpers ═══════ */
+
+function buildContainmentPolys(activeNames) {
+  if (!window.google?.maps) return [];
   return NWLONDON_ERUVIM
-    .filter(e => activeNames.includes(e.name))
+    .filter(e => activeNames.includes(e.name) && e.containmentPath.length > 2)
     .map(e => ({
       name: e.name,
-      poly: new window.google.maps.Polygon({ paths: e.paths })
+      poly: new window.google.maps.Polygon({ paths: e.containmentPath }),
     }));
 }
 
-// 1. Point Check: Returns the name of the Eruv the point is in, or null.
 function whichEruvContains(latLng, activePolys) {
   for (const { name, poly } of activePolys) {
-    if (window.google.maps.geometry.poly.containsLocation(latLng, poly)) {
-      return name;
-    }
+    if (window.google.maps.geometry.poly.containsLocation(latLng, poly)) return name;
   }
   return null;
 }
@@ -57,52 +58,26 @@ function decodePath(encoded) {
   return window.google.maps.geometry.encoding.decodePath(encoded);
 }
 
-// Distance helper
-function distanceBetween(ll1, ll2) {
-  return window.google.maps.geometry.spherical.computeDistanceBetween(ll1, ll2);
-}
-
-// Helper to find the nearest valid crossing point to a given latLng
-function isNearValidCrossingPoint(latLng) {
+function isNearCrossingPoint(latLng) {
   for (const cp of CROSSING_POINTS) {
-    const cpLatLng = new window.google.maps.LatLng(cp.pos.lat, cp.pos.lng);
-    const dist = distanceBetween(latLng, cpLatLng);
-    if (dist < 80) { // If transit happened within 80 meters of a designated cross
-      return true;
-    }
+    const cpLL = new window.google.maps.LatLng(cp.pos.lat, cp.pos.lng);
+    if (window.google.maps.geometry.spherical.computeDistanceBetween(latLng, cpLL) < 80) return true;
   }
   return false;
 }
 
-// 2. Route Check: Validates the decoded route against strict/crossing rules
-function routeStaysInNWLondon(result, isCrossingMode, activePolys) {
+function routeStaysValid(result, isCrossingMode, activePolys) {
   let currentEruv = null;
-
   for (const leg of result.routes[0].legs) {
     for (const step of leg.steps) {
-      const pts = decodePath(step.polyline?.points || '');
-      for (const pt of pts) {
-        
-        const occupyingEruv = whichEruvContains(pt, activePolys);
-
-        // If it's entirely outside any active Eruv, fail immediately
-        if (!occupyingEruv) return false;
-
-        // Validating transition between Eruvin
-        if (currentEruv === null) {
-          currentEruv = occupyingEruv;
-        } else if (currentEruv !== occupyingEruv) {
-          
-          if (!isCrossingMode) {
-             // Strict mode: NOT allowed to cross into a different Eruv at all.
-             return false;
-          } else {
-             // Crossing mode: MUST be near a valid CROSSING_POINT
-             if (!isNearValidCrossingPoint(pt)) {
-                return false;
-             }
-             currentEruv = occupyingEruv; // Transition successful
-          }
+      for (const pt of decodePath(step.polyline?.points || '')) {
+        const occupying = whichEruvContains(pt, activePolys);
+        if (!occupying) return false;
+        if (currentEruv === null) { currentEruv = occupying; continue; }
+        if (currentEruv !== occupying) {
+          if (!isCrossingMode) return false;
+          if (!isNearCrossingPoint(pt)) return false;
+          currentEruv = occupying;
         }
       }
     }
@@ -110,150 +85,76 @@ function routeStaysInNWLondon(result, isCrossingMode, activePolys) {
   return true;
 }
 
-// 3. Waypoint generation
-let _cachedWaypoints = {};
-
-function getInteriorWaypoints(eruvName, activePolys) {
-  if (_cachedWaypoints[eruvName]) return _cachedWaypoints[eruvName];
-
+/* ═══════ Waypoint grid ═══════ */
+const _wpCache = {};
+function getWaypoints(eruvName, activePolys) {
+  if (_wpCache[eruvName]) return _wpCache[eruvName];
   const eruvObj = activePolys.find(p => p.name === eruvName);
   if (!eruvObj) return [];
-
-  // Find bounding box to generate grid
-  let minLat = Infinity, maxLat = -Infinity;
-  let minLng = Infinity, maxLng = -Infinity;
-  
-  // paths could be an array of points OR array of arrays of points
-  const rawData = NWLONDON_ERUVIM.find(e => e.name === eruvName);
-  const extractPoints = (paths) => {
-    if(!paths) return;
-    if(paths.length > 0 && Array.isArray(paths[0])) {
-      paths.forEach(extractPoints);
-    } else {
-      paths.forEach(p => {
-        if (p.lat < minLat) minLat = p.lat;
-        if (p.lat > maxLat) maxLat = p.lat;
-        if (p.lng < minLng) minLng = p.lng;
-        if (p.lng > maxLng) maxLng = p.lng;
-      });
-    }
-  };
-  extractPoints(rawData.paths);
-
+  const raw = NWLONDON_ERUVIM.find(e => e.name === eruvName);
+  let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
+  const scan = pts => pts.forEach(p => {
+    if (p.lat < minLat) minLat = p.lat; if (p.lat > maxLat) maxLat = p.lat;
+    if (p.lng < minLng) minLng = p.lng; if (p.lng > maxLng) maxLng = p.lng;
+  });
+  raw.containmentPath.forEach(p => scan([p]));
+  raw.rawSegments.forEach(scan);
   const inside = [];
-  const G = 15; // 15x15 = 225 candidates per Eruv
-
-  for (let i = 0; i <= G; i++) {
-    for (let j = 0; j <= G; j++) {
-      const lat = minLat + (maxLat - minLat) * (i / G);
-      const lng = minLng + (maxLng - minLng) * (j / G);
-      const ll  = new window.google.maps.LatLng(lat, lng);
-      if (window.google.maps.geometry.poly.containsLocation(ll, eruvObj.poly)) {
-        inside.push({ lat, lng });
-      }
-    }
+  const G = 15;
+  for (let i = 0; i <= G; i++) for (let j = 0; j <= G; j++) {
+    const lat = minLat + (maxLat - minLat) * (i / G);
+    const lng = minLng + (maxLng - minLng) * (j / G);
+    const ll = new window.google.maps.LatLng(lat, lng);
+    if (window.google.maps.geometry.poly.containsLocation(ll, eruvObj.poly)) inside.push({ lat, lng });
   }
-
-  _cachedWaypoints[eruvName] = inside;
+  _wpCache[eruvName] = inside;
   return inside;
 }
 
-// Find first point where route exits valid zone to anchor waypoints
-function firstExitOrInvalidCrossing(result, isCrossingMode, activePolys) {
-  let currentEruv = null;
-  for (const leg of result.routes[0].legs) {
-    for (const step of leg.steps) {
-      const pts = decodePath(step.polyline?.points || '');
-      for (const pt of pts) {
-        const occupyingEruv = whichEruvContains(pt, activePolys);
-        if (!occupyingEruv) return { pt: {lat: pt.lat(), lng: pt.lng()}, type: 'outside' };
-        
-        if (currentEruv === null) currentEruv = occupyingEruv;
-        else if (currentEruv !== occupyingEruv) {
-          if (!isCrossingMode || !isNearValidCrossingPoint(pt)) {
-             return { pt: {lat: pt.lat(), lng: pt.lng()}, type: 'invalid_cross' };
-          }
-          currentEruv = occupyingEruv;
-        }
-      }
-    }
-  }
-  return null;
-}
-
-function requestRoute(origin, dest, waypointLatLngs, service) {
+function requestRoute(origin, dest, wps, service) {
   return new Promise(resolve => {
-    service.route(
-      {
-        origin,
-        destination: dest,
-        travelMode: window.google.maps.TravelMode.WALKING,
-        waypoints: waypointLatLngs.map(ll => ({
-          location: new window.google.maps.LatLng(ll.lat, ll.lng),
-          stopover: false,
-        })),
-        optimizeWaypoints: false,
-      },
-      (result, status) => resolve(status === 'OK' ? result : null),
-    );
+    service.route({
+      origin, destination: dest,
+      travelMode: window.google.maps.TravelMode.WALKING,
+      waypoints: wps.map(ll => ({ location: new window.google.maps.LatLng(ll.lat, ll.lng), stopover: false })),
+      optimizeWaypoints: false,
+    }, (result, status) => resolve(status === 'OK' ? result : null));
   });
 }
 
-async function findInBoundaryRoute(originLoc, destLoc, isCrossingMode, activePolys, service) {
-  // Try direct route
+async function findRoute(originLoc, destLoc, isCrossing, activePolys, service) {
   const direct = await requestRoute(originLoc, destLoc, [], service);
-  if (direct && routeStaysInNWLondon(direct, isCrossingMode, activePolys)) {
-     return { result: direct, indirect: false };
-  }
+  if (direct && routeStaysValid(direct, isCrossing, activePolys)) return { result: direct, indirect: false };
 
-  // Find where rule was violated
-  const violation = direct ? firstExitOrInvalidCrossing(direct, isCrossingMode, activePolys) : null;
-  const ref = violation ? violation.pt : {
-    lat: (originLoc.lat() + destLoc.lat()) / 2,
-    lng: (originLoc.lng() + destLoc.lng()) / 2,
-  };
+  const originEruv = whichEruvContains(originLoc, activePolys);
+  if (!originEruv) return null;
 
-  // Determine which waypoints to pull from.
-  // If strict mode, we ONLY use waypoints from the origin's Eruv
-  // If crossing mode, we can use waypoints from any active Eruv, or rely on CROSSING_POINTS directly.
-  const originEruvName = whichEruvContains(originLoc, activePolys);
-  if(!originEruvName) return null; // Origin itself is outside
-
-  let waypoints = [];
-  if (!isCrossingMode) {
-      waypoints = getInteriorWaypoints(originEruvName, activePolys);
+  let wps = [];
+  if (!isCrossing) {
+    wps = getWaypoints(originEruv, activePolys);
   } else {
-      // If we failed in crossing mode (e.g. invalid crossing or outside boundary),
-      // we inject the valid Crossing Points as strong anchor candidates too!
-      activePolys.forEach(p => {
-          waypoints = waypoints.concat(getInteriorWaypoints(p.name, activePolys));
-      });
-      CROSSING_POINTS.forEach(cp => waypoints.push(cp.pos));
+    activePolys.forEach(p => { wps = wps.concat(getWaypoints(p.name, activePolys)); });
+    CROSSING_POINTS.forEach(cp => wps.push(cp.pos));
   }
 
-  const sorted = [...waypoints].sort((a, b) =>
-    Math.hypot(a.lat - ref.lat, a.lng - ref.lng) -
-    Math.hypot(b.lat - ref.lat, b.lng - ref.lng)
+  const ref = { lat: (originLoc.lat() + destLoc.lat()) / 2, lng: (originLoc.lng() + destLoc.lng()) / 2 };
+  const sorted = [...wps].sort((a, b) =>
+    Math.hypot(a.lat - ref.lat, a.lng - ref.lng) - Math.hypot(b.lat - ref.lat, b.lng - ref.lng)
   );
 
-  // Try 1-waypoint routes (12 nearest)
   for (const wp of sorted.slice(0, 12)) {
-    const result = await requestRoute(originLoc, destLoc, [wp], service);
-    if (result && routeStaysInNWLondon(result, isCrossingMode, activePolys)) return { result, indirect: true };
+    const r = await requestRoute(originLoc, destLoc, [wp], service);
+    if (r && routeStaysValid(r, isCrossing, activePolys)) return { result: r, indirect: true };
   }
-
-  // Try 2-waypoint pairs (6 nearest)
   const near6 = sorted.slice(0, 6);
-  for (let i = 0; i < near6.length; i++) {
-    for (let j = i + 1; j < near6.length; j++) {
-      const result = await requestRoute(originLoc, destLoc, [near6[i], near6[j]], service);
-      if (result && routeStaysInNWLondon(result, isCrossingMode, activePolys)) return { result, indirect: true };
-    }
+  for (let i = 0; i < near6.length; i++) for (let j = i + 1; j < near6.length; j++) {
+    const r = await requestRoute(originLoc, destLoc, [near6[i], near6[j]], service);
+    if (r && routeStaysValid(r, isCrossing, activePolys)) return { result: r, indirect: true };
   }
-
   return null;
 }
 
+/* ═══════ Component ═══════ */
 const NWLondonMap = () => {
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '',
@@ -261,203 +162,159 @@ const NWLondonMap = () => {
   });
 
   const [activeTab, setActiveTab] = useState('check');
-  const [activeEruvinNames, setActiveEruvinNames] = useState(
-      NWLONDON_ERUVIM.map(e => e.name)
-  );
-  
-  // UI State
+  const [activeEruvinNames, setActiveEruvinNames] = useState(NWLONDON_ERUVIM.map(e => e.name));
+  const [showCrossingPins, setShowCrossingPins] = useState(false);
   const [checkResult, setCheckResult] = useState({ state: 'idle', msg: '' });
   const [routeStatus, setRouteStatus] = useState('idle');
   const [routeMsg, setRouteMsg] = useState('');
   const [routeLoading, setRouteLoading] = useState(false);
-  
-  // Toggles
   const [allowCrossing, setAllowCrossing] = useState(false);
-  const [showToggles, setShowToggles] = useState(false);
+  const [showToggles, setShowToggles] = useState(true);
+  const [checkMarker, setCheckMarker] = useState(null);
+  const [directionsResult, setDirectionsResult] = useState(null);
 
-  // Map state
   const mapRef = useRef(null);
   const routeServiceRef = useRef(null);
+  const dirRendererRef = useRef(null);
   const autocompleteCheckRef = useRef(null);
   const autocompleteStartRef = useRef(null);
   const autocompleteEndRef = useRef(null);
-
-  const [checkMarker, setCheckMarker] = useState(null);
-  const [directionsResult, setDirectionsResult] = useState(null);
 
   const onMapLoad = useCallback(map => {
     mapRef.current = map;
     routeServiceRef.current = new window.google.maps.DirectionsService();
   }, []);
 
-  const handleEruvToggle = (name) => {
-    setActiveEruvinNames(prev => 
-      prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
-    );
+  const handleToggle = (item) => {
+    if (item.isCrossing) { setShowCrossingPins(prev => !prev); return; }
+    if (item.disabled) return;
+    setActiveEruvinNames(prev => prev.includes(item.name) ? prev.filter(n => n !== item.name) : [...prev, item.name]);
   };
 
-  /* Tab 1: Check */
-  const onCheckPlaceSelected = () => {
+  /* ── Draggable route re-validation ── */
+  const onDirectionsChanged = useCallback(() => {
+    if (!dirRendererRef.current) return;
+    const newDirs = dirRendererRef.current.getDirections();
+    if (!newDirs) return;
+    const activePolys = buildContainmentPolys(activeEruvinNames);
+    const valid = routeStaysValid(newDirs, allowCrossing, activePolys);
+    setRouteStatus(valid ? 'inside' : 'outside');
+    setRouteMsg(valid
+      ? 'Modified route stays within Eruv boundaries.'
+      : 'Modified route exits boundary! Drag it back inside.');
+  }, [activeEruvinNames, allowCrossing]);
+
+  /* ── Tab 1: Check ── */
+  const onCheckPlace = () => {
     if (!autocompleteCheckRef.current) return;
     const place = autocompleteCheckRef.current.getPlace();
     if (!place?.geometry?.location) return;
-
     const loc = place.geometry.location;
     setCheckMarker({ lat: loc.lat(), lng: loc.lng() });
     mapRef.current.panTo(loc);
-    mapRef.current.setZoom(16);
-
-    const activePolys = makePolys(activeEruvinNames);
-    const eruvName = whichEruvContains(loc, activePolys);
-
+    mapRef.current.setZoom(15);
     setDirectionsResult(null);
-
-    if (eruvName) {
-      setCheckResult({ state: 'inside', msg: `Inside ${eruvName}!` });
-    } else {
-      setCheckResult({ state: 'outside', msg: 'Outside active Eruvin bounds. (Check if you have toggles disabled on the menu)' });
-    }
+    const polys = buildContainmentPolys(activeEruvinNames);
+    const name = whichEruvContains(loc, polys);
+    setCheckResult(name
+      ? { state: 'inside', msg: `Inside ${name}!` }
+      : { state: 'outside', msg: 'Outside active Eruvin bounds.' }
+    );
   };
 
-  /* Tab 2: Route */
-  const handleRouteSubmit = async (e) => {
+  /* ── Tab 2: Route ── */
+  const handleRoute = async (e) => {
     e.preventDefault();
     if (!autocompleteStartRef.current || !autocompleteEndRef.current) return;
-
-    const startPlace = autocompleteStartRef.current.getPlace();
-    const endPlace = autocompleteEndRef.current.getPlace();
-
-    if (!startPlace?.geometry?.location || !endPlace?.geometry?.location) {
-      setRouteStatus('error');
-      setRouteMsg('Please select addresses from the dropdown.');
-      return;
+    const sp = autocompleteStartRef.current.getPlace();
+    const ep = autocompleteEndRef.current.getPlace();
+    if (!sp?.geometry?.location || !ep?.geometry?.location) {
+      setRouteStatus('error'); setRouteMsg('Select addresses from the dropdown.'); return;
     }
+    setRouteLoading(true); setRouteStatus('idle'); setRouteMsg('');
+    setDirectionsResult(null); setCheckMarker(null);
 
-    setRouteLoading(true);
-    setRouteStatus('idle');
-    setRouteMsg('');
-    setDirectionsResult(null);
-    setCheckMarker(null);
-    
-    // Auto-fit bounds
     const bounds = new window.google.maps.LatLngBounds();
-    bounds.extend(startPlace.geometry.location);
-    bounds.extend(endPlace.geometry.location);
+    bounds.extend(sp.geometry.location); bounds.extend(ep.geometry.location);
     mapRef.current.fitBounds(bounds);
 
-    const activePolys = makePolys(activeEruvinNames);
-    
-    // Quick origin/dest validation BEFORE routing
-    const originEruv = whichEruvContains(startPlace.geometry.location, activePolys);
-    const destEruv = whichEruvContains(endPlace.geometry.location, activePolys);
-    
-    if (!originEruv || !destEruv) {
-        setRouteLoading(false);
-        setRouteStatus('outside');
-        setRouteMsg('Origin or destination is completely outside the active Eruvin boundaries.');
-        return;
+    const polys = buildContainmentPolys(activeEruvinNames);
+    const oEruv = whichEruvContains(sp.geometry.location, polys);
+    const dEruv = whichEruvContains(ep.geometry.location, polys);
+
+    if (!oEruv || !dEruv) {
+      setRouteLoading(false); setRouteStatus('outside');
+      setRouteMsg('Origin or destination is outside active Eruvin.'); return;
     }
-    
-    if (!allowCrossing && originEruv !== destEruv) {
-        setRouteLoading(false);
-        setRouteStatus('outside');
-        setRouteMsg(`Strict Mode is ON. You cannot route from ${originEruv} to ${destEruv}. Turn on 'Allow Crossing'.`);
-        return;
+    if (!allowCrossing && oEruv !== dEruv) {
+      setRouteLoading(false); setRouteStatus('outside');
+      setRouteMsg(`Strict Mode: Cannot route from ${oEruv} to ${dEruv}. Enable "Allow Crossing".`); return;
     }
 
-    const outcome = await findInBoundaryRoute(
-      startPlace.geometry.location,
-      endPlace.geometry.location,
-      allowCrossing,
-      activePolys,
-      routeServiceRef.current
-    );
-
+    const outcome = await findRoute(sp.geometry.location, ep.geometry.location, allowCrossing, polys, routeServiceRef.current);
     setRouteLoading(false);
-
     if (outcome) {
       setDirectionsResult(outcome.result);
       setRouteStatus('inside');
-      setRouteMsg(
-        outcome.indirect
-          ? 'Route found with slight adjustments to stay inside boundary limits.'
-          : 'Direct route stays completely inside bounds.'
-      );
+      setRouteMsg(outcome.indirect
+        ? 'Route found with adjustments. Drag to modify — we\'ll check if it stays inside.'
+        : 'Direct route stays inside bounds. Drag to modify — we\'ll check if it stays inside.');
     } else {
       setRouteStatus('outside');
-      setRouteMsg(allowCrossing 
-        ? 'No valid route found. Path leaves the boundary entirely or crosses between Eruvin at an invalid point.'
-        : `No route found strictly within ${originEruv}.`
-      );
+      setRouteMsg(allowCrossing
+        ? 'No valid route found within boundaries.'
+        : `No route found strictly within ${oEruv}.`);
     }
   };
 
   if (loadError) return <div className="eruv-error">Failed to load Google Maps</div>;
-  if (!isLoaded) return (
-    <div className="eruv-loading">
-      <div className="eruv-spinner" />
-      <p>Loading mapping engine…</p>
-    </div>
-  );
+  if (!isLoaded) return <div className="eruv-loading"><div className="eruv-spinner" /><p>Loading…</p></div>;
 
   return (
     <div className="eruv-page">
       <div className="eruv-header">
-        <Link to="/" className="eruv-back-btn" aria-label="Back to portal">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Portal
-        </Link>
-        <h1 className="eruv-title">NW London Eiruvim Network</h1>
-        <p className="eruv-subtitle">
-          Check locations or plan complex routes across multiple interconnected North West London Eruv zones.
-        </p>
+        <div className="eruv-header-row">
+          <Link to="/" className="eruv-back-btn" aria-label="Back to portal">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Portal
+          </Link>
+          <div className="eruv-header-text">
+            <h1 className="eruv-title">NW London Eiruvim Network</h1>
+            <p className="eruv-subtitle">Check locations or plan routes across interconnected North West London Eruv zones.</p>
+          </div>
+        </div>
       </div>
 
       <div className="eruv-container">
-        {/* ── Left Sidebar: Controls ── */}
         <div className="eruv-sidebar">
-          
           <div className="eruv-tabs">
-            <button
-              className={`eruv-tab ${activeTab === 'check' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('check'); setDirectionsResult(null); }}
-            >
-              Location Check
-            </button>
-            <button
-              className={`eruv-tab ${activeTab === 'route' ? 'active' : ''}`}
-              onClick={() => { setActiveTab('route'); setCheckMarker(null); }}
-            >
-              Route Planner
-            </button>
+            <button className={`eruv-tab ${activeTab === 'check' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('check'); setDirectionsResult(null); }}>Location Check</button>
+            <button className={`eruv-tab ${activeTab === 'route' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('route'); setCheckMarker(null); }}>Route Planner</button>
           </div>
 
           <div className="eruv-panel">
             {activeTab === 'check' && (
               <div className="eruv-check-form">
                 <h3>Check an Address</h3>
-                <p>Enter a specific address or postcode to verify if it falls within any active Eruv.</p>
+                <p>Enter an address to verify which Eruv it falls within.</p>
                 <div className="eruv-input-wrap">
-                  <Autocomplete onLoad={ac => autocompleteCheckRef.current = ac} onPlaceChanged={onCheckPlaceSelected}>
+                  <Autocomplete onLoad={ac => autocompleteCheckRef.current = ac} onPlaceChanged={onCheckPlace}>
                     <input type="text" placeholder="e.g., Station Road, Edgware" className="eruv-input" />
                   </Autocomplete>
                 </div>
-                {checkResult.state === 'inside' && (
-                  <div className="eruv-alert eruv-alert--success">✓ {checkResult.msg}</div>
-                )}
-                {checkResult.state === 'outside' && (
-                  <div className="eruv-alert eruv-alert--error">✕ {checkResult.msg}</div>
-                )}
+                {checkResult.state === 'inside' && <div className="eruv-alert eruv-alert--success">✓ {checkResult.msg}</div>}
+                {checkResult.state === 'outside' && <div className="eruv-alert eruv-alert--error">✕ {checkResult.msg}</div>}
               </div>
             )}
 
             {activeTab === 'route' && (
-              <form className="eruv-route-form" onSubmit={handleRouteSubmit}>
+              <form className="eruv-route-form" onSubmit={handleRoute}>
                 <h3>Plan a Route</h3>
-                <p>Plan a walking route that doesn't cross the boundary incorrectly.</p>
-
+                <p>Plan a walking route. Drag the blue line on the map to modify it.</p>
                 <div className="eruv-input-wrap">
                   <label>Origin</label>
                   <Autocomplete onLoad={ac => autocompleteStartRef.current = ac}>
@@ -470,75 +327,89 @@ const NWLondonMap = () => {
                     <input type="text" placeholder="End location" className="eruv-input" required />
                   </Autocomplete>
                 </div>
-                
                 <label className="nwl-crossing-toggle">
-                   <input type="checkbox" checked={allowCrossing} onChange={e => setAllowCrossing(e.target.checked)} />
-                   <span>Allow Crossing Between Eiruvim (Requires using assigned official crossing boundaries).</span>
+                  <input type="checkbox" checked={allowCrossing} onChange={e => setAllowCrossing(e.target.checked)} />
+                  <span>Allow Crossing Between Eiruvim (via official crossing points only)</span>
                 </label>
-
                 <button type="submit" className="eruv-btn" disabled={routeLoading}>
                   {routeLoading ? 'Calculating…' : 'Find Safe Route'}
                 </button>
-
-                {routeStatus === 'outside' && ( <div className="eruv-alert eruv-alert--error">⚠ {routeMsg}</div> )}
-                {routeStatus === 'error' && ( <div className="eruv-alert eruv-alert--error">✕ {routeMsg}</div> )}
-                {routeStatus === 'inside' && ( <div className="eruv-alert eruv-alert--success">✓ {routeMsg}</div> )}
+                {routeStatus === 'outside' && <div className="eruv-alert eruv-alert--error">⚠ {routeMsg}</div>}
+                {routeStatus === 'error' && <div className="eruv-alert eruv-alert--error">✕ {routeMsg}</div>}
+                {routeStatus === 'inside' && <div className="eruv-alert eruv-alert--success">✓ {routeMsg}</div>}
               </form>
             )}
-            
+
             <hr className="nwl-divider" />
-            
+
             <div className="nwl-layers">
-               <div className="nwl-layers-header" onClick={() => setShowToggles(!showToggles)}>
-                   <h3>Layer Toggles</h3>
-                   <span>{showToggles ? '▲' : '▼'}</span>
-               </div>
-               
-               {showToggles && (
-                 <div className="nwl-layer-list">
-                    {ALL_ERUVIM_OPTIONS.map((eruv, idx) => (
-                       <label key={idx} className={`nwl-checkbox ${eruv.disabled ? 'disabled' : ''}`}>
-                          <input 
-                             type="checkbox" 
-                             checked={activeEruvinNames.includes(eruv.name)}
-                             disabled={eruv.disabled}
-                             onChange={() => handleEruvToggle(eruv.name)} 
-                          />
-                          <span className="nwl-color-swatch" style={{backgroundColor: eruv.color}}></span>
-                          {eruv.name}
-                       </label>
-                    ))}
-                 </div>
-               )}
+              <div className="nwl-layers-header" onClick={() => setShowToggles(!showToggles)}>
+                <h3>Layer Toggles</h3>
+                <span>{showToggles ? '▲' : '▼'}</span>
+              </div>
+              {showToggles && (
+                <div className="nwl-layer-list">
+                  {ALL_TOGGLE_OPTIONS.map((item, idx) => (
+                    <label key={idx} className={`nwl-checkbox ${item.disabled ? 'disabled' : ''}`}>
+                      <input
+                        type="checkbox"
+                        checked={item.isCrossing ? showCrossingPins : activeEruvinNames.includes(item.name)}
+                        disabled={item.disabled}
+                        onChange={() => handleToggle(item)}
+                      />
+                      <span className="nwl-color-swatch" style={{ backgroundColor: item.color }}></span>
+                      {item.name}
+                    </label>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* ── Right Side: Map ── */}
         <div className="eruv-map-wrap">
           <GoogleMap mapContainerClassName="eruv-map" center={MAP_CENTER} zoom={12} options={MAP_OPTIONS} onLoad={onMapLoad}>
-            
-            {/* Draw all active polygons distinctly */}
-            {NWLONDON_ERUVIM.map((eruvItem, i) => {
-               if(!activeEruvinNames.includes(eruvItem.name)) return null;
-               
-               return (
-                 <Polygon 
-                   key={`poly-${i}`} 
-                   paths={eruvItem.paths} 
-                   options={{
-                     strokeColor: eruvItem.color,
-                     strokeOpacity: 1,
-                     strokeWeight: 2,
-                     fillColor: eruvItem.color,
-                     fillOpacity: 0.1,
-                   }} 
-                 />
-               );
-            })}
+
+            {/* Raw segment Polylines for accurate boundary rendering */}
+            {NWLONDON_ERUVIM.map((eruv, ei) =>
+              activeEruvinNames.includes(eruv.name) && eruv.rawSegments.map((seg, si) => (
+                <Polyline key={`seg-${ei}-${si}`} path={seg} options={{
+                  strokeColor: eruv.color, strokeOpacity: 1, strokeWeight: 3,
+                }} />
+              ))
+            )}
+
+            {/* Pre-closed polygon fills for Eruvin that have them */}
+            {NWLONDON_ERUVIM.map((eruv, ei) =>
+              activeEruvinNames.includes(eruv.name) && eruv.polygonPaths.map((poly, pi) => (
+                <Polygon key={`poly-${ei}-${pi}`} paths={poly} options={{
+                  strokeColor: eruv.color, strokeOpacity: 1, strokeWeight: 2,
+                  fillColor: eruv.color, fillOpacity: 0.08,
+                }} />
+              ))
+            )}
+
+            {/* Crossing point markers */}
+            {showCrossingPins && CROSSING_POINTS.map((cp, i) => (
+              <Marker key={`cp-${i}`} position={cp.pos} title={cp.name}
+                icon={{
+                  path: window.google.maps.SymbolPath.CIRCLE,
+                  scale: 6, fillColor: '#ffffff', fillOpacity: 0.9,
+                  strokeColor: '#333', strokeWeight: 2,
+                }}
+              />
+            ))}
 
             {checkMarker && <Marker position={checkMarker} />}
-            {directionsResult && <DirectionsRenderer directions={directionsResult} options={{ preserveViewport: true }} />}
+
+            {directionsResult && (
+              <DirectionsRenderer
+                directions={directionsResult}
+                options={{ preserveViewport: true, draggable: true }}
+                onLoad={r => { dirRendererRef.current = r; }}
+                onDirectionsChanged={onDirectionsChanged}
+              />
+            )}
           </GoogleMap>
         </div>
       </div>

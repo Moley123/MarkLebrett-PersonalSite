@@ -48,25 +48,34 @@
 }
 
 @keyframes eruv-spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* ── Header ── */
 .eruv-header {
-    padding: 1.5rem 1.5rem 1rem;
-    text-align: center;
-    position: relative;
+    padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--border);
     background: rgba(8, 11, 16, 0.8);
     backdrop-filter: blur(12px);
     z-index: 10;
 }
 
+.eruv-header-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.eruv-header-text {
+    flex: 1;
+    text-align: center;
+    padding-right: 80px;
+    /* balance the Portal button width */
+}
+
 .eruv-back-btn {
-    position: absolute;
-    top: 50%;
-    left: 1.5rem;
-    transform: translateY(-50%);
     display: inline-flex;
     align-items: center;
     gap: 0.45rem;
@@ -82,7 +91,9 @@
     text-decoration: none;
     letter-spacing: 0.02em;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-    transition: all var(--ease);
+    transition: color var(--ease), background var(--ease), box-shadow var(--ease);
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .eruv-back-btn:hover {
@@ -125,13 +136,14 @@
     flex-direction: column;
     overflow-y: auto;
     z-index: 5;
-    box-shadow: 4px 0 24px rgba(0,0,0,0.2);
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
 }
 
 @media (max-width: 768px) {
     .eruv-container {
         flex-direction: column;
     }
+
     .eruv-sidebar {
         width: 100%;
         max-height: 50vh;
@@ -282,7 +294,7 @@
     align-items: flex-start;
     gap: 0.5rem;
     padding: 0.75rem;
-    background: rgba(255,255,255,0.03);
+    background: rgba(255, 255, 255, 0.03);
     border-radius: var(--radius);
     border: 1px solid var(--border);
     cursor: pointer;
@@ -351,7 +363,7 @@
     width: 14px;
     height: 14px;
     border-radius: 4px;
-    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.2);
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
 }
 
 /* ── Map ── */
@@ -367,5 +379,6 @@
 }
 
 .gm-style-mtc {
-    display: none; /* Hide default map/satellite buttons if using custom */
+    display: none;
+    /* Hide default map/satellite buttons if using custom */
 }

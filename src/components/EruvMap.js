@@ -361,16 +361,20 @@ const EruvMap = () => {
 
       {/* ── Header ── */}
       <div className="eruv-header">
-        <Link to="/" className="eruv-back-btn" aria-label="Back to portal">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Portal
-        </Link>
-        <h1 className="eruv-title">🕍 Zurich Eruv Route Planner</h1>
-        <p className="eruv-subtitle">
-          Check if an address is within the Eruv, or plan a walking route that stays inside the boundary.
-        </p>
+        <div className="eruv-header-row">
+          <Link to="/" className="eruv-back-btn" aria-label="Back to portal">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Portal
+          </Link>
+          <div className="eruv-header-text">
+            <h1 className="eruv-title">🕍 Zurich Eiruv Route Planner</h1>
+            <p className="eruv-subtitle">
+              Check if an address is within the Eiruv, or plan a walking route that stays inside the boundary.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* ── Tabs ── */}
