@@ -30,7 +30,7 @@ const GOLDERS_GREEN_PLACEHOLDER = {
 
 const ALL_TOGGLE_OPTIONS = [
   ...NWLONDON_ERUVIM,
-  { name: '── Crossing Points', color: '#ffffff', isCrossing: true },
+  { name: '── Crossing Points', color: '#ffd600', isCrossing: true },
   GOLDERS_GREEN_PLACEHOLDER,
 ];
 
@@ -60,8 +60,10 @@ function decodePath(encoded) {
 
 function isNearCrossingPoint(latLng) {
   for (const cp of CROSSING_POINTS) {
-    const cpLL = new window.google.maps.LatLng(cp.pos.lat, cp.pos.lng);
-    if (window.google.maps.geometry.spherical.computeDistanceBetween(latLng, cpLL) < 80) return true;
+    for (const pt of cp.path) {
+      const cpLL = new window.google.maps.LatLng(pt.lat, pt.lng);
+      if (window.google.maps.geometry.spherical.computeDistanceBetween(latLng, cpLL) < 100) return true;
+    }
   }
   return false;
 }
@@ -134,7 +136,7 @@ async function findRoute(originLoc, destLoc, isCrossing, activePolys, service) {
     wps = getWaypoints(originEruv, activePolys);
   } else {
     activePolys.forEach(p => { wps = wps.concat(getWaypoints(p.name, activePolys)); });
-    CROSSING_POINTS.forEach(cp => wps.push(cp.pos));
+    CROSSING_POINTS.forEach(cp => { const mid = cp.path[Math.floor(cp.path.length / 2)]; wps.push(mid); });
   }
 
   const ref = { lat: (originLoc.lat() + destLoc.lat()) / 2, lng: (originLoc.lng() + destLoc.lng()) / 2 };
@@ -163,7 +165,7 @@ const NWLondonMap = () => {
 
   const [activeTab, setActiveTab] = useState('check');
   const [activeEruvinNames, setActiveEruvinNames] = useState(NWLONDON_ERUVIM.map(e => e.name));
-  const [showCrossingPins, setShowCrossingPins] = useState(false);
+  const [showCrossingPins, setShowCrossingPins] = useState(true);
   const [checkResult, setCheckResult] = useState({ state: 'idle', msg: '' });
   const [routeStatus, setRouteStatus] = useState('idle');
   const [routeMsg, setRouteMsg] = useState('');
@@ -389,15 +391,12 @@ const NWLondonMap = () => {
               ))
             )}
 
-            {/* Crossing point markers */}
+            {/* Crossing point lines */}
             {showCrossingPins && CROSSING_POINTS.map((cp, i) => (
-              <Marker key={`cp-${i}`} position={cp.pos} title={cp.name}
-                icon={{
-                  path: window.google.maps.SymbolPath.CIRCLE,
-                  scale: 6, fillColor: '#ffffff', fillOpacity: 0.9,
-                  strokeColor: '#333', strokeWeight: 2,
-                }}
-              />
+              <Polyline key={`cp-${i}`} path={cp.path} options={{
+                strokeColor: '#ffd600', strokeOpacity: 1, strokeWeight: 4,
+                zIndex: 10,
+              }} />
             ))}
 
             {checkMarker && <Marker position={checkMarker} />}

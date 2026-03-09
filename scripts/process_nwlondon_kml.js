@@ -32,13 +32,10 @@ function parseCoordinates(coordStr) {
   }).filter(Boolean);
 }
 
-// Collect only DIRECT Placemark children of a folder (not nested sub-folder placemarks)
 function getDirectPlacemarks(folder) {
   const result = [];
   for (let i = 0; i < folder.childNodes.length; i++) {
-    if (folder.childNodes[i].nodeName === 'Placemark') {
-      result.push(folder.childNodes[i]);
-    }
+    if (folder.childNodes[i].nodeName === 'Placemark') result.push(folder.childNodes[i]);
   }
   return result;
 }
@@ -49,29 +46,28 @@ for (let i = 0; i < topFolders.length; i++) {
   if (!nameNode) continue;
   const folderName = nameNode.textContent.trim();
 
-  // Skip the LABELS folder entirely
   if (folderName === 'LABELS') continue;
 
-  // Handle Crossing Points
+  // ── Crossing Points: store FULL LineString paths ──
   if (folderName === 'Crossing Points') {
     const placemarks = getDirectPlacemarks(folder);
     for (let j = 0; j < placemarks.length; j++) {
       const pm = placemarks[j];
       const pmName = pm.getElementsByTagName('name')[0]?.textContent || 'Crossing';
-      const point = pm.getElementsByTagName('Point')[0];
-      const lineString = pm.getElementsByTagName('LineString')[0];
-      if (point) {
-        const coords = parseCoordinates(point.getElementsByTagName('coordinates')[0]?.textContent);
-        if (coords.length > 0) crossingPoints.push({ name: pmName, pos: coords[0] });
-      } else if (lineString) {
-        const coords = parseCoordinates(lineString.getElementsByTagName('coordinates')[0]?.textContent);
-        if (coords.length > 0) crossingPoints.push({ name: pmName, pos: coords[Math.floor(coords.length / 2)] });
+      const ls = pm.getElementsByTagName('LineString')[0];
+      const pt = pm.getElementsByTagName('Point')[0];
+      if (ls) {
+        const coords = parseCoordinates(ls.getElementsByTagName('coordinates')[0]?.textContent);
+        if (coords.length > 0) crossingPoints.push({ name: pmName, path: coords });
+      } else if (pt) {
+        const coords = parseCoordinates(pt.getElementsByTagName('coordinates')[0]?.textContent);
+        if (coords.length > 0) crossingPoints.push({ name: pmName, path: coords });
       }
     }
     continue;
   }
 
-  // Eruv folder — extract raw segments AND polygons
+  // ── Eruv folder ──
   const placemarks = getDirectPlacemarks(folder);
   const rawSegments = [];
   const polygonPaths = [];
@@ -80,7 +76,6 @@ for (let i = 0; i < topFolders.length; i++) {
     const pm = placemarks[j];
     const lineString = pm.getElementsByTagName('LineString')[0];
     const polygon = pm.getElementsByTagName('Polygon')[0];
-
     if (lineString) {
       const coordNode = lineString.getElementsByTagName('coordinates')[0];
       if (coordNode) {
@@ -105,60 +100,103 @@ for (let i = 0; i < topFolders.length; i++) {
   }
 }
 
-// Chaining algorithm — used ONLY for building containment polygons, not for rendering
+/* ═══════════════════════════════════════════════════
+   Robust multi-pass chaining for containment polygons
+   ═══════════════════════════════════════════════════ */
+function dist(a, b) {
+  return Math.sqrt((a.lat - b.lat) ** 2 + (a.lng - b.lng) ** 2);
+}
+
 function chainSegments(segments) {
   if (!segments || segments.length === 0) return [];
+
+  // Work with copies
   let remaining = segments.map(s => [...s]);
-  let currentChain = [...remaining.shift()];
 
-  const close = (p1, p2) => Math.abs(p1.lat - p2.lat) < 0.0005 && Math.abs(p1.lng - p2.lng) < 0.0005;
+  // Sort by length descending — start with the longest segment for best anchor
+  remaining.sort((a, b) => b.length - a.length);
 
-  let maxIter = remaining.length * remaining.length + 10;
-  while (remaining.length > 0 && maxIter-- > 0) {
-    let last = currentChain[currentChain.length - 1];
-    let first = currentChain[0];
-    let found = false;
+  let chain = [...remaining.shift()];
 
-    for (let i = 0; i < remaining.length; i++) {
-      let c = remaining[i];
-      if (close(last, c[0])) {
-        c.shift(); currentChain = currentChain.concat(c); remaining.splice(i, 1); found = true; break;
-      } else if (close(last, c[c.length - 1])) {
-        c.pop(); c.reverse(); currentChain = currentChain.concat(c); remaining.splice(i, 1); found = true; break;
-      } else if (close(first, c[c.length - 1])) {
-        c.pop(); currentChain = c.concat(currentChain); remaining.splice(i, 1); found = true; break;
-      } else if (close(first, c[0])) {
-        c.shift(); c.reverse(); currentChain = c.concat(currentChain); remaining.splice(i, 1); found = true; break;
+  // Multi-pass with increasing tolerance
+  const tolerances = [0.0001, 0.0005, 0.001, 0.003, 0.008];
+  
+  for (const tol of tolerances) {
+    let changed = true;
+    while (changed && remaining.length > 0) {
+      changed = false;
+      let bestIdx = -1;
+      let bestDist = tol;
+      let bestMode = ''; // 'tail-head', 'tail-tail', 'head-tail', 'head-head'
+
+      const chainHead = chain[0];
+      const chainTail = chain[chain.length - 1];
+
+      for (let i = 0; i < remaining.length; i++) {
+        const seg = remaining[i];
+        const segHead = seg[0];
+        const segTail = seg[seg.length - 1];
+
+        const d1 = dist(chainTail, segHead);  // append forward
+        const d2 = dist(chainTail, segTail);  // append reversed
+        const d3 = dist(chainHead, segTail);  // prepend forward
+        const d4 = dist(chainHead, segHead);  // prepend reversed
+
+        const minD = Math.min(d1, d2, d3, d4);
+        if (minD < bestDist) {
+          bestDist = minD;
+          bestIdx = i;
+          if (minD === d1) bestMode = 'tail-head';
+          else if (minD === d2) bestMode = 'tail-tail';
+          else if (minD === d3) bestMode = 'head-tail';
+          else bestMode = 'head-head';
+        }
+      }
+
+      if (bestIdx >= 0) {
+        const seg = remaining.splice(bestIdx, 1)[0];
+        switch (bestMode) {
+          case 'tail-head': seg.shift(); chain = chain.concat(seg); break;
+          case 'tail-tail': seg.pop(); seg.reverse(); chain = chain.concat(seg); break;
+          case 'head-tail': seg.pop(); chain = seg.concat(chain); break;
+          case 'head-head': seg.shift(); seg.reverse(); chain = seg.concat(chain); break;
+        }
+        changed = true;
       }
     }
-    if (!found) break; // Don't force-append bad segments; just stop
+  }
+
+  // Force-append any remaining segments (they'll create a messy polygon but
+  // it's better for containsLocation than missing them entirely)
+  while (remaining.length > 0) {
+    chain = chain.concat(remaining.shift());
   }
 
   // Close the loop
-  if (currentChain.length > 2 && !close(currentChain[0], currentChain[currentChain.length - 1])) {
-    currentChain.push(currentChain[0]);
+  if (chain.length > 2 && dist(chain[0], chain[chain.length - 1]) > 0.00001) {
+    chain.push({ ...chain[0] });
   }
-  return currentChain;
+
+  return chain;
 }
 
 // Colors matching the Google My Maps reference
 const COLORS = {
-  'Edgware Eruv Area': '#e91e63',   // pink/red
-  'Woodside Park Eruv': '#ff9800',  // orange
-  'NW London Eruv': '#4caf50',      // green
-  'Mill Hill': '#2196f3',           // blue
-  'Borehamwood Eruv': '#3f51b5',    // indigo
-  'Bushey Eruv': '#9c27b0',         // purple
-  'Stanmore Eruv': '#795548',       // brown
-  'Pinner Eruv': '#f44336',         // red
+  'Edgware Eruv Area': '#e91e63',
+  'Woodside Park Eruv': '#ff9800',
+  'NW London Eruv': '#4caf50',
+  'Mill Hill': '#2196f3',
+  'Borehamwood Eruv': '#3f51b5',
+  'Bushey Eruv': '#9c27b0',
+  'Stanmore Eruv': '#795548',
+  'Pinner Eruv': '#f44336',
 };
 const DEFAULT_COLOR = '#607d8b';
 
 const mappedEruvim = eruvimData.map(e => {
-  // Build a containment polygon from polygonPaths OR chained segments
   let containmentPath = [];
   if (e.polygonPaths.length > 0) {
-    containmentPath = e.polygonPaths[0]; // Use the first polygon boundary
+    containmentPath = e.polygonPaths[0];
   } else if (e.rawSegments.length > 0) {
     containmentPath = chainSegments(e.rawSegments);
   }
@@ -166,15 +204,18 @@ const mappedEruvim = eruvimData.map(e => {
   return {
     name: e.name,
     color: COLORS[e.name] || DEFAULT_COLOR,
-    rawSegments: e.rawSegments,       // For Polyline rendering (visual)
-    polygonPaths: e.polygonPaths,     // For Polygon rendering (pre-closed areas)
-    containmentPath: containmentPath, // For containsLocation() checks
+    rawSegments: e.rawSegments,
+    polygonPaths: e.polygonPaths,
+    containmentPath: containmentPath,
   };
 });
 
 console.log(`Extracted ${mappedEruvim.length} Eruv boundaries.`);
-mappedEruvim.forEach(e => console.log(`  ${e.name}: ${e.rawSegments.length} segments, ${e.polygonPaths.length} polygons, containment: ${e.containmentPath.length} pts`));
-console.log(`Extracted ${crossingPoints.length} Crossing Points.`);
+mappedEruvim.forEach(e => {
+  const totalRaw = e.rawSegments.reduce((s, seg) => s + seg.length, 0);
+  console.log(`  ${e.name}: ${e.rawSegments.length} segs(${totalRaw}pts), ${e.polygonPaths.length} polys, containment=${e.containmentPath.length}pts`);
+});
+console.log(`Extracted ${crossingPoints.length} Crossing Points (as LineStrings).`);
 
 const outputFile = path.join(__dirname, '..', 'src', 'data', 'nwlondon_data.js');
 const finalCode = `// AUTO-GENERATED from process_nwlondon_kml.js
