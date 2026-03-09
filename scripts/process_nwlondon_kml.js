@@ -212,6 +212,91 @@ const mappedEruvim = eruvimData.map(e => {
   };
 });
 
+/* ═══════════════════════════════════════════════════
+   Gap-closing pass: borrow neighbor boundary segments
+   to close large gaps in containment polygons.
+   ═══════════════════════════════════════════════════ */
+const GAP_THRESHOLD = 0.005; // ~500m — anything larger is a shared boundary gap
+
+for (const eruv of mappedEruvim) {
+  const cp = eruv.containmentPath;
+  if (cp.length < 3) continue;
+
+  // Measure gap (head to the point before the closing copy)
+  const head = cp[0];
+  const tail = cp[cp.length - 2]; // -2 because -1 is a copy of head from close-loop
+  const gapDist = dist(head, tail);
+
+  if (gapDist < GAP_THRESHOLD) continue;
+  console.log(`  ${eruv.name}: gap = ${gapDist.toFixed(4)} (${(gapDist * 111000).toFixed(0)}m) — searching neighbors...`);
+
+  // Search other Eruvin for a chain that can bridge the gap
+  for (const neighbor of mappedEruvim) {
+    if (neighbor.name === eruv.name) continue;
+    const nc = neighbor.containmentPath;
+    if (nc.length < 10) continue;
+
+    // Find the point on the neighbor's chain closest to our HEAD
+    let bestHeadIdx = -1, bestHeadDist = Infinity;
+    // Find the point closest to our TAIL
+    let bestTailIdx = -1, bestTailDist = Infinity;
+
+    for (let i = 0; i < nc.length; i++) {
+      const dh = dist(nc[i], head);
+      const dt = dist(nc[i], tail);
+      if (dh < bestHeadDist) { bestHeadDist = dh; bestHeadIdx = i; }
+      if (dt < bestTailDist) { bestTailDist = dt; bestTailIdx = i; }
+    }
+
+    // Both endpoints must be reasonably close to the neighbor's chain
+    if (bestHeadDist > 0.02 || bestTailDist > 0.02) continue;
+
+    console.log(`    -> Found neighbor "${neighbor.name}": headDist=${bestHeadDist.toFixed(5)}, tailDist=${bestTailDist.toFixed(5)}, indices=[${bestHeadIdx}, ${bestTailIdx}]`);
+
+    // Extract the bridge segment from the neighbor's chain
+    let bridge;
+    if (bestHeadIdx <= bestTailIdx) {
+      // head comes before tail in neighbor chain
+      bridge = nc.slice(bestHeadIdx, bestTailIdx + 1);
+    } else {
+      // head comes after tail — reverse direction
+      bridge = nc.slice(bestTailIdx, bestHeadIdx + 1).reverse();
+    }
+
+    // Check: is bridge a reasonable length? (should not be longer than 2x the gap)
+    let bridgeLen = 0;
+    for (let i = 1; i < bridge.length; i++) bridgeLen += dist(bridge[i - 1], bridge[i]);
+    if (bridgeLen > gapDist * 5) {
+      // Try the other direction around the neighbor's chain
+      if (bestHeadIdx <= bestTailIdx) {
+        const part1 = nc.slice(bestTailIdx);
+        const part2 = nc.slice(0, bestHeadIdx + 1);
+        bridge = [...part1, ...part2].reverse();
+      } else {
+        const part1 = nc.slice(bestHeadIdx);
+        const part2 = nc.slice(0, bestTailIdx + 1);
+        bridge = [...part1, ...part2];
+      }
+      bridgeLen = 0;
+      for (let i = 1; i < bridge.length; i++) bridgeLen += dist(bridge[i - 1], bridge[i]);
+    }
+
+    console.log(`    -> Bridge: ${bridge.length} pts, len=${bridgeLen.toFixed(4)}`);
+
+    // Remove the old closing point and insert the bridge
+    cp.pop(); // remove the closing copy-of-head
+    // Append bridge from head-end to tail-end (connects our head → neighbor → our tail)
+    // Actually we need: chain goes head→...→tail, then bridge goes tail→...→head
+    const reverseBridge = bridge.reverse();
+    for (const pt of reverseBridge) cp.push(pt);
+    // Re-close
+    cp.push({ ...cp[0] });
+
+    console.log(`    -> ${eruv.name} containment now ${cp.length} pts (was ${cp.length - reverseBridge.length})`);
+    break; // Only use first matching neighbor
+  }
+}
+
 console.log(`Extracted ${mappedEruvim.length} Eruv boundaries.`);
 mappedEruvim.forEach(e => {
   const totalRaw = e.rawSegments.reduce((s, seg) => s + seg.length, 0);
