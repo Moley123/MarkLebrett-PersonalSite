@@ -110,24 +110,21 @@ function dist(a, b) {
 function chainSegments(segments) {
   if (!segments || segments.length === 0) return [];
 
-  // Work with copies
   let remaining = segments.map(s => [...s]);
+  const allChains = [];
+  const TOL = 0.001; // ~100m tolerance for snapping
 
-  // Sort by length descending — start with the longest segment for best anchor
-  remaining.sort((a, b) => b.length - a.length);
+  // Build multiple independent chains
+  while (remaining.length > 0) {
+    let chain = [...remaining.shift()];
 
-  let chain = [...remaining.shift()];
-
-  // Multi-pass with increasing tolerance
-  const tolerances = [0.0001, 0.0005, 0.001, 0.003, 0.008];
-  
-  for (const tol of tolerances) {
+    // Keep extending this chain as long as we find matching segments
     let changed = true;
     while (changed && remaining.length > 0) {
       changed = false;
       let bestIdx = -1;
-      let bestDist = tol;
-      let bestMode = ''; // 'tail-head', 'tail-tail', 'head-tail', 'head-head'
+      let bestDist = TOL;
+      let bestMode = '';
 
       const chainHead = chain[0];
       const chainTail = chain[chain.length - 1];
@@ -137,10 +134,10 @@ function chainSegments(segments) {
         const segHead = seg[0];
         const segTail = seg[seg.length - 1];
 
-        const d1 = dist(chainTail, segHead);  // append forward
-        const d2 = dist(chainTail, segTail);  // append reversed
-        const d3 = dist(chainHead, segTail);  // prepend forward
-        const d4 = dist(chainHead, segHead);  // prepend reversed
+        const d1 = dist(chainTail, segHead);
+        const d2 = dist(chainTail, segTail);
+        const d3 = dist(chainHead, segTail);
+        const d4 = dist(chainHead, segHead);
 
         const minD = Math.min(d1, d2, d3, d4);
         if (minD < bestDist) {
@@ -164,20 +161,25 @@ function chainSegments(segments) {
         changed = true;
       }
     }
+
+    allChains.push(chain);
   }
 
-  // Force-append any remaining segments (they'll create a messy polygon but
-  // it's better for containsLocation than missing them entirely)
-  while (remaining.length > 0) {
-    chain = chain.concat(remaining.shift());
+  // Sort chains by length — pick the longest as the containment polygon
+  allChains.sort((a, b) => b.length - a.length);
+  const best = allChains[0];
+
+  if (allChains.length > 1) {
+    const otherPts = allChains.slice(1).reduce((s, c) => s + c.length, 0);
+    console.log(`    -> Built ${allChains.length} chains. Using longest (${best.length} pts), dropped ${otherPts} pts in ${allChains.length - 1} smaller chains`);
   }
 
   // Close the loop
-  if (chain.length > 2 && dist(chain[0], chain[chain.length - 1]) > 0.00001) {
-    chain.push({ ...chain[0] });
+  if (best.length > 2 && dist(best[0], best[best.length - 1]) > 0.00001) {
+    best.push({ ...best[0] });
   }
 
-  return chain;
+  return best;
 }
 
 // Colors matching the Google My Maps reference
