@@ -1,5 +1,12 @@
 export const EDGWARE_ERUV_NOTES = [
   {
+    title: "Credit",
+    content: "All Eruv boundaries and notes are shared with permission from the Edgware Eruv Committee.",
+    links: [
+      { name: "Edgware Eruv Website", url: "https://edgwareeruv.org/" }
+    ]
+  },
+  {
     title: "Please Note",
     content: "Both Edgwarebury Park and Stoneyfields Park are completely outside of the Eruv. Stonegrove Park is inside the Edgware Eruv and the park gate on Stonegrove marks the boundary between the Edgware Eruv (in the park) and the Stanmore Eruv (on Stonegrove)."
   },
