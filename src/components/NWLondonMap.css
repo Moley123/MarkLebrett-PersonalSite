@@ -192,10 +192,52 @@
 }
 
 .eruv-check-form,
-.eruv-route-form {
+.eruv-route-form,
+.eruv-notes-form {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+}
+
+.eruv-notes-section {
+    margin-bottom: 1rem;
+}
+
+.eruv-notes-section h4 {
+    color: var(--blue);
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.eruv-notes-section p {
+    color: var(--text);
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.eruv-notes-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.eruv-note-link {
+    color: var(--blue);
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 0.25rem 0.5rem;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.eruv-note-link:hover {
+    background: rgba(59, 130, 246, 0.2);
+    transform: translateY(-1px);
 }
 
 .eruv-panel h3 {

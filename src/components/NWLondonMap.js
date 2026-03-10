@@ -10,6 +10,7 @@ import {
   DirectionsRenderer,
 } from '@react-google-maps/api';
 import { NWLONDON_ERUVIM, CROSSING_POINTS } from '../data/nwlondon_data';
+import { EDGWARE_ERUV_NOTES } from '../data/eruv_notes';
 import './NWLondonMap.css';
 
 const LIBRARIES = ['places', 'geometry'];
@@ -296,6 +297,8 @@ const NWLondonMap = () => {
               onClick={() => { setActiveTab('check'); setDirectionsResult(null); }}>Location Check</button>
             <button className={`eruv-tab ${activeTab === 'route' ? 'active' : ''}`}
               onClick={() => { setActiveTab('route'); setCheckMarker(null); }}>Route Planner</button>
+            <button className={`eruv-tab ${activeTab === 'notes' ? 'active' : ''}`}
+              onClick={() => { setActiveTab('notes'); setCheckMarker(null); setDirectionsResult(null); }}>Eruv Notes</button>
           </div>
 
           <div className="eruv-panel">
@@ -340,6 +343,36 @@ const NWLondonMap = () => {
                 {routeStatus === 'error' && <div className="eruv-alert eruv-alert--error">✕ {routeMsg}</div>}
                 {routeStatus === 'inside' && <div className="eruv-alert eruv-alert--success">✓ {routeMsg}</div>}
               </form>
+            )}
+
+            {activeTab === 'notes' && (
+              <div className="eruv-notes-form">
+                <h3>Edgware Eruv Notes</h3>
+                <p>Important details and border information for the Edgware Eruv.</p>
+                <div className="eruv-notes-content">
+                  {EDGWARE_ERUV_NOTES.map((section, idx) => (
+                    <div key={idx} className="eruv-notes-section">
+                      <h4>{section.title}</h4>
+                      {section.content && <p>{section.content}</p>}
+                      {section.links && (
+                        <div className="eruv-notes-list">
+                          {section.links.map((link, lIdx) => (
+                            <a 
+                              key={lIdx} 
+                              href={link.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="eruv-note-link"
+                            >
+                              {link.name}
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
             )}
 
             <hr className="nwl-divider" />
