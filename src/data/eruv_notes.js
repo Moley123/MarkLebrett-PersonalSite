@@ -1,7 +1,7 @@
 export const EDGWARE_ERUV_NOTES = [
   {
-    title: "Credit",
-    content: "All Eruv boundaries and notes are shared with permission from the Edgware Eruv Committee.",
+    title: "Credit & Disclaimer",
+    content: "All Eruv boundaries and notes are sourced from the Edgware Eruv Committee. We do not take any responsibility for the halachic validity or the accuracy of the boundaries or data shown. Please verify all information independently.",
     links: [
       { name: "Edgware Eruv Website", url: "https://edgwareeruv.org/" }
     ]
