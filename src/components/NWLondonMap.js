@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   GoogleMap,
@@ -163,6 +163,22 @@ const NWLondonMap = () => {
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '',
     libraries: LIBRARIES,
   });
+
+  useEffect(() => {
+    document.title = 'Mark Lebrett | NW London Eiruvim';
+    const metaUpdates = [
+      { sel: 'meta[property="og:title"]',       attr: 'content', val: 'Mark Lebrett | NW London Eiruvim' },
+      { sel: 'meta[property="og:description"]', attr: 'content', val: 'Check boundaries and plan walking routes across NW London Eiruvim.' },
+      { sel: 'meta[property="og:url"]',          attr: 'content', val: 'https://marklebrett.co.uk/nwlondon-eiruv' },
+      { sel: 'meta[name="description"]',         attr: 'content', val: 'Check boundaries and plan walking routes across NW London Eiruvim.' },
+      { sel: 'meta[name="twitter:title"]',       attr: 'content', val: 'Mark Lebrett | NW London Eiruvim' },
+      { sel: 'meta[name="twitter:description"]', attr: 'content', val: 'Check boundaries and plan walking routes across NW London Eiruvim.' },
+    ];
+    metaUpdates.forEach(({ sel, attr, val }) => {
+      const el = document.querySelector(sel);
+      if (el) el.setAttribute(attr, val);
+    });
+  }, []);
 
   const [activeTab, setActiveTab] = useState('check');
   const [activeEruvinNames, setActiveEruvinNames] = useState(NWLONDON_ERUVIM.map(e => e.name));
