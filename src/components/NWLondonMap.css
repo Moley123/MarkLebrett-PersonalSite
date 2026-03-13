@@ -444,3 +444,119 @@
     display: none;
     /* Hide default map/satellite buttons if using custom */
 }
+
+/* ── Eruv Notes Accordion ── */
+
+.eruv-notes-credit {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.45;
+    margin-bottom: 1rem;
+}
+
+.eruv-notes-credit a {
+    color: var(--accent);
+}
+
+.eruv-notes-accordion {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+    transition: background var(--ease);
+}
+
+.eruv-notes-accordion[open] {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.eruv-notes-accordion summary {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem 0.75rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    user-select: none;
+    list-style: none;
+}
+
+.eruv-notes-accordion summary::-webkit-details-marker {
+    display: none;
+}
+
+.eruv-notes-accordion summary::after {
+    content: '▸';
+    margin-left: auto;
+    font-size: 0.7rem;
+    color: var(--muted);
+    transition: transform var(--ease);
+}
+
+.eruv-notes-accordion[open] summary::after {
+    transform: rotate(90deg);
+}
+
+.eruv-notes-body {
+    padding: 0 0.75rem 0.75rem;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: var(--text);
+}
+
+.eruv-notes-row {
+    margin-bottom: 0.5rem;
+}
+
+.eruv-notes-row a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.eruv-notes-row a:hover {
+    text-decoration: underline;
+}
+
+.eruv-notes-row--source {
+    margin-top: 0.75rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.eruv-note-link--wa {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    background: #25d366;
+    color: #fff !important;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+
+.eruv-note-link--wa:hover {
+    opacity: 0.9;
+    text-decoration: none !important;
+}
+
+.eruv-notes-special {
+    margin-top: 0.5rem;
+    padding: 0.6rem 0.75rem;
+    background: rgba(255, 152, 0, 0.08);
+    border-left: 3px solid #ff9800;
+    border-radius: 4px;
+    font-size: 0.78rem;
+}
+
+.eruv-notes-special strong {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: #ff9800;
+}
+
+.eruv-notes-special p {
+    margin: 0.25rem 0;
+    color: var(--text);
+}

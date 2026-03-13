@@ -10,7 +10,7 @@ import {
   DirectionsRenderer,
 } from '@react-google-maps/api';
 import { NWLONDON_ERUVIM, CROSSING_POINTS } from '../data/nwlondon_data';
-import { EDGWARE_ERUV_NOTES } from '../data/eruv_notes';
+import { ERUV_NOTES } from '../data/eruv_notes';
 import './NWLondonMap.css';
 
 const LIBRARIES = ['places', 'geometry'];
@@ -445,30 +445,97 @@ const NWLondonMap = () => {
 
             {activeTab === 'notes' && (
               <div className="eruv-notes-form">
-                <h3>Edgware Eruv Notes</h3>
-                <p>Important details and border information for the Edgware Eruv.</p>
+                <h3>Eruv Information</h3>
+                <p className="eruv-notes-credit">
+                  Sourced from <a href="https://www.eruv.co.uk/eruvin/" target="_blank" rel="noopener noreferrer">KLBD Eruv (eruv.co.uk)</a> and <a href="https://edgwareeruv.org/" target="_blank" rel="noopener noreferrer">edgwareeruv.org</a>. We do not take responsibility for accuracy — please verify independently.
+                </p>
                 <div className="eruv-notes-content">
-                  {EDGWARE_ERUV_NOTES.map((section, idx) => (
-                    <div key={idx} className="eruv-notes-section">
-                      <h4>{section.title}</h4>
-                      {section.content && <p>{section.content}</p>}
-                      {section.links && (
-                        <div className="eruv-notes-list">
-                          {section.links.map((link, lIdx) => (
-                            <a 
-                              key={lIdx} 
-                              href={link.url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="eruv-note-link"
-                            >
-                              {link.name}
-                            </a>
-                          ))}
+                  {NWLONDON_ERUVIM.map((eruv) => {
+                    const info = ERUV_NOTES[eruv.name];
+                    if (!info) return null;
+                    const hasNotes = info.notes && info.notes.length > 0;
+                    const hasLinks = info.links && info.links.length > 0;
+                    return (
+                      <details key={eruv.name} className="eruv-notes-accordion">
+                        <summary>
+                          <span className="nwl-color-swatch" style={{ backgroundColor: eruv.color }} />
+                          {eruv.name}
+                        </summary>
+                        <div className="eruv-notes-body">
+                          {/* Contact info */}
+                          {info.contact && (
+                            <div className="eruv-notes-row">
+                              <strong>Contact:</strong>{' '}
+                              {info.contact.name}
+                              {info.contact.email && (
+                                <> — <a href={`mailto:${info.contact.email}`}>{info.contact.email}</a></>
+                              )}
+                              {info.contact.phone && <> — {info.contact.phone}</>}
+                            </div>
+                          )}
+
+                          {/* Sponsor */}
+                          {info.sponsorEmail && (
+                            <div className="eruv-notes-row">
+                              <strong>Sponsor:</strong>{' '}
+                              <a href={`mailto:${info.sponsorEmail}?subject=I'd like to sponsor the ${eruv.name}`}>{info.sponsorEmail}</a>
+                            </div>
+                          )}
+
+                          {/* Shul links */}
+                          {info.shuls && info.shuls.length > 0 && (
+                            <div className="eruv-notes-row">
+                              <strong>Shuls & Links:</strong>
+                              <div className="eruv-notes-list">
+                                {info.shuls.map((s, i) => (
+                                  <a key={i} href={s.url} target="_blank" rel="noopener noreferrer" className="eruv-note-link">{s.name}</a>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* WhatsApp */}
+                          {info.whatsapp && (
+                            <div className="eruv-notes-row">
+                              <a href={info.whatsapp} target="_blank" rel="noopener noreferrer" className="eruv-note-link eruv-note-link--wa">
+                                📱 Join WhatsApp Alerts
+                              </a>
+                            </div>
+                          )}
+
+                          {/* Extra links */}
+                          {hasLinks && (
+                            <div className="eruv-notes-row">
+                              <div className="eruv-notes-list">
+                                {info.links.map((l, i) => (
+                                  <a key={i} href={l.url} target="_blank" rel="noopener noreferrer" className="eruv-note-link">{l.name}</a>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Special notes */}
+                          {hasNotes && (
+                            <div className="eruv-notes-special">
+                              <strong>⚠ Important Notes:</strong>
+                              {info.notes.map((note, i) => (
+                                <p key={i}>{note}</p>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* KLBD page link */}
+                          {info.url && (
+                            <div className="eruv-notes-row eruv-notes-row--source">
+                              <a href={info.url} target="_blank" rel="noopener noreferrer" className="eruv-note-link">
+                                View on eruv.co.uk →
+                              </a>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  ))}
+                      </details>
+                    );
+                  })}
                 </div>
               </div>
             )}
