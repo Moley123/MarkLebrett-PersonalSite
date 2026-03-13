@@ -29,10 +29,17 @@ const GOLDERS_GREEN_PLACEHOLDER = {
   disabled: true,
 };
 
+const STAMFORD_HILL_PLACEHOLDER = {
+  name: 'Stamford Hill Eruv (Coming Soon)',
+  color: '#888888',
+  disabled: true,
+};
+
 const ALL_TOGGLE_OPTIONS = [
   ...NWLONDON_ERUVIM,
   { name: '── Crossing Points', color: '#ffd600', isCrossing: true },
   GOLDERS_GREEN_PLACEHOLDER,
+  STAMFORD_HILL_PLACEHOLDER,
 ];
 
 /* ═══════ Geometry helpers ═══════ */
@@ -188,7 +195,7 @@ const NWLondonMap = () => {
   const [routeMsg, setRouteMsg] = useState('');
   const [routeLoading, setRouteLoading] = useState(false);
   const [allowCrossing, setAllowCrossing] = useState(false);
-  const [showToggles, setShowToggles] = useState(true);
+  const [showToggles, setShowToggles] = useState(false);
   const [checkMarker, setCheckMarker] = useState(null);
   const [directionsResult, setDirectionsResult] = useState(null);
 
@@ -524,6 +531,29 @@ const NWLondonMap = () => {
             ))}
 
             {checkMarker && <Marker position={checkMarker} />}
+
+            {/* Eruv name labels */}
+            {NWLONDON_ERUVIM.map((eruv, ei) =>
+              activeEruvinNames.includes(eruv.name) && eruv.labelPosition && (
+                <Marker
+                  key={`label-${ei}`}
+                  position={eruv.labelPosition}
+                  icon={{
+                    path: 'M 0,0',
+                    scale: 0,
+                  }}
+                  label={{
+                    text: eruv.name,
+                    color: eruv.color,
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Inter, system-ui, sans-serif',
+                    className: 'eruv-map-label',
+                  }}
+                  clickable={false}
+                />
+              )
+            )}
 
             {directionsResult && (
               <DirectionsRenderer
