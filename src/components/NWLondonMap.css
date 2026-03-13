@@ -308,6 +308,26 @@
     cursor: not-allowed;
 }
 
+.eruv-btn--ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-weight: 500;
+}
+
+.eruv-btn--ghost:hover {
+    border-color: var(--border-hi);
+    color: var(--text);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.eruv-btn-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
 /* ── Alerts ── */
 .eruv-alert {
     padding: 0.85rem 1rem;

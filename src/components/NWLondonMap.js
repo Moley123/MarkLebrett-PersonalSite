@@ -198,6 +198,9 @@ const NWLondonMap = () => {
   const autocompleteCheckRef = useRef(null);
   const autocompleteStartRef = useRef(null);
   const autocompleteEndRef = useRef(null);
+  const checkInputRef = useRef(null);
+  const startInputRef = useRef(null);
+  const endInputRef   = useRef(null);
 
   const onMapLoad = useCallback(map => {
     mapRef.current = map;
@@ -286,6 +289,68 @@ const NWLondonMap = () => {
     }
   };
 
+  /* ── Reset handlers ── */
+  const handleCheckReset = () => {
+    setCheckResult({ state: 'idle', msg: '' });
+    setCheckMarker(null);
+    if (checkInputRef.current) checkInputRef.current.value = '';
+  };
+
+  const handleRouteClear = (e) => {
+    if (e) e.preventDefault();
+    setDirectionsResult(null);
+    setRouteStatus('idle');
+    setRouteMsg('');
+    if (startInputRef.current) startInputRef.current.value = '';
+    if (endInputRef.current) endInputRef.current.value = '';
+  };
+
+  /* ── Print helpers ── */
+  const getRouteText = () => {
+    if (!directionsResult) return null;
+    const route = directionsResult.routes[0];
+    const leg = route.legs[0];
+    return {
+      from: leg.start_address,
+      to: leg.end_address,
+      distance: leg.distance?.text || '',
+      duration: leg.duration?.text || '',
+      steps: leg.steps.map((s, i) => ({
+        num: i + 1,
+        instruction: s.instructions?.replace(/<[^>]*>/g, '') || '',
+        distance: s.distance?.text || '',
+      })),
+    };
+  };
+
+  const buildPrintHtml = (includeMap) => {
+    const info = getRouteText();
+    if (!info) return null;
+    const stepsHtml = info.steps.map(s =>
+      `<tr><td style="padding:6px 12px 6px 0;color:#666;font-weight:600;vertical-align:top;white-space:nowrap">${s.num}.</td><td style="padding:6px 0;vertical-align:top">${s.instruction}</td><td style="padding:6px 0 6px 12px;color:#666;white-space:nowrap;vertical-align:top">${s.distance}</td></tr>`
+    ).join('');
+    let mapSection = '';
+    if (includeMap && mapRef.current) {
+      const center = mapRef.current.getCenter();
+      const zoom = mapRef.current.getZoom();
+      const origin = encodeURIComponent(info.from);
+      const dest = encodeURIComponent(info.to);
+      const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
+      const staticUrl = `https://maps.googleapis.com/maps/api/staticmap?size=640x400&scale=2&maptype=roadmap&markers=color:green|label:A|${origin}&markers=color:red|label:B|${dest}&path=enc:${encodeURIComponent(directionsResult.routes[0].overview_polyline)}&center=${center.lat()},${center.lng()}&zoom=${zoom}&key=${apiKey}`;
+      mapSection = `<div style="margin:20px 0;text-align:center"><img src="${staticUrl}" style="max-width:100%;border:1px solid #ddd;border-radius:8px" alt="Route map" onerror="this.style.display='none'"/></div>`;
+    }
+    return `<!DOCTYPE html><html><head><title>Eruv Route</title><style>body{font-family:Inter,system-ui,sans-serif;margin:40px;color:#1a1a2e;line-height:1.6}h1{font-size:1.4rem;margin:0 0 4px}h2{font-size:1rem;color:#666;font-weight:400;margin:0 0 20px}.meta{display:flex;gap:24px;margin-bottom:16px;font-size:0.9rem;color:#444}.meta span{background:#f0f4ff;padding:4px 12px;border-radius:6px}table{border-collapse:collapse;width:100%;font-size:0.9rem}hr{border:none;border-top:1px solid #e2e8f0;margin:16px 0}.footer{margin-top:24px;font-size:0.75rem;color:#999;text-align:center}</style></head><body><h1>NW London Eiruvim — Walking Route</h1><h2>${info.from} → ${info.to}</h2><div class="meta"><span>📏 ${info.distance}</span><span>⏱ ${info.duration}</span></div>${mapSection}<hr/><table>${stepsHtml}</table><div class="footer">Printed from marklebrett.co.uk/nwlondon-eiruv</div></body></html>`;
+  };
+
+  const handlePrint = (includeMap) => {
+    const html = buildPrintHtml(includeMap);
+    if (!html) return;
+    const win = window.open('', '_blank', 'width=800,height=600');
+    win.document.write(html);
+    win.document.close();
+    win.onload = () => { win.print(); };
+  };
+
   if (loadError) return <div className="eruv-error">Failed to load Google Maps</div>;
   if (!isLoaded) return <div className="eruv-loading"><div className="eruv-spinner" /><p>Loading…</p></div>;
 
@@ -324,9 +389,10 @@ const NWLondonMap = () => {
                 <p>Enter an address to verify which Eruv it falls within.</p>
                 <div className="eruv-input-wrap">
                   <Autocomplete onLoad={ac => autocompleteCheckRef.current = ac} onPlaceChanged={onCheckPlace}>
-                    <input type="text" placeholder="e.g., Station Road, Edgware" className="eruv-input" />
+                    <input ref={checkInputRef} type="text" placeholder="e.g., Station Road, Edgware" className="eruv-input" />
                   </Autocomplete>
                 </div>
+                <button type="button" className="eruv-btn eruv-btn--ghost" onClick={handleCheckReset}>Reset</button>
                 {checkResult.state === 'inside' && <div className="eruv-alert eruv-alert--success">✓ {checkResult.msg}</div>}
                 {checkResult.state === 'outside' && <div className="eruv-alert eruv-alert--error">✕ {checkResult.msg}</div>}
               </div>
@@ -339,22 +405,31 @@ const NWLondonMap = () => {
                 <div className="eruv-input-wrap">
                   <label>Origin</label>
                   <Autocomplete onLoad={ac => autocompleteStartRef.current = ac}>
-                    <input type="text" placeholder="Start location" className="eruv-input" required />
+                    <input ref={startInputRef} type="text" placeholder="Start location" className="eruv-input" required />
                   </Autocomplete>
                 </div>
                 <div className="eruv-input-wrap">
                   <label>Destination</label>
                   <Autocomplete onLoad={ac => autocompleteEndRef.current = ac}>
-                    <input type="text" placeholder="End location" className="eruv-input" required />
+                    <input ref={endInputRef} type="text" placeholder="End location" className="eruv-input" required />
                   </Autocomplete>
                 </div>
                 <label className="nwl-crossing-toggle">
                   <input type="checkbox" checked={allowCrossing} onChange={e => setAllowCrossing(e.target.checked)} />
                   <span>Allow Crossing Between Eiruvim (via official crossing points only)</span>
                 </label>
-                <button type="submit" className="eruv-btn" disabled={routeLoading}>
-                  {routeLoading ? 'Calculating…' : 'Find Safe Route'}
-                </button>
+                <div className="eruv-btn-row">
+                  <button type="submit" className="eruv-btn" disabled={routeLoading}>
+                    {routeLoading ? 'Calculating…' : 'Find Safe Route'}
+                  </button>
+                  <button type="button" className="eruv-btn eruv-btn--ghost" onClick={handleRouteClear}>Reset</button>
+                  {directionsResult && !routeLoading && (
+                    <>
+                      <button type="button" className="eruv-btn eruv-btn--ghost" onClick={() => handlePrint(false)}>🖨 Print Route</button>
+                      <button type="button" className="eruv-btn eruv-btn--ghost" onClick={() => handlePrint(true)}>🗺 Print with Map</button>
+                    </>
+                  )}
+                </div>
                 {routeStatus === 'outside' && <div className="eruv-alert eruv-alert--error">⚠ {routeMsg}</div>}
                 {routeStatus === 'error' && <div className="eruv-alert eruv-alert--error">✕ {routeMsg}</div>}
                 {routeStatus === 'inside' && <div className="eruv-alert eruv-alert--success">✓ {routeMsg}</div>}

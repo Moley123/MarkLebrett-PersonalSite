@@ -206,6 +206,9 @@ const EruvMap = () => {
   const destRef        = useRef(null);
   const locationRef    = useRef(null);
   const dirRendererRef = useRef(null);
+  const locationInputRef = useRef(null);
+  const originInputRef   = useRef(null);
+  const destInputRef     = useRef(null);
 
   const [tab,          setTab]          = useState('check');
   const [marker,       setMarker]       = useState(null);
@@ -337,10 +340,64 @@ const EruvMap = () => {
     }
   };
 
+  const handleLocationReset = () => {
+    setMarker(null);
+    setInsideStatus(null);
+    if (locationInputRef.current) locationInputRef.current.value = '';
+  };
+
   const handleRouteClear = () => {
     setDirections(null);
     setRouteStatus(null);
     setRouteMsg('');
+    if (originInputRef.current) originInputRef.current.value = '';
+    if (destInputRef.current) destInputRef.current.value = '';
+  };
+
+  /* ── Print helpers ── */
+  const getRouteText = () => {
+    if (!directions) return null;
+    const route = directions.routes[0];
+    const leg = route.legs[0];
+    return {
+      from: leg.start_address,
+      to: leg.end_address,
+      distance: leg.distance?.text || '',
+      duration: leg.duration?.text || '',
+      steps: leg.steps.map((s, i) => ({
+        num: i + 1,
+        instruction: s.instructions?.replace(/<[^>]*>/g, '') || '',
+        distance: s.distance?.text || '',
+      })),
+    };
+  };
+
+  const buildPrintHtml = (includeMap) => {
+    const info = getRouteText();
+    if (!info) return null;
+    const stepsHtml = info.steps.map(s =>
+      `<tr><td style="padding:6px 12px 6px 0;color:#666;font-weight:600;vertical-align:top;white-space:nowrap">${s.num}.</td><td style="padding:6px 0;vertical-align:top">${s.instruction}</td><td style="padding:6px 0 6px 12px;color:#666;white-space:nowrap;vertical-align:top">${s.distance}</td></tr>`
+    ).join('');
+    let mapSection = '';
+    if (includeMap && mapRef.current) {
+      const center = mapRef.current.getCenter();
+      const zoom = mapRef.current.getZoom();
+      const origin = encodeURIComponent(info.from);
+      const dest = encodeURIComponent(info.to);
+      const apiKey = process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '';
+      const staticUrl = `https://maps.googleapis.com/maps/api/staticmap?size=640x400&scale=2&maptype=roadmap&markers=color:green|label:A|${origin}&markers=color:red|label:B|${dest}&path=enc:${encodeURIComponent(directions.routes[0].overview_polyline)}&center=${center.lat()},${center.lng()}&zoom=${zoom}&key=${apiKey}`;
+      mapSection = `<div style="margin:20px 0;text-align:center"><img src="${staticUrl}" style="max-width:100%;border:1px solid #ddd;border-radius:8px" alt="Route map" onerror="this.style.display='none'"/></div>`;
+    }
+    return `<!DOCTYPE html><html><head><title>Eruv Route</title><style>body{font-family:Inter,system-ui,sans-serif;margin:40px;color:#1a1a2e;line-height:1.6}h1{font-size:1.4rem;margin:0 0 4px}h2{font-size:1rem;color:#666;font-weight:400;margin:0 0 20px}.meta{display:flex;gap:24px;margin-bottom:16px;font-size:0.9rem;color:#444}.meta span{background:#f0f4ff;padding:4px 12px;border-radius:6px}table{border-collapse:collapse;width:100%;font-size:0.9rem}hr{border:none;border-top:1px solid #e2e8f0;margin:16px 0}.footer{margin-top:24px;font-size:0.75rem;color:#999;text-align:center}</style></head><body><h1>🕍 Zurich Eiruv — Walking Route</h1><h2>${info.from} → ${info.to}</h2><div class="meta"><span>📏 ${info.distance}</span><span>⏱ ${info.duration}</span></div>${mapSection}<hr/><table>${stepsHtml}</table><div class="footer">Printed from marklebrett.co.uk/zurich-eiruv</div></body></html>`;
+  };
+
+  const handlePrint = (includeMap) => {
+    const html = buildPrintHtml(includeMap);
+    if (!html) return;
+    const win = window.open('', '_blank', 'width=800,height=600');
+    win.document.write(html);
+    win.document.close();
+    win.onload = () => { win.print(); };
   };
 
   if (loadError) return (
@@ -392,11 +449,9 @@ const EruvMap = () => {
         {tab === 'check' && (
           <div className="eruv-control-row">
             <Autocomplete onLoad={ac => { locationRef.current = ac; }} onPlaceChanged={handleLocationSearch} options={{ componentRestrictions: { country: 'ch' } }}>
-              <input className="eruv-input" type="text" placeholder="Search an address in Zürich…" />
+              <input ref={locationInputRef} className="eruv-input" type="text" placeholder="Search an address in Zürich…" />
             </Autocomplete>
-            {insideStatus && (
-              <button className="eruv-btn eruv-btn--ghost" onClick={() => { setMarker(null); setInsideStatus(null); }}>Reset</button>
-            )}
+            <button className="eruv-btn eruv-btn--ghost" onClick={handleLocationReset}>Reset</button>
             {insideStatus === 'inside'  && <span className="eruv-badge eruv-badge--inside">✓ Inside Eruv</span>}
             {insideStatus === 'outside' && <span className="eruv-badge eruv-badge--outside">✗ Outside Eruv</span>}
           </div>
@@ -406,18 +461,22 @@ const EruvMap = () => {
           <div className="eruv-route-controls">
             <div className="eruv-control-row">
               <Autocomplete onLoad={ac => { originRef.current = ac; }} onPlaceChanged={() => {}} options={{ componentRestrictions: { country: 'ch' } }}>
-                <input className="eruv-input" type="text" placeholder="Start address…" />
+                <input ref={originInputRef} className="eruv-input" type="text" placeholder="Start address…" />
               </Autocomplete>
               <Autocomplete onLoad={ac => { destRef.current = ac; }} onPlaceChanged={() => {}} options={{ componentRestrictions: { country: 'ch' } }}>
-                <input className="eruv-input" type="text" placeholder="End address…" />
+                <input ref={destInputRef} className="eruv-input" type="text" placeholder="End address…" />
               </Autocomplete>
               <button className="eruv-btn eruv-btn--primary" onClick={handleRoutePlan} disabled={routeLoading}>
                 {routeLoading ? (
                   <><span className="eruv-btn-spinner" /> Searching…</>
                 ) : 'Plan Route'}
               </button>
-              {(directions || routeStatus) && !routeLoading && (
-                <button className="eruv-btn eruv-btn--ghost" onClick={handleRouteClear}>Clear</button>
+              <button className="eruv-btn eruv-btn--ghost" onClick={handleRouteClear}>Reset</button>
+              {directions && !routeLoading && (
+                <>
+                  <button className="eruv-btn eruv-btn--ghost" onClick={() => handlePrint(false)}>🖨 Print Route</button>
+                  <button className="eruv-btn eruv-btn--ghost" onClick={() => handlePrint(true)}>🗺 Print with Map</button>
+                </>
               )}
             </div>
 
