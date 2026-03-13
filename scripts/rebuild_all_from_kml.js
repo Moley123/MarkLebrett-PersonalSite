@@ -213,17 +213,16 @@ allEruvim.push({
 // 8. Pinner Eruv — from KML (this was the one with biggest difference!)
 allEruvim.push(eruvFromLines('Pinner Eruv', '#f44336', 'Pinner Eruv', 'Pinner Eruv'));
 
-// 9. Belmont Eruv — separated from EBS
+// 9. Belmont Eruv — separated from EBS (lines only, the "Area" polygon belongs to Edgware)
 const belmontAllPts = [];
 belmontLines.forEach(s => s.forEach(p => belmontAllPts.push(p)));
-if (ebsPoly) ebsPoly.polygon.forEach(p => belmontAllPts.push(p));
 
 allEruvim.push({
   name: 'Belmont Eruv',
   color: '#009688',
   labelPosition: belmontLabel,
   rawSegments: belmontLines,
-  polygonPaths: ebsPoly ? [ebsPoly.polygon] : [],
+  polygonPaths: [],
   containmentPath: belmontAllPts,
 });
 
