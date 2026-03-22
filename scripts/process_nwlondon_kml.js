@@ -4,19 +4,28 @@ const { DOMParser } = require('xmldom');
 
 console.log("---- NW London KML Parser ----");
 
-const kmlPath = path.join(__dirname, '..', 'The Edgware Eruv & Surrounding Eruvin.kml');
-const kmlText = fs.readFileSync(kmlPath, 'utf8');
-
-const parser = new DOMParser();
-const doc = parser.parseFromString(kmlText, 'text/xml');
-
-// Only iterate TOP-LEVEL folders (direct children of Document)
-const documentEl = doc.getElementsByTagName('Document')[0];
-const topFolders = [];
-for (let i = 0; i < documentEl.childNodes.length; i++) {
-  const child = documentEl.childNodes[i];
-  if (child.nodeName === 'Folder') topFolders.push(child);
-}
+const kmlSources = [
+  {
+    file: 'The Edgware Eruv & Surrounding Eruvin.kml',
+    hasFolders: true,
+    authority: 'LBD',
+    isPrototype: false
+  },
+  {
+    file: 'GGmap_v3.kml',
+    hasFolders: false,
+    forcedName: 'Golders Green Eruv',
+    authority: 'KF',
+    isPrototype: true
+  },
+  {
+    file: 'SHmap_v1.kml',
+    hasFolders: false,
+    forcedName: 'Stamford Hill Eruv',
+    authority: 'UOHC',
+    isPrototype: true
+  }
+];
 
 const eruvimData = [];
 const crossingPoints = [];
@@ -32,73 +41,100 @@ function parseCoordinates(coordStr) {
   }).filter(Boolean);
 }
 
-function getDirectPlacemarks(folder) {
+function getDirectPlacemarks(node) {
   const result = [];
-  for (let i = 0; i < folder.childNodes.length; i++) {
-    if (folder.childNodes[i].nodeName === 'Placemark') result.push(folder.childNodes[i]);
+  for (let i = 0; i < node.childNodes.length; i++) {
+    if (node.childNodes[i].nodeName === 'Placemark') result.push(node.childNodes[i]);
   }
   return result;
 }
 
-for (let i = 0; i < topFolders.length; i++) {
-  const folder = topFolders[i];
-  const nameNode = folder.getElementsByTagName('name')[0];
-  if (!nameNode) continue;
-  const folderName = nameNode.textContent.trim();
+kmlSources.forEach(source => {
+  const kmlPath = path.join(__dirname, '..', source.file);
+  if (!fs.existsSync(kmlPath)) {
+    console.log(`Skipping missing file: ${source.file}`);
+    return;
+  }
+  const kmlText = fs.readFileSync(kmlPath, 'utf8');
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(kmlText, 'text/xml');
+  const documentEl = doc.getElementsByTagName('Document')[0];
 
-  if (folderName === 'LABELS') continue;
+  let nodesToProcess = [];
 
-  // ── Crossing Points: store FULL LineString paths ──
-  if (folderName === 'Crossing Points') {
-    const placemarks = getDirectPlacemarks(folder);
-    for (let j = 0; j < placemarks.length; j++) {
-      const pm = placemarks[j];
-      const pmName = pm.getElementsByTagName('name')[0]?.textContent || 'Crossing';
-      const ls = pm.getElementsByTagName('LineString')[0];
-      const pt = pm.getElementsByTagName('Point')[0];
-      if (ls) {
-        const coords = parseCoordinates(ls.getElementsByTagName('coordinates')[0]?.textContent);
-        if (coords.length > 0) crossingPoints.push({ name: pmName, path: coords });
-      } else if (pt) {
-        const coords = parseCoordinates(pt.getElementsByTagName('coordinates')[0]?.textContent);
-        if (coords.length > 0) crossingPoints.push({ name: pmName, path: coords });
-      }
+  if (source.hasFolders) {
+    for (let i = 0; i < documentEl.childNodes.length; i++) {
+      const child = documentEl.childNodes[i];
+      if (child.nodeName === 'Folder') nodesToProcess.push({ node: child, name: child.getElementsByTagName('name')[0]?.textContent.trim() });
     }
-    continue;
+  } else {
+    nodesToProcess.push({ node: documentEl, name: source.forcedName });
   }
 
-  // ── Eruv folder ──
-  const placemarks = getDirectPlacemarks(folder);
-  const rawSegments = [];
-  const polygonPaths = [];
+  for (let i = 0; i < nodesToProcess.length; i++) {
+    const { node, name } = nodesToProcess[i];
+    if (!name) continue;
 
-  for (let j = 0; j < placemarks.length; j++) {
-    const pm = placemarks[j];
-    const lineString = pm.getElementsByTagName('LineString')[0];
-    const polygon = pm.getElementsByTagName('Polygon')[0];
-    if (lineString) {
-      const coordNode = lineString.getElementsByTagName('coordinates')[0];
-      if (coordNode) {
-        const seg = parseCoordinates(coordNode.textContent);
-        if (seg.length > 1) rawSegments.push(seg);
+    if (name === 'LABELS') continue;
+
+    // ── Crossing Points: store FULL LineString paths ──
+    if (name === 'Crossing Points') {
+      const placemarks = getDirectPlacemarks(node);
+      for (let j = 0; j < placemarks.length; j++) {
+        const pm = placemarks[j];
+        const pmName = pm.getElementsByTagName('name')[0]?.textContent || 'Crossing';
+        const ls = pm.getElementsByTagName('LineString')[0];
+        const pt = pm.getElementsByTagName('Point')[0];
+        if (ls) {
+          const coords = parseCoordinates(ls.getElementsByTagName('coordinates')[0]?.textContent);
+          if (coords.length > 0) crossingPoints.push({ name: pmName, path: coords });
+        } else if (pt) {
+          const coords = parseCoordinates(pt.getElementsByTagName('coordinates')[0]?.textContent);
+          if (coords.length > 0) crossingPoints.push({ name: pmName, path: coords });
+        }
       }
+      continue;
     }
-    if (polygon) {
-      const outerRing = polygon.getElementsByTagName('outerBoundaryIs')[0];
-      if (outerRing) {
-        const coordNode = outerRing.getElementsByTagName('coordinates')[0];
+
+    // ── Eruv folder ──
+    const placemarks = getDirectPlacemarks(node);
+    const rawSegments = [];
+    const polygonPaths = [];
+
+    for (let j = 0; j < placemarks.length; j++) {
+      const pm = placemarks[j];
+      const lineString = pm.getElementsByTagName('LineString')[0];
+      const polygon = pm.getElementsByTagName('Polygon')[0];
+      if (lineString) {
+        const coordNode = lineString.getElementsByTagName('coordinates')[0];
         if (coordNode) {
-          const poly = parseCoordinates(coordNode.textContent);
-          if (poly.length > 2) polygonPaths.push(poly);
+          const seg = parseCoordinates(coordNode.textContent);
+          if (seg.length > 1) rawSegments.push(seg);
+        }
+      }
+      if (polygon) {
+        const outerRing = polygon.getElementsByTagName('outerBoundaryIs')[0];
+        if (outerRing) {
+          const coordNode = outerRing.getElementsByTagName('coordinates')[0];
+          if (coordNode) {
+            const poly = parseCoordinates(coordNode.textContent);
+            if (poly.length > 2) polygonPaths.push(poly);
+          }
         }
       }
     }
-  }
 
-  if (rawSegments.length > 0 || polygonPaths.length > 0) {
-    eruvimData.push({ name: folderName, rawSegments, polygonPaths });
+    if (rawSegments.length > 0 || polygonPaths.length > 0) {
+      eruvimData.push({ 
+        name, 
+        rawSegments, 
+        polygonPaths, 
+        authority: source.authority, 
+        isPrototype: source.isPrototype 
+      });
+    }
   }
-}
+});
 
 /* ═══════════════════════════════════════════════════
    Robust multi-pass chaining for containment polygons
@@ -202,6 +238,8 @@ const COLORS = {
   'Bushey Eruv': '#9c27b0',
   'Stanmore Eruv': '#795548',
   'Pinner Eruv': '#f44336',
+  'Golders Green Eruv': '#ef6c00', // distinct orange
+  'Stamford Hill Eruv': '#8e24aa', // distinct purple
 };
 const DEFAULT_COLOR = '#607d8b';
 
@@ -219,6 +257,8 @@ const mappedEruvim = eruvimData.map(e => {
     rawSegments: e.rawSegments,
     polygonPaths: e.polygonPaths,
     containmentPath: containmentPath,
+    authority: e.authority,
+    isPrototype: !!e.isPrototype
   };
 });
 

@@ -23,24 +23,7 @@ const MAP_OPTIONS = {
   fullscreenControl: true,
 };
 
-const GOLDERS_GREEN_PLACEHOLDER = {
-  name: 'Golders Green Eruv (Coming Soon)',
-  color: '#888888',
-  disabled: true,
-};
-
-const STAMFORD_HILL_PLACEHOLDER = {
-  name: 'Stamford Hill Eruv (Coming Soon)',
-  color: '#888888',
-  disabled: true,
-};
-
-const ALL_TOGGLE_OPTIONS = [
-  ...NWLONDON_ERUVIM,
-  { name: '── Crossing Points', color: '#ffd600', isCrossing: true },
-  GOLDERS_GREEN_PLACEHOLDER,
-  STAMFORD_HILL_PLACEHOLDER,
-];
+// Removed ALL_TOGGLE_OPTIONS and placeholders since we group dynamically now.
 
 /* ═══════ Geometry helpers ═══════ */
 
@@ -215,9 +198,20 @@ const NWLondonMap = () => {
   }, []);
 
   const handleToggle = (item) => {
-    if (item.isCrossing) { setShowCrossingPins(prev => !prev); return; }
-    if (item.disabled) return;
     setActiveEruvinNames(prev => prev.includes(item.name) ? prev.filter(n => n !== item.name) : [...prev, item.name]);
+  };
+
+  const handleMasterToggle = (authId, isChecking) => {
+    const authList = NWLONDON_ERUVIM.filter(e => e.authority === authId).map(e => e.name);
+    setActiveEruvinNames(prev => {
+      let next = [...prev];
+      if (isChecking) {
+        authList.forEach(n => { if (!next.includes(n)) next.push(n); });
+      } else {
+        next = next.filter(n => !authList.includes(n));
+      }
+      return next;
+    });
   };
 
   /* ── Draggable route re-validation ── */
@@ -549,18 +543,46 @@ const NWLondonMap = () => {
               </div>
               {showToggles && (
                 <div className="nwl-layer-list">
-                  {ALL_TOGGLE_OPTIONS.map((item, idx) => (
-                    <label key={idx} className={`nwl-checkbox ${item.disabled ? 'disabled' : ''}`}>
-                      <input
-                        type="checkbox"
-                        checked={item.isCrossing ? showCrossingPins : activeEruvinNames.includes(item.name)}
-                        disabled={item.disabled}
-                        onChange={() => handleToggle(item)}
-                      />
-                      <span className="nwl-color-swatch" style={{ backgroundColor: item.color }}></span>
-                      {item.name}
-                    </label>
-                  ))}
+                  {[
+                    { id: 'LBD', label: 'London Beis Din (LBD)' },
+                    { id: 'KF', label: 'Federation (KF)' },
+                    { id: 'UOHC', label: 'UOHC' }
+                  ].map(auth => {
+                    const list = NWLONDON_ERUVIM.filter(e => e.authority === auth.id);
+                    if (!list.length) return null;
+                    const allChecked = list.every(item => activeEruvinNames.includes(item.name));
+                    return (
+                      <div key={auth.id} className="nwl-authority-group">
+                        <label className="nwl-checkbox nwl-checkbox--master">
+                          <input type="checkbox" checked={allChecked} onChange={(e) => handleMasterToggle(auth.id, e.target.checked)} />
+                          <strong>{auth.label}</strong>
+                        </label>
+                        <div className="nwl-authority-children">
+                          {list.map((item, idx) => (
+                            <label key={idx} className="nwl-checkbox">
+                              <input
+                                type="checkbox"
+                                checked={activeEruvinNames.includes(item.name)}
+                                onChange={() => handleToggle(item)}
+                              />
+                              <span className="nwl-color-swatch" style={{ backgroundColor: item.color }}></span>
+                              {item.name} {item.isPrototype && <span className="eruv-badge eruv-badge--proto">Prototype</span>}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <hr className="nwl-divider-inner" />
+                  <label className="nwl-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={showCrossingPins}
+                      onChange={() => setShowCrossingPins(!showCrossingPins)}
+                    />
+                    <span className="nwl-color-swatch" style={{ backgroundColor: '#ffd600' }}></span>
+                    ── Crossing Points
+                  </label>
                 </div>
               )}
             </div>

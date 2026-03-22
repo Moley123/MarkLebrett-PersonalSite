@@ -5,6 +5,7 @@ import EmelSolutions from './components/EmelSolutions';
 import CertMonitor from './components/CertMonitor';
 import EruvMap from './components/EruvMap';
 import NWLondonMap from './components/NWLondonMap';
+import GibraltarMap from './components/GibraltarMap';
 import GematriaApp from './GematriaApp';
 import './App.css';
 
@@ -32,6 +33,9 @@ const App = () => {
         
         {/* 6. NW London Eiruvim */}
         <Route path="/nwlondon-eiruv" element={<NWLondonMap />} />
+
+        {/* 7. Gibraltar Eruv */}
+        <Route path="/gibraltareruv" element={<GibraltarMap />} />
 
         {/* 4. DEBUG: Catch-all for 404s */}
         {/* This will show us what URL the router is seeing */}

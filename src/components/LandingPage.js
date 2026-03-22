@@ -254,6 +254,23 @@ const LandingPage = () => {
               </div>
           </Link>
 
+          {/* Gibraltar Eruv Route Planner */}
+          <Link to="/gibraltareruv" className="group relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-rose-500 via-pink-500 to-red-500 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+              <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 h-full flex flex-col">
+                  <div className="w-12 h-12 bg-rose-500/20 rounded-lg flex items-center justify-center mb-6 text-rose-400 group-hover:text-white group-hover:bg-rose-600 transition-colors">
+                      <MapPin className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-2xl font-bold mb-3 text-gray-100">Gibraltar Eruv</h3>
+                  <p className="text-gray-400 mb-8 flex-grow">
+                      Check locations against the Gibraltar Eruv boundary and view important halachic boundary notes.
+                  </p>
+                  <div className="flex items-center text-rose-400 font-semibold group-hover:translate-x-2 transition-transform">
+                      Launch App <ArrowRight className="ml-2 w-4 h-4" />
+                  </div>
+              </div>
+          </Link>
+
           {/* Coming Soon */}
           <div className="group relative cursor-default">
               <div className="absolute -inset-1 bg-gradient-to-r from-gray-600 to-gray-700 rounded-2xl blur opacity-15"></div>
