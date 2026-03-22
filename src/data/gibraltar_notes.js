@@ -14,5 +14,8 @@ export const GIBRALTAR_ERUV_NOTES = [
   {
     title: "Contact",
     content: "For any and all other questions or queries, please contact:\n\nEruv@jewish.gi",
+    links: [
+      { name: "Gibraltar Eruv Website", url: "https://gib-eruv.weebly.com/" }
+    ]
   }
 ];
