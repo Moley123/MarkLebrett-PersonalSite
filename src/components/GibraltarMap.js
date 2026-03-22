@@ -183,15 +183,20 @@ const GibraltarMap = () => {
 
   return (
     <div className="eruv-page">
-      <nav className="eruv-top-nav">
-        <div className="nav-col-left" />
-        <div className="nav-col-center">
-          <h2>Gibraltar Eruv Route Planner</h2>
+      <div className="eruv-header">
+        <div className="eruv-header-row">
+          <Link to="/" className="eruv-back-btn" aria-label="Back to portal">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Portal
+          </Link>
+          <div className="eruv-header-text">
+            <h1 className="eruv-title">Gibraltar Eruv Route Planner</h1>
+            <p className="eruv-subtitle">Check locations against the Gibraltar Eruv boundary and view important halachic boundary notes.</p>
+          </div>
         </div>
-        <div className="nav-col-right">
-          <Link to="/" className="eruv-portal-btn">← Portal</Link>
-        </div>
-      </nav>
+      </div>
 
       <div className="eruv-container">
         <div className="eruv-sidebar">
