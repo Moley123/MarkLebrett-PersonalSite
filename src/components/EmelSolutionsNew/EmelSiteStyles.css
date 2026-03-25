@@ -200,13 +200,13 @@
 /* Hero — dot-grid light background */
 .es-hero {
   position: relative;
-  min-height: calc(100vh - var(--es-header-h));
+  min-height: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   overflow: hidden;
-  padding: 4rem 1.5rem 5rem;
+  padding: 4rem 1.5rem 4.5rem;
   background-color: #ffffff;
   background-image: radial-gradient(circle, rgba(37,99,235,0.07) 1.5px, transparent 1.5px);
   background-size: 28px 28px;
@@ -234,12 +234,12 @@
   border: 1px solid rgba(37,99,235,0.2);
   padding: 0.35rem 1rem;
   border-radius: 999px;
-  margin-bottom: 1.75rem;
+  margin-bottom: 1.25rem;
   animation: es-fadeUp 0.7s cubic-bezier(0.4,0,0.2,1) both;
 }
 .es-hero__title {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: clamp(2.6rem, 6vw, 4.4rem);
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
   font-weight: 700;
   line-height: 1.08;
   letter-spacing: -0.03em;
