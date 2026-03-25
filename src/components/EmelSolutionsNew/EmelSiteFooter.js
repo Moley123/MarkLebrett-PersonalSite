@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 
 const FooterLogoSVG = () => (
   <svg viewBox="0 0 180 44" fill="none" xmlns="http://www.w3.org/2000/svg" width="148" aria-label="EMEL Solutions">
@@ -11,7 +10,6 @@ const FooterLogoSVG = () => (
 );
 
 const EmelSiteFooter = ({ onNavigate }) => {
-  const navigate = useNavigate();
   const year = new Date().getFullYear();
 
   return (
@@ -61,9 +59,7 @@ const EmelSiteFooter = ({ onNavigate }) => {
 
       <div className="es-footer__bottom" style={{ maxWidth: 'var(--es-max-w)', margin: '0 auto' }}>
         <span>&copy; {year} EMEL Solutions. All rights reserved.</span>
-        <button className="es-footer__portal-link" onClick={() => navigate('/')}>
-          ← Back to Portal
-        </button>
+        <a href="mailto:mark@lebrett.com" style={{ color: '#94a3b8', fontSize: '0.8rem', textDecoration: 'none' }}>mark@lebrett.com</a>
       </div>
     </footer>
   );

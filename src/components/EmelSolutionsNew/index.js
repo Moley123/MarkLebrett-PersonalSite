@@ -62,8 +62,7 @@ const EmelSolutionsNew = () => {
   }, []);
 
   return (
-    /* emel-page class allows reuse of existing animation CSS (service sections etc.) */
-    <div className="emel-site emel-page">
+    <div className="emel-site">
       <EmelSiteHeader currentPage={currentPage} onNavigate={setCurrentPage} />
 
       <main id="main-content">

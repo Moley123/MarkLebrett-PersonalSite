@@ -139,8 +139,33 @@ const LandingPage = () => {
         </div>
       </div>
 
-      {/* ═══════════ FEATURED: EMEL SOLUTIONS ═══════════ */}
+      {/* ═══════════ BUSINESS: EMEL SOLUTIONS WEBSITE ═══════════ */}
       <div className="max-w-6xl mx-auto px-4 pt-20 pb-6">
+        <p className="text-xs font-semibold tracking-widest uppercase text-gray-500 mb-5">Business</p>
+        <Link to="/emelsolutions" className="group relative block">
+          <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 via-blue-600 to-indigo-500 rounded-2xl blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
+          <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-10 hover:-translate-y-1 transition-transform duration-300 flex flex-col md:flex-row md:items-center gap-8">
+            <div className="flex-shrink-0 w-16 h-16 bg-blue-500/20 rounded-xl flex items-center justify-center text-blue-400 group-hover:text-white group-hover:bg-blue-600 transition-colors">
+              <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-8 h-8">
+                <polygon points="22,3 38,12 38,30 22,39 6,30 6,12" fill="none" stroke="currentColor" strokeWidth="2.2"/>
+                <circle cx="22" cy="21" r="4" fill="currentColor" opacity="0.85"/>
+              </svg>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-3xl font-bold mb-2 text-gray-100">EMEL Solutions</h3>
+              <p className="text-gray-400 max-w-2xl">
+                A full-service technology consultancy — AI automation, WordPress development, data analytics, bespoke AI solutions and hardware infrastructure. UK-based, end-to-end delivery.
+              </p>
+            </div>
+            <div className="flex items-center text-blue-400 font-semibold group-hover:translate-x-2 transition-transform flex-shrink-0">
+              Visit Site <ArrowRight className="ml-2 w-5 h-5" />
+            </div>
+          </div>
+        </Link>
+      </div>
+
+      {/* ═══════════ FEATURED: EMEL SOLUTIONS SERVICES ═══════════ */}
+      <div className="max-w-6xl mx-auto px-4 pt-4 pb-6">
         <p className="text-xs font-semibold tracking-widest uppercase text-gray-500 mb-5">Services</p>
         <Link to="/services" className="group relative block">
           <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-violet-600 to-indigo-600 rounded-2xl blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>

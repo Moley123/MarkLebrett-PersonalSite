@@ -64,12 +64,7 @@ const WHY = [
 const EmelHomePage = ({ onNavigate }) => (
   <>
     {/* ── Hero ── */}
-    <section className="es-hero banner" id="home" aria-label="EMEL Solutions hero">
-      <div className="banner-bg-grid" aria-hidden="true"></div>
-      <div className="banner-orb banner-orb--1" aria-hidden="true"></div>
-      <div className="banner-orb banner-orb--2" aria-hidden="true"></div>
-      <div className="banner-orb banner-orb--3" aria-hidden="true"></div>
-
+    <section className="es-hero" id="home" aria-label="EMEL Solutions hero">
       <div className="es-hero__content">
         <span className="es-hero__eyebrow">UK-based Technology Consultancy</span>
         <h1 className="es-hero__title">

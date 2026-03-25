@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 const LogoSVG = () => (
   <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" width="36" height="36" aria-hidden="true">
@@ -25,7 +24,6 @@ const NAV_LINKS = [
 const EmelSiteHeader = ({ currentPage, onNavigate }) => {
   const [scrolled, setScrolled]       = useState(false);
   const [mobileOpen, setMobileOpen]   = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 60);
@@ -68,13 +66,6 @@ const EmelSiteHeader = ({ currentPage, onNavigate }) => {
         {/* Right cluster */}
         <div className="es-header__right">
           <button
-            className="es-header__portal-link"
-            onClick={() => navigate('/')}
-            aria-label="Back to portal"
-          >
-            ← Portal
-          </button>
-          <button
             className="es-header__cta"
             onClick={() => handleNav('contact')}
           >
@@ -111,12 +102,6 @@ const EmelSiteHeader = ({ currentPage, onNavigate }) => {
             onClick={() => handleNav('contact')}
           >
             Get a Quote
-          </button>
-          <button
-            className="es-header__drawer-portal"
-            onClick={() => navigate('/')}
-          >
-            ← Back to Portal
           </button>
         </div>
       )}

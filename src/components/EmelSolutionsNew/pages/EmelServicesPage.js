@@ -108,7 +108,8 @@ const EmelServicesPage = ({ onNavigate }) => {
   }, []);
 
   return (
-    <>
+    /* emel-page scopes existing EmelSolutionsPage.css; .emel-site overrides make sections light */
+    <div className="emel-page">
       {/* ── Page hero ── */}
       <div className="es-services-hero">
         <h1>Our Services</h1>
@@ -439,7 +440,7 @@ const EmelServicesPage = ({ onNavigate }) => {
           </svg>
         </button>
       </div>
-    </>
+    </div>
   );
 };
 
