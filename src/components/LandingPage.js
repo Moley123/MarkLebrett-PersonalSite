@@ -141,8 +141,8 @@ const LandingPage = () => {
 
       {/* ═══════════ FEATURED: EMEL SOLUTIONS ═══════════ */}
       <div className="max-w-6xl mx-auto px-4 pt-20 pb-6">
-        <p className="text-xs font-semibold tracking-widest uppercase text-gray-500 mb-5">Business</p>
-        <Link to="/emelsolutions" className="group relative block">
+        <p className="text-xs font-semibold tracking-widest uppercase text-gray-500 mb-5">Services</p>
+        <Link to="/services" className="group relative block">
           <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 via-violet-600 to-indigo-600 rounded-2xl blur opacity-20 group-hover:opacity-60 transition duration-1000 group-hover:duration-200"></div>
           <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-10 hover:-translate-y-1 transition-transform duration-300 flex flex-col md:flex-row md:items-center gap-8">
             <div className="flex-shrink-0 w-16 h-16 bg-violet-500/20 rounded-xl flex items-center justify-center text-violet-400 group-hover:text-white group-hover:bg-violet-600 transition-colors">

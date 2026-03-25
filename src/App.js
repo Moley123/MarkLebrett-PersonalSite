@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './components/LandingPage';
 import EmelSolutions from './components/EmelSolutions';
+import EmelSolutionsNew from './components/EmelSolutionsNew';
 import CertMonitor from './components/CertMonitor';
 import EruvMap from './components/EruvMap';
 import NWLondonMap from './components/NWLondonMap';
@@ -22,8 +23,11 @@ const App = () => {
         {/* 2. Gematria App */}
         <Route path="/gematria" element={<GematriaApp />} />
 
-        {/* 3. Emel Solutions */}
-        <Route path="/emelsolutions" element={<EmelSolutions />} />
+        {/* 3. Emel Solutions — full consultancy site */}
+        <Route path="/emelsolutions" element={<EmelSolutionsNew />} />
+
+        {/* 3b. Services showcase (portal entry point) */}
+        <Route path="/services" element={<EmelSolutions />} />
 
         {/* 4. CertStream Monitor */}
         <Route path="/certmonitor" element={<CertMonitor />} />
