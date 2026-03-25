@@ -29,12 +29,12 @@ const PROCESS = [
   {
     num: '03',
     title: 'Build',
-    desc: 'Delivery in sprints with regular check-ins, so you always know what's happening and can steer if priorities change.',
+    desc: "Delivery in sprints with regular check-ins, so you always know what's happening and can steer if priorities change.",
   },
   {
     num: '04',
     title: 'Support',
-    desc: 'Thorough handover, documentation, and ongoing maintenance options — we don't disappear after go-live.',
+    desc: "Thorough handover, documentation, and ongoing maintenance options — we don't disappear after go-live.",
   },
 ];
 
