@@ -67,14 +67,14 @@ const LandingPage = () => {
   }, []);
 
   useEffect(() => {
-    // 2. VISITOR COUNTER — counterapi.dev (API v1 temporarily down; badge hides gracefully on error)
+    // 2. VISITOR COUNTER — counterapi.dev v2
     const namespace = 'marklebrett-portal';
     const key = 'homepage';
     const hasVisited = localStorage.getItem('hasVisitedSite');
 
     const url = !hasVisited
-        ? `https://api.counterapi.dev/v1/${namespace}/${key}/up`
-        : `https://api.counterapi.dev/v1/${namespace}/${key}/`;
+        ? `https://api.counterapi.dev/v2/${namespace}/${key}/up`
+        : `https://api.counterapi.dev/v2/${namespace}/${key}`;
 
     fetch(url)
       .then(res => {
@@ -82,7 +82,7 @@ const LandingPage = () => {
         return res.json();
       })
       .then(data => {
-        setVisitorCount(data.count + 125); // +125 carries over pre-migration count
+        setVisitorCount(data.value + 125); // +125 carries over pre-migration count
         if (!hasVisited) {
             localStorage.setItem('hasVisitedSite', 'true');
         }
