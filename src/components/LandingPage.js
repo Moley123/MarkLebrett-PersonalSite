@@ -67,39 +67,29 @@ const LandingPage = () => {
   }, []);
 
   useEffect(() => {
-    // 2. VISITOR COUNTER
+    // 2. VISITOR COUNTER — uses CountAPI (api.countapi.xyz), CORS-friendly
     const namespace = 'marklebrett-portal';
     const key = 'homepage';
     const hasVisited = localStorage.getItem('hasVisitedSite');
 
-    // Define the URL based on whether they have visited before
-    // If NEW visitor -> use '/up' to count them. 
-    // If RETURNING -> use base URL to just read the number.
-    const url = !hasVisited 
-        ? `https://api.counterapi.dev/v1/${namespace}/${key}/up`
-        : `https://api.counterapi.dev/v1/${namespace}/${key}/`;
+    // New visitors hit the increment endpoint; returning visitors just read.
+    const url = !hasVisited
+        ? `https://api.countapi.xyz/hit/${namespace}/${key}`
+        : `https://api.countapi.xyz/get/${namespace}/${key}`;
 
     fetch(url)
-      .then(async (res) => {
-        if (!res.ok) {
-            // If the server returns an error (like 400 or 429), throw it so we see it
-            const text = await res.text();
-            throw new Error(`API Error: ${res.status} ${text}`);
-        }
+      .then(res => {
+        if (!res.ok) throw new Error(`API Error: ${res.status}`);
         return res.json();
       })
       .then(data => {
-        console.log("Counter API Success:", data); // <--- LOG SUCCESS
-        setVisitorCount(data.count);
-        
-        // If this was a successful 'count up', save the flag
+        setVisitorCount(data.value); // CountAPI returns { value: N }
         if (!hasVisited) {
             localStorage.setItem('hasVisitedSite', 'true');
         }
       })
-      .catch((err) => {
-        console.error("Counter API Failed:", err); // <--- LOG ERROR
-        setVisitorCount("Error"); // Show text instead of fake number
+      .catch(() => {
+        setVisitorCount('Error');
       });
   }, []);
 
