@@ -44,8 +44,16 @@ function makePoly() {
   return new window.google.maps.Polygon({ paths: ERUV_BOUNDARY });
 }
 
+function makeExclusionPolys() {
+  return ERUV_POLYGONS.map(p => new window.google.maps.Polygon({ paths: p.paths }));
+}
+
 function pointInEruv(latLng) {
-  return window.google.maps.geometry.poly.containsLocation(latLng, makePoly());
+  if (!window.google.maps.geometry.poly.containsLocation(latLng, makePoly())) return false;
+  for (const excPoly of makeExclusionPolys()) {
+    if (window.google.maps.geometry.poly.containsLocation(latLng, excPoly)) return false;
+  }
+  return true;
 }
 
 function decodePath(encoded) {
@@ -53,14 +61,18 @@ function decodePath(encoded) {
   return window.google.maps.geometry.encoding.decodePath(encoded);
 }
 
-/** Strict check — every decoded polyline point must be inside the polygon. */
+/** Strict check — every decoded polyline point must be inside the eruv and outside exclusion zones. */
 function routeStaysInEruv(result) {
   const poly = makePoly();
+  const excPolys = makeExclusionPolys();
   for (const leg of result.routes[0].legs) {
     for (const step of leg.steps) {
       const pts = decodePath(step.polyline?.points || '');
       for (const pt of pts) {
         if (!window.google.maps.geometry.poly.containsLocation(pt, poly)) return false;
+        for (const excPoly of excPolys) {
+          if (window.google.maps.geometry.poly.containsLocation(pt, excPoly)) return false;
+        }
       }
     }
   }
