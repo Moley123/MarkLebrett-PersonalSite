@@ -446,122 +446,127 @@ const EruvMap = () => {
         </div>
       </div>
 
-      {/* ── Tabs ── */}
-      <div className="eruv-tabs">
-        <button className={`eruv-tab ${tab === 'check' ? 'eruv-tab--active' : ''}`} onClick={() => setTab('check')}>
-          📍 Location Check
-        </button>
-        <button className={`eruv-tab ${tab === 'route' ? 'eruv-tab--active' : ''}`} onClick={() => setTab('route')}>
-          🗺 Route Planner
-        </button>
-      </div>
+      {/* ── Sidebar + Map ── */}
+      <div className="eruv-container">
 
-      {/* ── Controls ── */}
-      <div className="eruv-controls">
-        {tab === 'check' && (
-          <div className="eruv-control-row">
-            <Autocomplete onLoad={ac => { locationRef.current = ac; }} onPlaceChanged={handleLocationSearch} options={{ componentRestrictions: { country: 'ch' } }}>
-              <input ref={locationInputRef} className="eruv-input" type="text" placeholder="Search an address in Zürich…" />
-            </Autocomplete>
-            <button className="eruv-btn eruv-btn--ghost" onClick={handleLocationReset}>Reset</button>
-            {insideStatus === 'inside'  && <span className="eruv-badge eruv-badge--inside">✓ Inside Eruv</span>}
-            {insideStatus === 'outside' && <span className="eruv-badge eruv-badge--outside">✗ Outside Eruv</span>}
+        {/* ── Left Sidebar ── */}
+        <div className="eruv-sidebar">
+          <div className="eruv-tabs">
+            <button className={`eruv-tab ${tab === 'check' ? 'active' : ''}`}
+              onClick={() => { setTab('check'); setDirections(null); }}>
+              📍 Location Check
+            </button>
+            <button className={`eruv-tab ${tab === 'route' ? 'active' : ''}`}
+              onClick={() => { setTab('route'); setMarker(null); setInsideStatus(null); }}>
+              🗺 Route Planner
+            </button>
           </div>
-        )}
 
-        {tab === 'route' && (
-          <div className="eruv-route-controls">
-            <div className="eruv-control-row">
-              <Autocomplete onLoad={ac => { originRef.current = ac; }} onPlaceChanged={() => {}} options={{ componentRestrictions: { country: 'ch' } }}>
-                <input ref={originInputRef} className="eruv-input" type="text" placeholder="Start address…" />
-              </Autocomplete>
-              <Autocomplete onLoad={ac => { destRef.current = ac; }} onPlaceChanged={() => {}} options={{ componentRestrictions: { country: 'ch' } }}>
-                <input ref={destInputRef} className="eruv-input" type="text" placeholder="End address…" />
-              </Autocomplete>
-              <button className="eruv-btn eruv-btn--primary" onClick={handleRoutePlan} disabled={routeLoading}>
-                {routeLoading ? (
-                  <><span className="eruv-btn-spinner" /> Searching…</>
-                ) : 'Plan Route'}
-              </button>
-              <button className="eruv-btn eruv-btn--ghost" onClick={handleRouteClear}>Reset</button>
-              {directions && !routeLoading && (
-                <>
-                  <button className="eruv-btn eruv-btn--ghost" onClick={() => handlePrint(false)}>🖨 Print Route</button>
-                  <button className="eruv-btn eruv-btn--ghost" onClick={() => handlePrint(true)}>🗺 Print with Map</button>
-                </>
-              )}
-            </div>
-
-            {routeLoading && loadingMsg && (
-              <div className="eruv-alert eruv-alert--info">
-                <span className="eruv-btn-spinner eruv-btn-spinner--dark" /> {loadingMsg}
+          <div className="eruv-panel">
+            {tab === 'check' && (
+              <div className="eruv-check-form">
+                <h3>Check an Address</h3>
+                <p>Enter an address to verify whether it falls within the Zürich Eiruv boundary.</p>
+                <div className="eruv-input-wrap">
+                  <Autocomplete onLoad={ac => { locationRef.current = ac; }} onPlaceChanged={handleLocationSearch} options={{ componentRestrictions: { country: 'ch' } }}>
+                    <input ref={locationInputRef} className="eruv-input" type="text" placeholder="Search an address in Zürich…" />
+                  </Autocomplete>
+                </div>
+                <button className="eruv-btn eruv-btn--ghost" onClick={handleLocationReset}>Reset</button>
+                {insideStatus === 'inside'  && <div className="eruv-alert eruv-alert--success">✓ Inside Eruv</div>}
+                {insideStatus === 'outside' && <div className="eruv-alert eruv-alert--error">✕ Outside Eruv</div>}
               </div>
             )}
-            {!routeLoading && routeStatus === 'outside' && (
-              <div className="eruv-alert eruv-alert--error">⚠ {routeMsg}</div>
-            )}
-            {!routeLoading && routeStatus === 'error' && (
-              <div className="eruv-alert eruv-alert--error">✕ {routeMsg}</div>
-            )}
-            {!routeLoading && routeStatus === 'inside' && (
-              <div className="eruv-alert eruv-alert--success">✓ {routeMsg}</div>
+
+            {tab === 'route' && (
+              <div className="eruv-route-form">
+                <h3>Plan a Route</h3>
+                <p>Find a walking route that stays entirely within the Eiruv. Drag the blue line on the map to modify it.</p>
+                <div className="eruv-input-wrap">
+                  <label>Origin</label>
+                  <Autocomplete onLoad={ac => { originRef.current = ac; }} onPlaceChanged={() => {}} options={{ componentRestrictions: { country: 'ch' } }}>
+                    <input ref={originInputRef} className="eruv-input" type="text" placeholder="Start address…" />
+                  </Autocomplete>
+                </div>
+                <div className="eruv-input-wrap">
+                  <label>Destination</label>
+                  <Autocomplete onLoad={ac => { destRef.current = ac; }} onPlaceChanged={() => {}} options={{ componentRestrictions: { country: 'ch' } }}>
+                    <input ref={destInputRef} className="eruv-input" type="text" placeholder="End address…" />
+                  </Autocomplete>
+                </div>
+                <div className="eruv-btn-row">
+                  <button className="eruv-btn eruv-btn--primary" onClick={handleRoutePlan} disabled={routeLoading}>
+                    {routeLoading ? <><span className="eruv-btn-spinner" /> Searching…</> : 'Find Safe Route'}
+                  </button>
+                  <button className="eruv-btn eruv-btn--ghost" onClick={handleRouteClear}>Reset</button>
+                  {directions && !routeLoading && (
+                    <>
+                      <button className="eruv-btn eruv-btn--ghost" onClick={() => handlePrint(false)}>🖨 Print Route</button>
+                      <button className="eruv-btn eruv-btn--ghost" onClick={() => handlePrint(true)}>🗺 Print with Map</button>
+                    </>
+                  )}
+                </div>
+                {routeLoading && loadingMsg && (
+                  <div className="eruv-alert eruv-alert--info">
+                    <span className="eruv-btn-spinner eruv-btn-spinner--dark" /> {loadingMsg}
+                  </div>
+                )}
+                {!routeLoading && routeStatus === 'outside' && <div className="eruv-alert eruv-alert--error">⚠ {routeMsg}</div>}
+                {!routeLoading && routeStatus === 'error'   && <div className="eruv-alert eruv-alert--error">✕ {routeMsg}</div>}
+                {!routeLoading && routeStatus === 'inside'  && <div className="eruv-alert eruv-alert--success">✓ {routeMsg}</div>}
+              </div>
             )}
           </div>
-        )}
-      </div>
-
-      {/* ── Map ── */}
-      <div className="eruv-map-wrap">
-        <GoogleMap mapContainerClassName="eruv-map" center={MAP_CENTER} zoom={13} options={MAP_OPTIONS} onLoad={onMapLoad}>
-          {/* Invisible polygon — used only for containsLocation() point-in-polygon checks */}
-          <Polygon paths={ERUV_BOUNDARY} options={POLYGON_OPTIONS} />
-
-          {/* Special cutout polygons (like river banks / Tel HaMislaket) */}
-          {ERUV_POLYGONS.map((polyItem, i) => (
-             <Polygon key={`poly-${i}`} paths={polyItem.paths} options={{
-               strokeColor: '#ef4444',
-               strokeOpacity: polyItem.properties['stroke-opacity'] || 1,
-               strokeWeight: polyItem.properties['stroke-width'] || 2,
-               fillColor: '#ef4444',
-               fillOpacity: 0.2, // Custom override for a clear red wash
-             }} />
-          ))}
-
-          {/* All GeoJSON segments rendered as polylines — shows every boundary
-              section including river stubs that can't form closed rings */}
-          {ERUV_SEGMENTS.map((seg, i) => (
-            <Polyline key={i} path={seg} options={POLYLINE_OPTIONS} />
-          ))}
-
-          {tab === 'check' && marker && (
-            <Marker position={marker} icon={{
-              path: window.google.maps.SymbolPath.CIRCLE,
-              scale: 10,
-              fillColor: insideStatus === 'inside' ? '#22c55e' : '#ef4444',
-              fillOpacity: 1,
-              strokeColor: '#fff',
-              strokeWeight: 2,
-            }} />
-          )}
-
-          {tab === 'route' && directions && (
-            <DirectionsRenderer
-              directions={directions}
-              onLoad={ref => { dirRendererRef.current = ref; }}
-              onDirectionsChanged={handleDirectionsChanged}
-              options={{
-                draggable: true,
-                polylineOptions: { strokeColor: '#3b82f6', strokeWeight: 5 },
-                suppressMarkers: false,
-              }}
-            />
-          )}
-        </GoogleMap>
-
-        <div className="eruv-legend">
-          <span className="eruv-legend-item"><span className="eruv-legend-line" />Eruv boundary</span>
-          <span className="eruv-legend-item"><span className="eruv-legend-fill" />Inside area</span>
         </div>
+
+        {/* ── Map ── */}
+        <div className="eruv-map-wrap">
+          <GoogleMap mapContainerClassName="eruv-map" center={MAP_CENTER} zoom={13} options={MAP_OPTIONS} onLoad={onMapLoad}>
+            {/* Invisible polygon — used only for containsLocation() point-in-polygon checks */}
+            <Polygon paths={ERUV_BOUNDARY} options={POLYGON_OPTIONS} />
+
+            {/* Special cutout polygons (like river banks / Tel HaMislaket) */}
+            {ERUV_POLYGONS.map((polyItem, i) => (
+               <Polygon key={`poly-${i}`} paths={polyItem.paths} options={{
+                 strokeColor: '#ef4444',
+                 strokeOpacity: polyItem.properties['stroke-opacity'] || 1,
+                 strokeWeight: polyItem.properties['stroke-width'] || 2,
+                 fillColor: '#ef4444',
+                 fillOpacity: 0.2,
+               }} />
+            ))}
+
+            {/* All GeoJSON segments rendered as polylines */}
+            {ERUV_SEGMENTS.map((seg, i) => (
+              <Polyline key={i} path={seg} options={POLYLINE_OPTIONS} />
+            ))}
+
+            {tab === 'check' && marker && (
+              <Marker position={marker} icon={{
+                path: window.google.maps.SymbolPath.CIRCLE,
+                scale: 10,
+                fillColor: insideStatus === 'inside' ? '#22c55e' : '#ef4444',
+                fillOpacity: 1,
+                strokeColor: '#fff',
+                strokeWeight: 2,
+              }} />
+            )}
+
+            {tab === 'route' && directions && (
+              <DirectionsRenderer
+                directions={directions}
+                onLoad={ref => { dirRendererRef.current = ref; }}
+                onDirectionsChanged={handleDirectionsChanged}
+                options={{
+                  draggable: true,
+                  polylineOptions: { strokeColor: '#3b82f6', strokeWeight: 5 },
+                  suppressMarkers: false,
+                }}
+              />
+            )}
+          </GoogleMap>
+        </div>
+
       </div>
     </div>
   );

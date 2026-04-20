@@ -121,12 +121,14 @@ const LandingPage = () => {
         </div>
 
         {/* VISITOR COUNT BADGE */}
-        <div className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full flex items-center gap-3 shadow-lg">
-            <Users className="w-4 h-4 text-emerald-400" />
-            <span className="text-sm font-medium tracking-wide">
-                UNIQUE VISITORS: <span className="text-emerald-400 font-mono font-bold">{visitorCount}</span>
-            </span>
-        </div>
+        {visitorCount !== 'Error' && (
+          <div className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full flex items-center gap-3 shadow-lg">
+              <Users className="w-4 h-4 text-emerald-400" />
+              <span className="text-sm font-medium tracking-wide">
+                  UNIQUE VISITORS: <span className="text-emerald-400 font-mono font-bold">{visitorCount}</span>
+              </span>
+          </div>
+        )}
 
         {/* SOCIAL LINKS */}
         <div className="flex justify-center gap-6 mt-8">
@@ -174,7 +176,7 @@ const LandingPage = () => {
               <Zap className="w-8 h-8" />
             </div>
             <div className="flex-1">
-              <h3 className="text-3xl font-bold mb-2 text-gray-100">EMEL Solutions</h3>
+              <h3 className="text-3xl font-bold mb-2 text-gray-100">EMEL Services</h3>
               <p className="text-gray-400 max-w-2xl">
                 AI automation, WordPress management, data analytics, custom dashboards &amp; bespoke technology services for modern businesses.
               </p>

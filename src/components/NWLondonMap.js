@@ -10,8 +10,16 @@ import {
   DirectionsRenderer,
 } from '@react-google-maps/api';
 import { NWLONDON_ERUVIM, CROSSING_POINTS } from '../data/nwlondon_data';
+import { NEW_ERUVIM } from '../data/new_eruvim';
 import { ERUV_NOTES } from '../data/eruv_notes';
 import './NWLondonMap.css';
+
+const EXTRA_LBD_NAMES = ["South Hampstead Eruv", "St John's Wood Eruv"];
+const EXTRA_LBD_ERUVIM = NEW_ERUVIM
+  .filter(e => EXTRA_LBD_NAMES.includes(e.name))
+  .map(e => ({ ...e, authority: 'LBD', isPrototype: false, containmentPath: e.containmentPath || [] }));
+
+const ALL_ERUVIM = [...NWLONDON_ERUVIM, ...EXTRA_LBD_ERUVIM];
 
 const LIBRARIES = ['places', 'geometry'];
 
@@ -29,8 +37,8 @@ const MAP_OPTIONS = {
 
 function buildContainmentPolys(activeNames) {
   if (!window.google?.maps) return [];
-  return NWLONDON_ERUVIM
-    .filter(e => activeNames.includes(e.name) && e.containmentPath.length > 2)
+  return ALL_ERUVIM
+    .filter(e => activeNames.includes(e.name) && e.containmentPath?.length > 2)
     .map(e => ({
       name: e.name,
       poly: new window.google.maps.Polygon({ paths: e.containmentPath }),
@@ -84,7 +92,7 @@ function getWaypoints(eruvName, activePolys) {
   if (_wpCache[eruvName]) return _wpCache[eruvName];
   const eruvObj = activePolys.find(p => p.name === eruvName);
   if (!eruvObj) return [];
-  const raw = NWLONDON_ERUVIM.find(e => e.name === eruvName);
+  const raw = ALL_ERUVIM.find(e => e.name === eruvName);
   let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
   const scan = pts => pts.forEach(p => {
     if (p.lat < minLat) minLat = p.lat; if (p.lat > maxLat) maxLat = p.lat;
@@ -171,7 +179,7 @@ const NWLondonMap = () => {
   }, []);
 
   const [activeTab, setActiveTab] = useState('check');
-  const [activeEruvinNames, setActiveEruvinNames] = useState(NWLONDON_ERUVIM.map(e => e.name));
+  const [activeEruvinNames, setActiveEruvinNames] = useState(ALL_ERUVIM.map(e => e.name));
   const [showCrossingPins, setShowCrossingPins] = useState(true);
   const [checkResult, setCheckResult] = useState({ state: 'idle', msg: '' });
   const [routeStatus, setRouteStatus] = useState('idle');
@@ -202,7 +210,7 @@ const NWLondonMap = () => {
   };
 
   const handleMasterToggle = (authId, isChecking) => {
-    const authList = NWLONDON_ERUVIM.filter(e => e.authority === authId).map(e => e.name);
+    const authList = ALL_ERUVIM.filter(e => e.authority === authId).map(e => e.name);
     setActiveEruvinNames(prev => {
       let next = [...prev];
       if (isChecking) {
@@ -444,7 +452,7 @@ const NWLondonMap = () => {
                   Sourced from <a href="https://www.eruv.co.uk/eruvin/" target="_blank" rel="noopener noreferrer">KLBD Eruv (eruv.co.uk)</a> and <a href="https://edgwareeruv.org/" target="_blank" rel="noopener noreferrer">edgwareeruv.org</a>. We do not take responsibility for accuracy — please verify independently.
                 </p>
                 <div className="eruv-notes-content">
-                  {NWLONDON_ERUVIM.map((eruv) => {
+                  {ALL_ERUVIM.map((eruv) => {
                     const info = ERUV_NOTES[eruv.name];
                     if (!info) return null;
                     const hasNotes = info.notes && info.notes.length > 0;
@@ -548,7 +556,7 @@ const NWLondonMap = () => {
                     { id: 'KF', label: 'Federation (KF)' },
                     { id: 'UOHC', label: 'UOHC' }
                   ].map(auth => {
-                    const list = NWLONDON_ERUVIM.filter(e => e.authority === auth.id);
+                    const list = ALL_ERUVIM.filter(e => e.authority === auth.id);
                     if (!list.length) return null;
                     const allChecked = list.every(item => activeEruvinNames.includes(item.name));
                     return (
@@ -593,7 +601,7 @@ const NWLondonMap = () => {
           <GoogleMap mapContainerClassName="eruv-map" center={MAP_CENTER} zoom={12} options={MAP_OPTIONS} onLoad={onMapLoad}>
 
             {/* Raw segment Polylines for accurate boundary rendering */}
-            {NWLONDON_ERUVIM.map((eruv, ei) =>
+            {ALL_ERUVIM.map((eruv, ei) =>
               activeEruvinNames.includes(eruv.name) && eruv.rawSegments.map((seg, si) => (
                 <Polyline key={`seg-${ei}-${si}`} path={seg} options={{
                   strokeColor: eruv.color, strokeOpacity: 1, strokeWeight: 3,
@@ -602,8 +610,8 @@ const NWLondonMap = () => {
             )}
 
             {/* Pre-closed polygon fills for Eruvin that have them */}
-            {NWLONDON_ERUVIM.map((eruv, ei) =>
-              activeEruvinNames.includes(eruv.name) && eruv.polygonPaths.map((poly, pi) => (
+            {ALL_ERUVIM.map((eruv, ei) =>
+              activeEruvinNames.includes(eruv.name) && eruv.polygonPaths?.map((poly, pi) => (
                 <Polygon key={`poly-${ei}-${pi}`} paths={poly} options={{
                   strokeColor: eruv.color, strokeOpacity: 1, strokeWeight: 2,
                   fillColor: eruv.color, fillOpacity: 0.08,
@@ -622,7 +630,7 @@ const NWLondonMap = () => {
             {checkMarker && <Marker position={checkMarker} />}
 
             {/* Eruv name labels */}
-            {NWLONDON_ERUVIM.map((eruv, ei) =>
+            {ALL_ERUVIM.map((eruv, ei) =>
               activeEruvinNames.includes(eruv.name) && eruv.labelPosition && (
                 <Marker
                   key={`label-${ei}`}
