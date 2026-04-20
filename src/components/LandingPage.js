@@ -67,39 +67,28 @@ const LandingPage = () => {
   }, []);
 
   useEffect(() => {
-    // 2. VISITOR COUNTER
+    // 2. VISITOR COUNTER — counterapi.dev v2
     const namespace = 'marklebrett-portal';
     const key = 'homepage';
     const hasVisited = localStorage.getItem('hasVisitedSite');
 
-    // Define the URL based on whether they have visited before
-    // If NEW visitor -> use '/up' to count them. 
-    // If RETURNING -> use base URL to just read the number.
-    const url = !hasVisited 
-        ? `https://api.counterapi.dev/v1/${namespace}/${key}/up`
-        : `https://api.counterapi.dev/v1/${namespace}/${key}/`;
+    const url = !hasVisited
+        ? `https://api.counterapi.dev/v2/${namespace}/${key}/up`
+        : `https://api.counterapi.dev/v2/${namespace}/${key}`;
 
     fetch(url)
-      .then(async (res) => {
-        if (!res.ok) {
-            // If the server returns an error (like 400 or 429), throw it so we see it
-            const text = await res.text();
-            throw new Error(`API Error: ${res.status} ${text}`);
-        }
+      .then(res => {
+        if (!res.ok) throw new Error(`API Error: ${res.status}`);
         return res.json();
       })
       .then(data => {
-        console.log("Counter API Success:", data); // <--- LOG SUCCESS
-        setVisitorCount(data.count);
-        
-        // If this was a successful 'count up', save the flag
+        setVisitorCount(data.value + 125); // +125 carries over pre-migration count
         if (!hasVisited) {
             localStorage.setItem('hasVisitedSite', 'true');
         }
       })
-      .catch((err) => {
-        console.error("Counter API Failed:", err); // <--- LOG ERROR
-        setVisitorCount("Error"); // Show text instead of fake number
+      .catch(() => {
+        setVisitorCount('Error');
       });
   }, []);
 
@@ -121,12 +110,14 @@ const LandingPage = () => {
         </div>
 
         {/* VISITOR COUNT BADGE */}
-        <div className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full flex items-center gap-3 shadow-lg">
-            <Users className="w-4 h-4 text-emerald-400" />
-            <span className="text-sm font-medium tracking-wide">
-                UNIQUE VISITORS: <span className="text-emerald-400 font-mono font-bold">{visitorCount}</span>
-            </span>
-        </div>
+        {visitorCount !== 'Error' && (
+          <div className="mt-8 bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full flex items-center gap-3 shadow-lg">
+              <Users className="w-4 h-4 text-emerald-400" />
+              <span className="text-sm font-medium tracking-wide">
+                  UNIQUE VISITORS: <span className="text-emerald-400 font-mono font-bold">{visitorCount}</span>
+              </span>
+          </div>
+        )}
 
         {/* SOCIAL LINKS */}
         <div className="flex justify-center gap-6 mt-8">
@@ -174,7 +165,7 @@ const LandingPage = () => {
               <Zap className="w-8 h-8" />
             </div>
             <div className="flex-1">
-              <h3 className="text-3xl font-bold mb-2 text-gray-100">EMEL Solutions</h3>
+              <h3 className="text-3xl font-bold mb-2 text-gray-100">EMEL Services</h3>
               <p className="text-gray-400 max-w-2xl">
                 AI automation, WordPress management, data analytics, custom dashboards &amp; bespoke technology services for modern businesses.
               </p>
