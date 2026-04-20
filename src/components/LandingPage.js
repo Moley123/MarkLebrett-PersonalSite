@@ -83,7 +83,7 @@ const LandingPage = () => {
         return res.json();
       })
       .then(data => {
-        setVisitorCount(data.value); // CountAPI returns { value: N }
+        setVisitorCount(data.value + 125); // +125 carries over count from previous provider
         if (!hasVisited) {
             localStorage.setItem('hasVisitedSite', 'true');
         }
