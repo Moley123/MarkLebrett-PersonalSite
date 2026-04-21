@@ -69,7 +69,7 @@ const LandingPage = () => {
   useEffect(() => {
     // 2. VISITOR COUNTER — counterapi.dev v2
     const namespace = 'marklebrett-portal';
-    const key = 'homepage';
+    const key = 'marklebrett-homepage';
     const hasVisited = localStorage.getItem('hasVisitedSite');
 
     const url = !hasVisited
@@ -82,7 +82,7 @@ const LandingPage = () => {
         return res.json();
       })
       .then(data => {
-        setVisitorCount(data.value + 125); // +125 carries over pre-migration count
+        setVisitorCount(data.data.up_count + 125); // +125 carries over pre-migration count
         if (!hasVisited) {
             localStorage.setItem('hasVisitedSite', 'true');
         }
