@@ -68,7 +68,7 @@ const LandingPage = () => {
 
   useEffect(() => {
     // 2. VISITOR COUNTER — counterapi.dev v2
-    const namespace = 'marklebrett-portal';
+    const namespace = 'mark-ls-tea';
     const key = 'homepage';
     const hasVisited = localStorage.getItem('hasVisitedSite');
 
