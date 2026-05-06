@@ -41,6 +41,14 @@ const SERVICES = [
     title: 'Hardware Setup & Troubleshooting',
     desc: 'Network configuration, server and NAS setup, workstation builds, and remote or on-site support.',
   },
+  {
+    key: 'custom-software',
+    icon: '💻',
+    iconClass: 'es-card__icon--blue',
+    tag: 'Bespoke Software',
+    title: 'AI-Powered Custom Software Development',
+    desc: 'Bespoke web applications and business tools built rapidly using AI-assisted development — tailored precisely to your requirements.',
+  },
 ];
 
 const WHY = [

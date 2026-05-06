@@ -427,6 +427,67 @@ const EmelServicesPage = ({ onNavigate }) => {
             </div>
           </div>
         </section>
+        {/* ── Section 6: AI-Powered Custom Software ── */}
+        <section className="service-section reveal" id="custom-software" aria-labelledby="cs-heading">
+          <div className="section-inner">
+            <div className="section-tag">Bespoke Software</div>
+            <h2 className="section-title" id="cs-heading">AI-Powered Custom Software Development</h2>
+            <div className="section-body">
+              <div className="anim-panel">
+                <div className="workflow-canvas" aria-label="Code editor animation" role="img">
+                  <svg className="workflow-svg" viewBox="0 0 540 280" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="540" height="280" rx="12" fill="#0d1117"/>
+                    <rect width="540" height="38" rx="12" fill="#161b22"/>
+                    <rect y="26" width="540" height="12" fill="#161b22"/>
+                    <circle cx="22" cy="19" r="5" fill="#ff5f57"/>
+                    <circle cx="40" cy="19" r="5" fill="#febc2e"/>
+                    <circle cx="58" cy="19" r="5" fill="#28c840"/>
+                    <rect x="76" y="9" width="110" height="20" rx="4" fill="#1c2128"/>
+                    <text x="88" y="23" fill="#8b949e" fontSize="9" fontFamily="monospace">App.jsx</text>
+                    <rect x="0" y="38" width="38" height="242" fill="#0d1117"/>
+                    {[50,70,90,110,130,150,170,190,210,230].map((y,i) => (
+                      <text key={i} x="20" y={y} textAnchor="middle" fill="#30363d" fontSize="9" fontFamily="monospace">{i+1}</text>
+                    ))}
+                    <text x="50" y="50"  fill="#ff7b72" fontSize="10" fontFamily="monospace">import</text>
+                    <text x="96" y="50"  fill="#e6edf3" fontSize="10" fontFamily="monospace">React from</text>
+                    <text x="176" y="50" fill="#a5d6ff" fontSize="10" fontFamily="monospace">'react'</text>
+                    <text x="50" y="70"  fill="#e6edf3" fontSize="10" fontFamily="monospace">{'const'}</text>
+                    <text x="90" y="70"  fill="#d2a8ff" fontSize="10" fontFamily="monospace">Dashboard</text>
+                    <text x="163" y="70" fill="#e6edf3" fontSize="10" fontFamily="monospace">{'= () => {'}</text>
+                    <text x="50" y="90"  fill="#e6edf3" fontSize="10" fontFamily="monospace">{'  const'}</text>
+                    <text x="98" y="90"  fill="#79c0ff" fontSize="10" fontFamily="monospace">[data, setData]</text>
+                    <text x="214" y="90" fill="#e6edf3" fontSize="10" fontFamily="monospace">{'='}</text>
+                    <text x="50" y="110" fill="#ff7b72" fontSize="10" fontFamily="monospace">{'    useState'}</text>
+                    <text x="124" y="110" fill="#e6edf3" fontSize="10" fontFamily="monospace">{'(null)'}</text>
+                    <text x="50" y="130" fill="#e6edf3" fontSize="10" fontFamily="monospace">{'  return ('}</text>
+                    <text x="50" y="150" fill="#7ee787" fontSize="10" fontFamily="monospace">{'    <main>'}</text>
+                    <text x="50" y="170" fill="#7ee787" fontSize="10" fontFamily="monospace">{'      <Chart'}</text>
+                    <text x="50" y="190" fill="#79c0ff" fontSize="10" fontFamily="monospace">{'        data'}</text>
+                    <text x="110" y="190" fill="#e6edf3" fontSize="10" fontFamily="monospace">{'={data}'}</text>
+                    <rect x="50" y="200" width="130" height="16" rx="3" fill="rgba(79,142,247,0.15)" stroke="#4f8ef7" strokeWidth="1"/>
+                    <text x="56" y="212" fill="#4f8ef7" fontSize="9" fontFamily="monospace">✦ AI: add loading state?</text>
+                    <rect x="50" y="175" width="2" height="12" rx="1" fill="#e6edf3">
+                      <animate attributeName="opacity" values="1;0;1" dur="1.1s" repeatCount="indefinite"/>
+                    </rect>
+                  </svg>
+                </div>
+              </div>
+              <div className="section-text">
+                <p>We build bespoke software applications tailored precisely to your business — using AI as a development accelerator to deliver production-quality tools faster and more cost-effectively than traditional approaches.</p>
+                <p>From client-facing portals and internal dashboards to fully custom web platforms, we take your requirements from concept to deployment, working closely with you throughout the process.</p>
+                <ul className="feature-list" aria-label="Custom software features">
+                  <li>Full-stack web application development</li>
+                  <li>AI-assisted rapid prototyping</li>
+                  <li>Bespoke business tools &amp; portals</li>
+                  <li>Ongoing support &amp; iteration</li>
+                </ul>
+                <button className="es-service-quote-link" onClick={() => onNavigate('contact')}>
+                  Get a quote for this service →
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
 
       {/* ── Footer CTA ── */}
