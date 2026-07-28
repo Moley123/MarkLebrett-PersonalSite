@@ -86,7 +86,7 @@ const RefLinks = ({ occurrences, limit = 8 }) => {
   );
 };
 
-const ResultsPanel = ({ status, results, error, retry, value, methodName }) => {
+const ResultsPanel = ({ status, results, error, retry, value, methodName, parsha = 'All' }) => {
   const [page, setPage] = useState(1);
   const [activeValue, setActiveValue] = useState(null);
 
@@ -95,7 +95,7 @@ const ResultsPanel = ({ status, results, error, retry, value, methodName }) => {
     return results.find((r) => r.value === activeValue) || results[0];
   }, [results, activeValue]);
 
-  const stats = useMemo(() => parshaStatsFor(current?.value), [current]);
+  const stats = useMemo(() => parshaStatsFor(current?.value, parsha), [current, parsha]);
 
   // A flat, ranked list: structure matches, then whole verses, then phrases.
   const rows = useMemo(() => {

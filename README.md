@@ -27,6 +27,7 @@ An interactive Hebrew Gematria calculator and Torah research tool.
   by value, with the match highlighted inside its verse
 - **Hebrew dates** — civil ↔ Hebrew conversion (with after-sunset handling) plus
   the gematria of the written date
+- **Acronyms** — roshei and sofei teivot of a phrase, valued as words in their own right
 - **Bridge calculator** — finds the words that close the gap between two values
 - **Trend Tracker** — how often a word appears as the Torah progresses
 - **Word Race** — the twenty most frequent words, racing chapter by chapter

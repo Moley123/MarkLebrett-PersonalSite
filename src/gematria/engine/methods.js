@@ -9,7 +9,7 @@
 
 import {
   ACHBI, ALBAM, ATBASH, MILUI, MILUI_SPELLING, ORDINAL, SOFIT, STANDARD,
-  base, normalise,
+  base, normalise, normaliseWords,
 } from './letters';
 
 const letters = (text) => normalise(text).split('').filter(Boolean);
@@ -102,6 +102,35 @@ export const achbi = cipher(ACHBI);
 /** Return the ciphered *text* (not the value) — used to show the working. */
 export const applyCipher = (table, text) =>
   normalise(text).split('').map((c) => table[base(c)] || c).join('');
+
+// ── Acronyms ───────────────────────────────────────────────────────────────
+//
+// Roshei/sofei teivot operate on a *phrase* rather than a word, so they sit
+// outside the METHODS registry — there is nothing to compute for a single word.
+
+/** The first letter of each word, as a string. */
+export const rosheiTeivot = (text) =>
+  normaliseWords(text).split(' ').filter(Boolean).map((w) => w[0]).join('');
+
+/** The last letter of each word, as a string. */
+export const sofeiTeivot = (text) =>
+  normaliseWords(text).split(' ').filter(Boolean).map((w) => w[w.length - 1]).join('');
+
+/**
+ * Acronym summary for a phrase: the letters themselves plus their value.
+ * Returns `null` when there is fewer than one word boundary to work with.
+ */
+export function acronyms(text) {
+  const words = normaliseWords(text).split(' ').filter(Boolean);
+  if (words.length < 2) return null;
+  const roshei = rosheiTeivot(text);
+  const sofei = sofeiTeivot(text);
+  return {
+    words: words.length,
+    roshei: { letters: roshei, value: hechrachi(roshei) },
+    sofei: { letters: sofei, value: hechrachi(sofei) },
+  };
+}
 
 // ── Registry ───────────────────────────────────────────────────────────────
 

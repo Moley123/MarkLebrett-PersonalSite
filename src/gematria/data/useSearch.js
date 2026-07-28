@@ -93,12 +93,18 @@ export function useSearch(values, { parsha = 'All', singleWordsOnly = false, ena
 /**
  * "Structure match" results — Parshiyot whose verse count equals the value.
  * Cheap, synchronous, and independent of the index.
+ *
+ * Respects the Parsha filter: narrowing to Bereshit should not keep showing
+ * "Parshat Noach contains 153 verses".
  */
-export function parshaStatsFor(value) {
+export function parshaStatsFor(value, parsha = 'All') {
   if (!Number.isFinite(value) || value <= 0) return [];
-  return PARSHAS.filter((p) => p.verse_count === value).map((p) => ({
-    name: p.name,
-    verseCount: p.verse_count,
-    book: p.book,
-  }));
+  return PARSHAS
+    .filter((p) => p.verse_count === value)
+    .filter((p) => parsha === 'All' || p.name === parsha)
+    .map((p) => ({
+      name: p.name,
+      verseCount: p.verse_count,
+      book: p.book,
+    }));
 }

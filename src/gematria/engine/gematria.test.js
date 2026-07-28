@@ -1,7 +1,7 @@
 import {
   achbi, albam, atbash, boneeh, calculateAll, digitalRoot, gadol, haKlali,
   hechrachi, katan, katanMispari, kolel, letterBreakdown, meshulash, milui,
-  neelam, perati, siduri, METHODS,
+  neelam, perati, siduri, METHODS, acronyms, rosheiTeivot, sofeiTeivot,
 } from './methods';
 import { ACHBI, ALBAM, ATBASH, MILUI, normalise, normaliseWords } from './letters';
 import { fromHebrewNumeral, toHebrewNumeral } from './numerals';
@@ -349,5 +349,30 @@ describe('Hebrew dates', () => {
         expect(Number.isInteger(len)).toBe(true);
       });
     });
+  });
+});
+
+describe('acronyms', () => {
+  it('reads first and last letters of each word', () => {
+    expect(rosheiTeivot('אשר יצר את האדם')).toBe('איאה');
+    expect(sofeiTeivot('אשר יצר את האדם')).toBe('ררתם');
+  });
+
+  it('values the acronym', () => {
+    const a = acronyms('מזל טוב');
+    expect(a.words).toBe(2);
+    expect(a.roshei.letters).toBe('מט');
+    expect(a.roshei.value).toBe(49); // 40 + 9
+    expect(a.sofei.letters).toBe('לב');
+    expect(a.sofei.value).toBe(32); // 30 + 2
+  });
+
+  it('returns null for a single word', () => {
+    expect(acronyms('תורה')).toBeNull();
+    expect(acronyms('')).toBeNull();
+  });
+
+  it('ignores nikud and punctuation', () => {
+    expect(rosheiTeivot('מַזָּל טוֹב!')).toBe('מט');
   });
 });

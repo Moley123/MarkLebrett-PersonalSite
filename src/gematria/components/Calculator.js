@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import HebrewKeyboard from './HebrewKeyboard';
 import MethodGrid from './MethodGrid';
 import ResultsPanel from './ResultsPanel';
-import { METHODS_BY_KEY } from '../engine/methods';
+import { METHODS_BY_KEY, acronyms } from '../engine/methods';
 import { toHebrewNumeral } from '../engine/numerals';
 import { hasHebrew } from '../engine/letters';
 import { useSearch } from '../data/useSearch';
@@ -34,6 +34,8 @@ const Calculator = ({
     singleWordsOnly: singleWords,
     enabled: searchEnabled && value > 0,
   });
+
+  const acro = useMemo(() => acronyms(text), [text]);
 
   const commonMatches = useMemo(
     () => (value > 0 ? commonDb[String(value)] || [] : []),
@@ -104,6 +106,37 @@ const Calculator = ({
                   <p>{s.body}</p>
                 </span>
               </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {acro && (
+        <section className="gem-panel">
+          <h2 className="gem-panel-title">🔤 Acronyms</h2>
+          <p className="gem-panel-sub">
+            The first and last letters of each of the {acro.words} words, read as
+            words in their own right.
+          </p>
+          <div className="gem-compare-grid">
+            {[
+              { label: 'Roshei teivot', hint: 'first letters', data: acro.roshei },
+              { label: 'Sofei teivot', hint: 'last letters', data: acro.sofei },
+            ].map(({ label, hint, data }) => (
+              <div key={label} className="gem-value-hero" style={{ marginTop: 0 }}>
+                <div>
+                  <div className="gem-value-caption">{label} · {hint}</div>
+                  <div style={{ fontSize: '1.9rem', fontWeight: 700, direction: 'rtl' }}>
+                    {data.letters}
+                  </div>
+                </div>
+                <div>
+                  <div className="gem-value-caption">Value</div>
+                  <div style={{ fontSize: '2rem', fontWeight: 800, color: '#93c5fd' }}>
+                    {data.value}
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         </section>
@@ -181,6 +214,7 @@ const Calculator = ({
           retry={retry}
           value={value}
           methodName={methodDef?.name || 'Standard'}
+          parsha={parsha}
         />
       )}
     </>
