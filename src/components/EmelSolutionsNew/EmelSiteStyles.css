@@ -690,6 +690,24 @@
 }
 .es-form-submit:disabled { opacity: 0.6; cursor: not-allowed; }
 
+/* Email-only contact panel (replaces form) */
+.es-contact-email-panel { display: flex; flex-direction: column; gap: 1.5rem; padding-top: 0.5rem; }
+.es-contact-email-panel p { color: var(--es-text-muted); font-size: 1rem; line-height: 1.6; margin: 0; }
+.es-contact-mailto-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem;
+  background: var(--es-primary); color: #fff;
+  font-size: 1.05rem; font-weight: 600;
+  padding: 1rem 2.2rem; border-radius: 999px;
+  text-decoration: none;
+  transition: background var(--es-transition), transform var(--es-transition), box-shadow var(--es-transition);
+  align-self: flex-start;
+}
+.es-contact-mailto-btn:hover {
+  background: var(--es-primary-dk);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(37,99,235,0.3);
+}
+
 .es-form-success {
   background: rgba(5,150,105,0.06); border: 1px solid rgba(5,150,105,0.3);
   border-radius: var(--es-radius); padding: 2.5rem; text-align: center;

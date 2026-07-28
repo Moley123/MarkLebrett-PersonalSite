@@ -18,11 +18,25 @@ Personal portfolio homepage — links to all projects and tools.
 ### 🔢 Gematria Explorer
 An interactive Hebrew Gematria calculator and Torah research tool.
 
-- Real-time Gematria calculation as you type
-- Full Torah (Pentateuch) search — find words, phrases, and verses matching a value
-- Parsha filtering, Colel mode (±1), whole-verse and single-word matching
-- Wedding / Matchmaker calculator — finds the numerical bridge between two names
-- "Did you know?" cards for culturally significant numbers (18 = Chai, 26 = Hashem…)
+- **15 gematria methods** computed simultaneously — Hechrachi, Gadol, Siduri,
+  Katan, Katan Mispari, Kolel, Milui, Ne'elam, Perati, HaKlali, Meshulash,
+  Bone'eh, AtBash, AlBam and Achbi
+- **Compare mode** — put two to four words side by side and see which methods
+  make them equal
+- **Full Chumash search** — every word and phrase of up to three words, indexed
+  by value, with the match highlighted inside its verse
+- **Hebrew dates** — civil ↔ Hebrew conversion (with after-sunset handling) plus
+  the gematria of the written date
+- **Acronyms** — roshei and sofei teivot of a phrase, valued as words in their own right
+- **Explore** — anagrams (which rearrangements are real Chumash words), six
+  temurah cipher tables, and notarikon expansion from Torah vocabulary
+- **Share as image** — a rendered card copied straight to the clipboard
+- **Bridge calculator** — finds the words that close the gap between two values
+- **Trend Tracker** — how often a word appears as the Torah progresses
+- **Word Race** — the twenty most frequent words, racing chapter by chapter
+- Hebrew numeral input and output (613 ⇄ תרי״ג)
+- Parsha filtering, Colel mode (±1), single-word matching
+- Shareable URLs — every view is encoded in the query string
 - Built-in virtual Hebrew keyboard
 
 ### 🏢 Emel Solutions
@@ -69,17 +83,42 @@ Open: `http://localhost:3000`
 
 ---
 
-## 📊 Gematria Data Setup
+## 📊 Gematria Data
 
-The Gematria tool relies on a pre-built Torah index. Generate it before running:
+The dataset lives in `public/gematria-data/` and **is committed to the repo**, so
+neither `npm start` nor a deploy needs to regenerate it or reach Sefaria.
+
+```
+public/gematria-data/
+├── manifest.json     ~0.5 KB   shard map + counts
+├── verses.json       2.4 MB    each of the 5,846 verses exactly once
+└── idx/<n>.json      ~43 KB    values [n*100 … n*100+99]
+```
+
+A search fetches the verse table once plus the single shard containing the
+target value. The previous design shipped a single 58 MB `torah_index.json` that
+repeated the full English verse on all 223,408 phrase entries; normalising it
+and sharding by value cut the payload by 89% (and ~1.5 MB gzipped in practice).
+
+To rebuild:
 
 ```bash
-cd backend_tools
 pip install requests
-python build_index.py          # → public/torah_index.json  (~50 MB)
-python build_parshas.py        # → src/utils/parshas.js
-python build_common_offline.py # → src/data/common_gematria.json
-cd ..
+python3 backend_tools/build_gematria_data.py    # → public/gematria-data/
+python3 backend_tools/build_race_data.py        # → src/data/race_data.json
+python3 backend_tools/build_parshas.py          # → src/utils/parshas.js
+python3 backend_tools/build_common_offline.py   # → src/data/common_gematria.json
+```
+
+All Sefaria text cleaning (markup, footnotes, paragraph markers, prefix lists)
+goes through `backend_tools/sefaria_clean.py` so the builders can't drift apart.
+
+### Tests
+
+The gematria engine is pure and fully covered:
+
+```bash
+npm test
 ```
 
 ---
@@ -101,12 +140,16 @@ The app is served on port 80 via Nginx. GitHub Actions automatically deploys on 
 ├── src/
 │   ├── components/          # React page components
 │   │   ├── LandingPage.js   # Portfolio homepage
-│   │   ├── GematriaApp.js   # Gematria calculator
 │   │   ├── EmelSolutions.js # Emel Solutions page
 │   │   └── CertMonitor.js   # CT log monitor + detail panel
-│   ├── data/                # Static JSON (common_gematria.json)
-│   └── utils/               # Logic helpers (calculator, parshas, keyboard)
-├── public/                  # Static assets + torah_index.json
+│   ├── gematria/            # Gematria Explorer (self-contained)
+│   │   ├── engine/          # Pure calculation — methods, numerals, dates
+│   │   ├── data/            # Sharded index loader + search hook
+│   │   ├── components/      # Calculator, Compare, Bridge, Dates, Trends, Race
+│   │   └── GematriaApp.css  # Scoped styles (gem- prefix)
+│   ├── data/                # Static JSON (common_gematria.json, race_data.json)
+│   └── utils/               # Shared helpers (parshas, ref filtering)
+├── public/gematria-data/    # Generated, committed Gematria dataset
 ├── backend_tools/           # Python scripts for data generation
 ├── Dockerfile
 ├── nginx.conf

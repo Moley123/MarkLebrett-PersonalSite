@@ -5,32 +5,15 @@ import re
 import sys
 import time
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from sefaria_clean import clean_hebrew_plain, VALID_PREFIXES
+
 # CONFIGURATION
 MIN_WORD_LENGTH = 2 
 
-# STRICT GRAMMAR PREFIXES (Same as Frontend)
-VALID_PREFIXES = {
-    "ו", "ה", "ב", "כ", "ל", "מ", "ש", 
-    "וה", "וב", "וכ", "ול", "ומ", "וש", 
-    "שב", "שכ", "של", "שמ",             
-    "כש", "מש", "בש"                    
-}
-
-def clean_hebrew(text):
-    # STEP 1: Remove HTML tags
-    text = re.sub(r'<[^>]+>', '', text)
-
-    # STEP 2: Replace Maqqef (Hebrew Hyphen) & standard hyphen with SPACE
-    text = text.replace('־', ' ').replace('-', ' ')
-
-    # STEP 3: Remove Vowels & Cantillation (Range 0591-05C7)
-    text = re.sub(r'[\u0591-\u05C7]', '', text)
-
-    # STEP 4: Replace any remaining non-Hebrew characters with SPACE
-    # This prevents merging words like "Lahem[Moshe]" -> "LahemMoshe"
-    text = re.sub(r'[^\u05D0-\u05EA\s]', ' ', text)
-    
-    return text
+# Canonical prefix list lives in sefaria_clean.py so the builders and the
+# frontend Trend Tracker can never drift apart again.
+VALID_PREFIXES = set(VALID_PREFIXES)
 
 # 1. LOAD RACERS
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -43,7 +26,7 @@ words_to_track = set()
 for val, list_of_words in common_data.items():
     for entry in list_of_words:
         raw = entry.split('(')[0].strip()
-        clean = clean_hebrew(raw)
+        clean = clean_hebrew_plain(raw)
         # Use regex to strip spaces from the racer word itself
         clean = re.sub(r'\s+', '', clean)
         if clean and len(clean) >= MIN_WORD_LENGTH:
@@ -93,7 +76,7 @@ for book, total_chapters in BOOKS_STRUCTURE:
             sys.stdout.flush()
 
             for verse in he_text:
-                clean_verse = clean_hebrew(verse)
+                clean_verse = clean_hebrew_plain(verse)
                 # Split by space to get individual words
                 verse_words = clean_verse.split()
                 
