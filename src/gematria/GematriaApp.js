@@ -6,6 +6,7 @@ import Calculator from './components/Calculator';
 import CompareView from './components/CompareView';
 import BridgeView from './components/BridgeView';
 import DateView from './components/DateView';
+import ExploreView from './components/ExploreView';
 import { DEFAULT_METHOD, METHODS_BY_KEY } from './engine/methods';
 import { fromHebrewNumeral, looksLikeNumeral } from './engine/numerals';
 import { prefetch } from './data';
@@ -22,14 +23,15 @@ const MODES = [
   { key: 'compare', label: 'Compare', icon: '⚖️' },
   { key: 'bridge', label: 'Bridge', icon: '💍' },
   { key: 'dates', label: 'Dates', icon: '📅' },
+  { key: 'explore', label: 'Explore', icon: '🧭' },
   { key: 'trends', label: 'Trends', icon: '📈' },
   { key: 'race', label: 'Word Race', icon: '🏆' },
 ];
 
 const DESCRIPTION =
   'Calculate Hebrew gematria across fifteen methods, search every word and '
-  + 'phrase of the Chumash by value, compare words side by side, and convert '
-  + 'Hebrew dates.';
+  + 'phrase of the Chumash by value, compare words side by side, explore '
+  + 'anagrams, temurah and notarikon, and convert Hebrew dates.';
 
 /** Resolve whatever the user typed into a number. */
 export function resolveValue(text, methodKey) {
@@ -191,6 +193,7 @@ const GematriaApp = () => {
         {mode === 'compare' && <CompareView />}
         {mode === 'bridge' && <BridgeView method={method} />}
         {mode === 'dates' && <DateView onSearchValue={searchValue} />}
+        {mode === 'explore' && <ExploreView onSearchValue={searchValue} />}
 
         {(mode === 'trends' || mode === 'race') && (
           <Suspense

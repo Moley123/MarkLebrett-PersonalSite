@@ -2,7 +2,8 @@ import React, { useMemo } from 'react';
 import HebrewKeyboard from './HebrewKeyboard';
 import MethodGrid from './MethodGrid';
 import ResultsPanel from './ResultsPanel';
-import { METHODS_BY_KEY, acronyms } from '../engine/methods';
+import ShareCard from './ShareCard';
+import { METHODS_BY_KEY, PRIMARY_METHODS, acronyms } from '../engine/methods';
 import { toHebrewNumeral } from '../engine/numerals';
 import { hasHebrew } from '../engine/letters';
 import { useSearch } from '../data/useSearch';
@@ -36,6 +37,18 @@ const Calculator = ({
   });
 
   const acro = useMemo(() => acronyms(text), [text]);
+
+  const shareData = useMemo(() => ({
+    text: hasHebrew(text) ? text : String(value),
+    value,
+    numeral: toHebrewNumeral(value),
+    methodName: methodDef?.name || 'Mispar Hechrachi',
+    methods: hasHebrew(text)
+      ? PRIMARY_METHODS.filter((m) => m.key !== method)
+        .slice(0, 4)
+        .map((m) => ({ label: m.short, value: m.fn(text) }))
+      : [],
+  }), [text, value, method, methodDef]);
 
   const commonMatches = useMemo(
     () => (value > 0 ? commonDb[String(value)] || [] : []),
@@ -205,6 +218,8 @@ const Calculator = ({
           </div>
         </section>
       )}
+
+      {value > 0 && <ShareCard data={shareData} />}
 
       {searchEnabled && value > 0 && (
         <ResultsPanel

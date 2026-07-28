@@ -117,6 +117,53 @@ export async function lookup(value) {
   };
 }
 
+/**
+ * Torah vocabulary grouped by opening letter, for notarikon expansion.
+ *
+ * Derived from the verse table already in memory rather than shipped as a
+ * separate file. Built once and memoised — it is a single pass over ~5,800
+ * verses, a few tens of milliseconds.
+ */
+let vocabByInitial = null;
+
+export async function loadVocabByInitial() {
+  if (vocabByInitial) return vocabByInitial;
+  const verses = await loadVerses();
+
+  const counts = new Map();
+  const firstRef = new Map();
+  verses.forEach((verse) => {
+    plainWords(verse.he).forEach((word) => {
+      if (word.length < 2) return;
+      counts.set(word, (counts.get(word) || 0) + 1);
+      if (!firstRef.has(word)) firstRef.set(word, verse.ref);
+    });
+  });
+
+  const grouped = {};
+  counts.forEach((count, word) => {
+    const initial = word[0];
+    if (!grouped[initial]) grouped[initial] = [];
+    grouped[initial].push({ word, count, ref: firstRef.get(word) });
+  });
+  Object.values(grouped).forEach((list) => list.sort((a, b) => b.count - a.count));
+
+  vocabByInitial = grouped;
+  return vocabByInitial;
+}
+
+const NIKUD_RE = /[֑-ׇ]/g;
+
+/** Unpointed word list for a pointed verse. */
+function plainWords(he) {
+  return (he || '')
+    .replace(/־/g, ' ')
+    .replace(NIKUD_RE, '')
+    .replace(/[^א-ת\s]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
 /** Warm the caches ahead of a search so the first lookup feels instant. */
 export function prefetch(value) {
   loadVerses().catch(() => {});
@@ -129,4 +176,5 @@ export function __resetCache() {
   cache.verses = null;
   cache.shards.clear();
   cache.inflight.clear();
+  vocabByInitial = null;
 }
