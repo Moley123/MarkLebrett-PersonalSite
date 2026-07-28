@@ -7,8 +7,7 @@ import CertMonitor from './components/CertMonitor';
 import EruvMap from './components/EruvMap';
 import NWLondonMap from './components/NWLondonMap';
 import GibraltarMap from './components/GibraltarMap';
-import GematriaApp from './GematriaApp';
-import './App.css';
+import GematriaApp from './gematria/GematriaApp';
 
 const App = () => {
   // Debug: Log to console so we know the App is actually running

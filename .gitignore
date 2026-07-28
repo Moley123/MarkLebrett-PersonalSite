@@ -38,3 +38,7 @@ certmonitor_server.py
 # ── Misc root-level test assets ──
 gimmel1.jpeg
 gimmel2.jpeg
+
+# ── Python ──
+__pycache__/
+*.pyc

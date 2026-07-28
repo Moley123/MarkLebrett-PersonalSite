@@ -29,10 +29,11 @@ jobs:
             git reset --hard
             git pull origin main
 
-            # 3. Regenerate Data (Now we have plenty of RAM!)
-            echo "Building Torah Text..."
-            python3 backend_tools/build_torah_text.py
-            
+            # 3. Regenerate Data
+            # The Gematria dataset (public/gematria-data/) is committed, so it
+            # is NOT rebuilt here — that keeps deploys off Sefaria's API and
+            # makes them reproducible. Rebuild it deliberately with:
+            #   python3 backend_tools/build_gematria_data.py
             echo "Building Race Data..."
             python3 backend_tools/build_race_data.py
 
