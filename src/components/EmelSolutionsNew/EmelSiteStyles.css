@@ -810,3 +810,49 @@
   .es-form-row { grid-template-columns: 1fr; }
   .es-hero__actions { flex-direction: column; align-items: center; }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Scroll reveal
+   Driven by useScrollReveal.js. Elements carry data-reveal="…"
+   and get .is-revealed the first time they enter the viewport.
+
+   The hidden state is scoped to .es-reveal-ready, which the hook
+   puts on <body>. Without JavaScript that class never appears, so
+   nothing is ever hidden — the page just renders statically.
+═══════════════════════════════════════════════════════════ */
+
+.es-reveal-ready .emel-site [data-reveal] {
+  opacity: 0;
+  will-change: opacity, transform;
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  /* Grids stagger their children by setting --es-reveal-i on each item. */
+  transition-delay: calc(var(--es-reveal-i, 0) * 90ms);
+}
+
+/* Direction variants — `up` is the default for a bare data-reveal. */
+.es-reveal-ready .emel-site [data-reveal]          { transform: translate3d(0, 28px, 0); }
+.es-reveal-ready .emel-site [data-reveal="up"]     { transform: translate3d(0, 28px, 0); }
+.es-reveal-ready .emel-site [data-reveal="left"]   { transform: translate3d(-42px, 0, 0); }
+.es-reveal-ready .emel-site [data-reveal="right"]  { transform: translate3d(42px, 0, 0); }
+.es-reveal-ready .emel-site [data-reveal="scale"]  { transform: scale(0.93); }
+.es-reveal-ready .emel-site [data-reveal="fade"]   { transform: none; }
+
+.es-reveal-ready .emel-site [data-reveal].is-revealed {
+  opacity: 1;
+  transform: none;
+  /* Once revealed the element is static; stop hinting the compositor. */
+  will-change: auto;
+}
+
+/* Anyone who has asked for less motion gets none of this. */
+@media (prefers-reduced-motion: reduce) {
+  .es-reveal-ready .emel-site [data-reveal],
+  .es-reveal-ready .emel-site [data-reveal].is-revealed {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    will-change: auto;
+  }
+}

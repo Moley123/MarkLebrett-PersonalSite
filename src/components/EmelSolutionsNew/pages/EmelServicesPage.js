@@ -1,21 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 
 /* EmelServicesPage — lifts all 5 animated service sections from the original EmelSolutions.js.
    Wrapped in .emel-page so existing EmelSolutionsPage.css scoping applies. */
 
 const EmelServicesPage = ({ onNavigate }) => {
-  const navRef = useRef(null);
-
-  /* ── Scroll reveal ── */
-  useEffect(() => {
-    const els = document.querySelectorAll('.emel-page .reveal');
-    const obs = new IntersectionObserver(entries => {
-      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
-    }, { threshold: 0.12 });
-    els.forEach(el => obs.observe(el));
-    return () => obs.disconnect();
-  }, []);
-
   /* ── Neural network canvas ── */
   useEffect(() => {
     const canvas = document.getElementById('neuralCanvas');
@@ -121,12 +109,12 @@ const EmelServicesPage = ({ onNavigate }) => {
 
       <main>
         {/* ── Section 1: AI Automation ── */}
-        <section className="service-section reveal" id="ai-automation" aria-labelledby="ai-heading">
+        <section className="service-section" data-reveal="up" id="ai-automation" aria-labelledby="ai-heading">
           <div className="section-inner">
             <div className="section-tag">AI &amp; Automation</div>
             <h2 className="section-title" id="ai-heading">AI Automation &amp; Workflow Development</h2>
             <div className="section-body">
-              <div className="anim-panel">
+              <div className="anim-panel" data-reveal="left">
                 <div className="workflow-canvas" aria-label="n8n-style workflow animation" role="img">
                   <svg className="workflow-svg" viewBox="0 0 540 280" xmlns="http://www.w3.org/2000/svg">
                     <path id="conn1" d="M 130 90 C 180 90 190 140 240 140" stroke="#4f8ef7" strokeWidth="2" fill="none" strokeDasharray="6 4" className="wf-conn"/>
@@ -169,7 +157,7 @@ const EmelServicesPage = ({ onNavigate }) => {
                   </svg>
                 </div>
               </div>
-              <div className="section-text">
+              <div className="section-text" data-reveal="right">
                 <p>We design and deploy intelligent automation pipelines that eliminate repetitive tasks and unlock your team's potential. From webhook-triggered multi-step workflows to AI-augmented data processing, our solutions connect your tools seamlessly.</p>
                 <p>Using cutting-edge orchestration frameworks, we build workflows that adapt, self-correct, and scale with your business — reducing overhead and accelerating decision-making across every department.</p>
                 <ul className="feature-list" aria-label="AI Automation features">
@@ -187,12 +175,12 @@ const EmelServicesPage = ({ onNavigate }) => {
         </section>
 
         {/* ── Section 2: WordPress ── */}
-        <section className="service-section service-section--alt reveal" id="wordpress" aria-labelledby="wp-heading">
+        <section className="service-section service-section--alt" data-reveal="up" id="wordpress" aria-labelledby="wp-heading">
           <div className="section-inner">
             <div className="section-tag">Web Development</div>
             <h2 className="section-title" id="wp-heading">WordPress Management &amp; Custom Plugins</h2>
             <div className="section-body section-body--reversed">
-              <div className="section-text">
+              <div className="section-text" data-reveal="right">
                 <p>From bespoke plugin development to full-site management, we bring enterprise-grade reliability to your WordPress platform. Our team handles performance optimisation, security hardening, custom Gutenberg blocks and complex WooCommerce integrations.</p>
                 <p>Whether you need a purpose-built plugin to automate a unique business process, or ongoing management to keep your site fast, secure and up to date — we've got you covered.</p>
                 <ul className="feature-list" aria-label="WordPress features">
@@ -205,7 +193,7 @@ const EmelServicesPage = ({ onNavigate }) => {
                   Get a quote for this service →
                 </button>
               </div>
-              <div className="anim-panel">
+              <div className="anim-panel" data-reveal="left">
                 <div className="wp-mockup" aria-label="WordPress admin interface animation" role="img">
                   <div className="wp-topbar">
                     <span className="wp-logo-icon">W</span>
@@ -248,12 +236,12 @@ const EmelServicesPage = ({ onNavigate }) => {
         </section>
 
         {/* ── Section 3: AI Solutions ── */}
-        <section className="service-section reveal" id="ai-solutions" aria-labelledby="ais-heading">
+        <section className="service-section" data-reveal="up" id="ai-solutions" aria-labelledby="ais-heading">
           <div className="section-inner">
             <div className="section-tag">Artificial Intelligence</div>
             <h2 className="section-title" id="ais-heading">AI Solutions</h2>
             <div className="section-body">
-              <div className="anim-panel">
+              <div className="anim-panel" data-reveal="left">
                 <div className="neural-canvas" aria-label="AI neural network animation" role="img">
                   <canvas id="neuralCanvas" width="480" height="280" aria-hidden="true"></canvas>
                   <div className="neural-label">
@@ -263,7 +251,7 @@ const EmelServicesPage = ({ onNavigate }) => {
                   </div>
                 </div>
               </div>
-              <div className="section-text">
+              <div className="section-text" data-reveal="right">
                 <p>We bring the power of large language models and computer vision directly into your operations. From intelligent chatbots and document-processing pipelines to predictive analytics and custom fine-tuned models — our AI solutions are built for real-world impact.</p>
                 <p>We work with the latest frontier models (OpenAI, Anthropic, Google Gemini) and open-source alternatives to design solutions that are cost-effective, secure, and deeply integrated with your existing tech stack.</p>
                 <ul className="feature-list" aria-label="AI Solutions features">
@@ -281,12 +269,12 @@ const EmelServicesPage = ({ onNavigate }) => {
         </section>
 
         {/* ── Section 4: Data Analytics ── */}
-        <section className="service-section service-section--alt reveal" id="data-analytics" aria-labelledby="data-heading">
+        <section className="service-section service-section--alt" data-reveal="up" id="data-analytics" aria-labelledby="data-heading">
           <div className="section-inner">
             <div className="section-tag">Analytics &amp; Reporting</div>
             <h2 className="section-title" id="data-heading">Data Analytics &amp; Custom Dashboards</h2>
             <div className="section-body section-body--reversed">
-              <div className="section-text">
+              <div className="section-text" data-reveal="right">
                 <p>We transform raw information into actionable intelligence. With robust data pipelines, dynamic reporting platforms, and tailored dashboards (like Grafana and Power BI), we provide total visibility into your operations.</p>
                 <p>By breaking down silos, cleaning messy datasets, and automating report generation, we empower you to make data-driven decisions seamlessly and accurately in real-time.</p>
                 <ul className="feature-list" aria-label="Data Analytics features">
@@ -299,7 +287,7 @@ const EmelServicesPage = ({ onNavigate }) => {
                   Get a quote for this service →
                 </button>
               </div>
-              <div className="anim-panel">
+              <div className="anim-panel" data-reveal="left">
                 <div className="data-canvas" aria-label="Grafana style dashboard animation" role="img">
                   <svg className="data-svg" viewBox="0 0 540 280" xmlns="http://www.w3.org/2000/svg">
                     <rect width="540" height="280" rx="12" fill="#0f172a" />
@@ -357,12 +345,12 @@ const EmelServicesPage = ({ onNavigate }) => {
         </section>
 
         {/* ── Section 5: Hardware ── */}
-        <section className="service-section reveal" id="hardware" aria-labelledby="hw-heading">
+        <section className="service-section" data-reveal="up" id="hardware" aria-labelledby="hw-heading">
           <div className="section-inner">
             <div className="section-tag">Infrastructure</div>
             <h2 className="section-title" id="hw-heading">Hardware Setup &amp; Troubleshooting</h2>
             <div className="section-body">
-              <div className="anim-panel">
+              <div className="anim-panel" data-reveal="left">
                 <div className="hw-canvas" aria-label="Circuit board animation" role="img">
                   <svg className="hw-svg" viewBox="0 0 480 280" xmlns="http://www.w3.org/2000/svg">
                     <rect width="480" height="280" rx="16" fill="#0b1a12"/>
@@ -411,7 +399,7 @@ const EmelServicesPage = ({ onNavigate }) => {
                   </svg>
                 </div>
               </div>
-              <div className="section-text">
+              <div className="section-text" data-reveal="right">
                 <p>Reliable infrastructure is the backbone of any successful technology strategy. Whether you're fitting out a new office, upgrading your server room, or troubleshooting a critical hardware failure — our engineers are on hand to diagnose, resolve, and future-proof your setup.</p>
                 <p>From network configuration and workstation deployment to NAS storage and smart-device integration, we handle the physical layer so your team can focus on what matters most.</p>
                 <ul className="feature-list" aria-label="Hardware features">
@@ -428,12 +416,12 @@ const EmelServicesPage = ({ onNavigate }) => {
           </div>
         </section>
         {/* ── Section 6: AI-Powered Custom Software ── */}
-        <section className="service-section reveal" id="custom-software" aria-labelledby="cs-heading">
+        <section className="service-section" data-reveal="up" id="custom-software" aria-labelledby="cs-heading">
           <div className="section-inner">
             <div className="section-tag">Bespoke Software</div>
             <h2 className="section-title" id="cs-heading">AI-Powered Custom Software Development</h2>
             <div className="section-body">
-              <div className="anim-panel">
+              <div className="anim-panel" data-reveal="left">
                 <div className="workflow-canvas" aria-label="Code editor animation" role="img">
                   <svg className="workflow-svg" viewBox="0 0 540 280" xmlns="http://www.w3.org/2000/svg">
                     <rect width="540" height="280" rx="12" fill="#0d1117"/>
@@ -472,7 +460,7 @@ const EmelServicesPage = ({ onNavigate }) => {
                   </svg>
                 </div>
               </div>
-              <div className="section-text">
+              <div className="section-text" data-reveal="right">
                 <p>We build bespoke software applications tailored precisely to your business — using AI as a development accelerator to deliver production-quality tools faster and more cost-effectively than traditional approaches.</p>
                 <p>From client-facing portals and internal dashboards to fully custom web platforms, we take your requirements from concept to deployment, working closely with you throughout the process.</p>
                 <ul className="feature-list" aria-label="Custom software features">
