@@ -14,10 +14,30 @@ import { NEW_ERUVIM } from '../data/new_eruvim';
 import { ERUV_NOTES } from '../data/eruv_notes';
 import './NWLondonMap.css';
 
-const EXTRA_LBD_NAMES = ["South Hampstead Eruv", "St John's Wood Eruv"];
-const EXTRA_LBD_ERUVIM = NEW_ERUVIM
-  .filter(e => EXTRA_LBD_NAMES.includes(e.name))
-  .map(e => ({ ...e, authority: 'LBD', isPrototype: false, containmentPath: e.containmentPath || [] }));
+// Every eruv in new_eruvim.js is a KLBD (London Beis Din) boundary. Listing
+// them explicitly rather than spreading NEW_ERUVIM keeps the order — and so
+// the layer list — stable when the data file is regenerated.
+// South Hampstead is listed LAST deliberately. Its boundary cannot be closed
+// from the KLBD KML (its two open ends are 4,530m apart with no connecting
+// coordinates), so the stored ring is unreliable and overlaps its neighbours.
+// whichEruvContains() returns the first match, so keeping it last means the
+// verified boundaries win wherever they disagree.
+const EXTRA_LBD_NAMES = [
+  'Brondesbury Park Eruv',
+  "St John's Wood Eruv",
+  'Chigwell Eruv',
+  'South Hampstead Eruv',
+];
+const EXTRA_LBD_ERUVIM = EXTRA_LBD_NAMES
+  .map(name => NEW_ERUVIM.find(e => e.name === name))
+  .filter(Boolean)
+  .map(e => ({
+    ...e,
+    authority: 'LBD',
+    isPrototype: false,
+    containmentPath: e.containmentPath || [],
+    rawSegments: e.rawSegments || [],
+  }));
 
 const ALL_ERUVIM = [...NWLONDON_ERUVIM, ...EXTRA_LBD_ERUVIM];
 
