@@ -7,9 +7,13 @@ import EmelHomePage    from './pages/EmelHomePage';
 import EmelServicesPage from './pages/EmelServicesPage';
 import EmelAboutPage   from './pages/EmelAboutPage';
 import EmelContactPage from './pages/EmelContactPage';
+import useScrollReveal from './useScrollReveal';
 
 const EmelSolutionsNew = () => {
   const [currentPage, setCurrentPage] = useState('home');
+
+  /* Pages swap by state rather than by route, so re-scan on every change. */
+  useScrollReveal(currentPage);
 
   /* ── Per-page document title ── */
   useEffect(() => {

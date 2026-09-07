@@ -16,7 +16,7 @@ const EmelContactPage = () => (
       <div className="es-contact-body__inner">
 
         {/* ── Email CTA ── */}
-        <div className="es-contact-email-panel">
+        <div className="es-contact-email-panel" data-reveal="left">
           <p>The best way to reach us is by email. Click below to start a conversation:</p>
           <a
             className="es-contact-mailto-btn"
@@ -32,7 +32,7 @@ const EmelContactPage = () => (
         </div>
 
         {/* ── Aside ── */}
-        <div className="es-contact-aside">
+        <div className="es-contact-aside" data-reveal="right">
           <div className="es-status-badge" aria-label="Availability status">
             <span className="es-status-dot" aria-hidden="true"></span>
             Currently accepting projects

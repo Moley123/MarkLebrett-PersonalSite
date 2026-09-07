@@ -53,7 +53,7 @@ const EmelAboutPage = ({ onNavigate }) => (
     {/* ── Mission ── */}
     <section className="es-about-mission" aria-labelledby="mission-heading">
       <div className="es-about-mission__inner">
-        <div className="es-about-mission__text">
+        <div className="es-about-mission__text" data-reveal="left">
           <h2 id="mission-heading">Who We Are</h2>
           <p>
             EMEL Solutions is a UK-based technology consultancy founded on the belief that
@@ -71,7 +71,7 @@ const EmelAboutPage = ({ onNavigate }) => (
             your solution. No account managers, no handoffs, no surprises.
           </p>
         </div>
-        <div className="es-about-visual" aria-hidden="true">
+        <div className="es-about-visual" aria-hidden="true" data-reveal="right">
           <div className="es-about-hex-wrap">
             <svg viewBox="0 0 260 260" fill="none" xmlns="http://www.w3.org/2000/svg">
               {/* Outer hex */}
@@ -113,10 +113,10 @@ const EmelAboutPage = ({ onNavigate }) => (
     {/* ── Founder ── */}
     <section className="es-founder" aria-labelledby="founder-heading">
       <div className="es-founder__inner">
-        <div className="es-section-header">
+        <div className="es-section-header" data-reveal="up">
           <h2 id="founder-heading">The Founder</h2>
         </div>
-        <div className="es-founder__card">
+        <div className="es-founder__card" data-reveal="scale">
           <div className="es-founder__avatar" aria-hidden="true">ML</div>
           <div className="es-founder__info">
             <h3>Mark Lebrett</h3>
@@ -163,13 +163,18 @@ const EmelAboutPage = ({ onNavigate }) => (
     {/* ── Process ── */}
     <section className="es-process" aria-labelledby="process-heading">
       <div className="es-process__inner">
-        <div className="es-section-header">
+        <div className="es-section-header" data-reveal="up">
           <h2 id="process-heading">Our Process</h2>
           <p>A straightforward approach that keeps you informed and in control at every stage.</p>
         </div>
         <div className="es-timeline">
-          {PROCESS.map(step => (
-            <div key={step.num} className="es-timeline-step">
+          {PROCESS.map((step, i) => (
+            <div
+              key={step.num}
+              className="es-timeline-step"
+              data-reveal="up"
+              style={{ '--es-reveal-i': i }}
+            >
               <div className="es-timeline-step__num" aria-hidden="true">{step.num}</div>
               <h3>{step.title}</h3>
               <p>{step.desc}</p>
@@ -182,11 +187,11 @@ const EmelAboutPage = ({ onNavigate }) => (
     {/* ── Tech stack ── */}
     <section className="es-tech" aria-labelledby="tech-heading">
       <div className="es-tech__inner">
-        <div className="es-section-header">
+        <div className="es-section-header" data-reveal="up">
           <h2 id="tech-heading">Technologies We Work With</h2>
           <p>We choose the right tool for each job — not the most fashionable one.</p>
         </div>
-        <div className="es-tech__grid">
+        <div className="es-tech__grid" data-reveal="fade">
           {TECH_STACK.map(t => (
             <span key={t.label} className="es-tech__badge">
               <span className={`es-tech__badge-dot ${t.dotClass}`} aria-hidden="true"></span>
@@ -199,7 +204,7 @@ const EmelAboutPage = ({ onNavigate }) => (
 
     {/* ── CTA ── */}
     <section className="es-cta-band" aria-label="Get in touch">
-      <div className="es-cta-band__inner">
+      <div className="es-cta-band__inner" data-reveal="scale">
         <h2>Want to work together?</h2>
         <p>We'd love to hear about your project. Get in touch and let's see what we can build.</p>
         <button className="es-btn-primary" onClick={() => onNavigate('contact')}>

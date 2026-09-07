@@ -100,19 +100,19 @@ const EmelHomePage = ({ onNavigate }) => (
     {/* ── Stats ── */}
     <div className="es-stats" aria-label="Key statistics">
       <div className="es-stats__inner">
-        <div>
+        <div data-reveal="up" style={{ '--es-reveal-i': 0 }}>
           <span className="es-stat__value">5</span>
           <span className="es-stat__label">Core Service Areas</span>
         </div>
-        <div>
+        <div data-reveal="up" style={{ '--es-reveal-i': 1 }}>
           <span className="es-stat__value">100%</span>
           <span className="es-stat__label">UK-Based</span>
         </div>
-        <div>
+        <div data-reveal="up" style={{ '--es-reveal-i': 2 }}>
           <span className="es-stat__value">AI&#8209;native</span>
           <span className="es-stat__label">Since 2022</span>
         </div>
-        <div>
+        <div data-reveal="up" style={{ '--es-reveal-i': 3 }}>
           <span className="es-stat__value">End&#8209;to&#8209;end</span>
           <span className="es-stat__label">Delivery</span>
         </div>
@@ -122,15 +122,17 @@ const EmelHomePage = ({ onNavigate }) => (
     {/* ── Services overview ── */}
     <section className="es-services-overview" aria-labelledby="services-heading">
       <div className="es-services-overview__inner">
-        <div className="es-section-header">
+        <div className="es-section-header" data-reveal="up">
           <h2 id="services-heading">What We Do</h2>
           <p>From intelligent automation to custom hardware — we cover the full technology stack so you don't have to.</p>
         </div>
         <div className="es-cards-grid">
-          {SERVICES.map(s => (
+          {SERVICES.map((s, i) => (
             <button
               key={s.key}
               className="es-card"
+              data-reveal="up"
+              style={{ '--es-reveal-i': i % 3 }}
               onClick={() => onNavigate('services')}
               aria-label={`Learn more about ${s.title}`}
             >
@@ -153,13 +155,18 @@ const EmelHomePage = ({ onNavigate }) => (
     {/* ── Why EMEL ── */}
     <section className="es-why" aria-labelledby="why-heading">
       <div className="es-why__inner">
-        <div className="es-section-header">
+        <div className="es-section-header" data-reveal="up">
           <h2 id="why-heading">Why EMEL Solutions?</h2>
           <p>We're not an agency — we're a specialist consultancy that works directly with you.</p>
         </div>
         <div className="es-why__grid">
-          {WHY.map(w => (
-            <div key={w.title} className="es-why-item">
+          {WHY.map((w, i) => (
+            <div
+              key={w.title}
+              className="es-why-item"
+              data-reveal={i === 0 ? 'left' : i === 2 ? 'right' : 'up'}
+              style={{ '--es-reveal-i': i }}
+            >
               <div className="es-why-item__icon" aria-hidden="true">{w.icon}</div>
               <h3>{w.title}</h3>
               <p>{w.desc}</p>
@@ -171,7 +178,7 @@ const EmelHomePage = ({ onNavigate }) => (
 
     {/* ── Closing CTA ── */}
     <section className="es-cta-band" aria-label="Call to action">
-      <div className="es-cta-band__inner">
+      <div className="es-cta-band__inner" data-reveal="scale">
         <h2>Ready to transform how your business works?</h2>
         <p>
           Whether you have a specific project in mind or just want to explore the possibilities,
