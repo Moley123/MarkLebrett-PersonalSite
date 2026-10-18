@@ -1,3 +1,7 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Disallow: /lab-
+
+# Pages under /lab-* are work-in-progress sandbox copies and must not be
+# indexed. They are also absent from normal builds — craco.config.js stubs
+# them out unless REACT_APP_LAB=1.
