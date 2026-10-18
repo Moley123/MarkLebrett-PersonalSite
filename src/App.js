@@ -10,33 +10,23 @@ import GibraltarMap from './components/GibraltarMap';
 import GematriaApp from './gematria/GematriaApp';
 
 /* ══════════════════════════════════════════════════════════════════════
-   Lab routes — sandbox pages, not part of the public site.
+   Lab route — a sandbox copy of the Zurich eruv page, used to trial
+   open-source mapping without touching the live one.
 
-   Mounted only when REACT_APP_LAB=1 at BUILD time. craco.config.js rewrites
-   the ./lab/* import to a stub unless that flag is set, so in a normal
-   production build the sandbox source never enters the webpack module graph
-   and nothing about it reaches the bundle. (Guarding the route alone is not
-   enough — webpack emits a chunk for an `import()` even on a dead branch.)
+   It lives on an unguessable path and is noindex/nofollow plus disallowed
+   in robots.txt, so it won't be crawled or stumbled upon. It is not secret:
+   the path is in this file, and this repository is public.
 
-   The path segment comes from REACT_APP_LAB_TOKEN rather than being written
-   here, because this repository is public: a literal in the source would be
-   published to GitHub. Keep the token in .env, which is gitignored.
+   The path is deliberately ONE segment deep. package.json sets
+   `homepage: "."`, so the bundle is referenced with relative paths; from a
+   nested path like /lab/<token>/zurich the browser resolves those against
+   the wrong directory, nginx's try_files hands back index.html, and the
+   page fails to boot on "Unexpected token '<'".
 
-   The route is deliberately ONE segment deep (/lab-<token>). package.json
-   sets `homepage: "."`, so the bundle is referenced with relative paths; from
-   a nested path like /lab/<token>/zurich the browser would resolve those
-   against the wrong directory, nginx's try_files would hand back index.html,
-   and the page would fail to boot.
-
-   To be explicit: this makes the page UNLISTED, not authenticated. A build
-   shipped with the flag on is readable by anyone who learns the URL. For real
-   protection, put HTTP basic auth on /lab- in nginx.conf.
+   Lazy-loaded so the sandbox never weighs down the main bundle.
 ══════════════════════════════════════════════════════════════════════ */
-const LAB_TOKEN = process.env.REACT_APP_LAB_TOKEN;
-const LAB_ENABLED = process.env.REACT_APP_LAB === '1' && !!LAB_TOKEN;
-const ZurichEruvLab = LAB_ENABLED
-  ? lazy(() => import('./lab/ZurichEruvLab'))
-  : null;
+const LAB_TOKEN = 'x490i98i_lRc';
+const ZurichEruvLab = lazy(() => import('./lab/ZurichEruvLab'));
 
 const App = () => {
   // Debug: Log to console so we know the App is actually running
@@ -69,17 +59,15 @@ const App = () => {
         {/* 7. Gibraltar Eruv */}
         <Route path="/gibraltareruv" element={<GibraltarMap />} />
 
-        {/* 8. Lab — absent unless REACT_APP_LAB=1 at build time */}
-        {LAB_ENABLED && (
-          <Route
-            path={`/lab-${LAB_TOKEN}`}
-            element={(
-              <Suspense fallback={<div style={{ padding: 50 }}>Loading lab…</div>}>
-                <ZurichEruvLab />
-              </Suspense>
-            )}
-          />
-        )}
+        {/* 8. Lab — sandbox copy of the Zurich page, unlisted */}
+        <Route
+          path={`/lab-${LAB_TOKEN}`}
+          element={(
+            <Suspense fallback={<div style={{ padding: 50 }}>Loading lab…</div>}>
+              <ZurichEruvLab />
+            </Suspense>
+          )}
+        />
 
         {/* 4. DEBUG: Catch-all for 404s */}
         {/* This will show us what URL the router is seeing */}

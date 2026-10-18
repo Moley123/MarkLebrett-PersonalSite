@@ -8,10 +8,9 @@
  * The live page at /zurich-eiruv stays on EruvMap.js and is unaffected:
  * every CSS class here is renamed zlab-* so the two share no styles.
  *
- * This route is NOT linked from anywhere, is noindex/nofollow, is disallowed
- * in robots.txt, and is only compiled into the bundle when REACT_APP_LAB=1.
- * That makes it unlisted — it is NOT authenticated. Anyone who learns the URL
- * of a build that shipped with the flag on can open it.
+ * The route is not linked from anywhere, sets noindex/nofollow/noarchive and
+ * is disallowed in robots.txt, so it won't be crawled or stumbled upon. It is
+ * unlisted rather than secret — the path is in src/App.js, in a public repo.
  */
 
 import React, { useCallback, useRef, useState, useEffect } from 'react';
