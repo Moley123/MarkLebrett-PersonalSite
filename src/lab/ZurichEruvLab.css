@@ -376,3 +376,57 @@
 }
 
 .zlab-banner a { color: #fde68a; }
+
+/* ── Map loading state ──
+   MapLibre owns the container, so the spinner overlays it rather than
+   replacing it — tearing the container down would destroy the map. */
+.zlab-map-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    background: var(--bg);
+    color: var(--muted);
+    z-index: 2;
+}
+
+/* MapLibre's own controls and attribution, themed to match the page. */
+.zlab-map-wrap .maplibregl-ctrl-group {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+}
+
+.zlab-map-wrap .maplibregl-ctrl-group button + button {
+    border-top: 1px solid var(--border);
+}
+
+.zlab-map-wrap .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+    filter: invert(1) brightness(1.4);
+}
+
+.zlab-map-wrap .maplibregl-ctrl-attrib {
+    background: rgba(8, 11, 16, 0.78);
+    color: var(--muted);
+    font-size: 0.68rem;
+}
+
+.zlab-map-wrap .maplibregl-ctrl-attrib a { color: #93c5fd; }
+
+/* Shown when the tile provider can't be reached; boundaries still render. */
+.zlab-map-notice {
+    position: absolute;
+    top: 0.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(245, 158, 11, 0.14);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: #fcd34d;
+    font-size: 0.78rem;
+    white-space: nowrap;
+}
