@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './components/LandingPage';
 import EmelSolutions from './components/EmelSolutions';
@@ -9,6 +9,25 @@ import NWLondonMap from './components/NWLondonMap';
 import GibraltarMap from './components/GibraltarMap';
 import GematriaApp from './gematria/GematriaApp';
 
+/* ══════════════════════════════════════════════════════════════════════
+   Lab route — a sandbox copy of the Zurich eruv page, used to trial
+   open-source mapping without touching the live one.
+
+   It lives on an unguessable path and is noindex/nofollow plus disallowed
+   in robots.txt, so it won't be crawled or stumbled upon. It is not secret:
+   the path is in this file, and this repository is public.
+
+   The path is deliberately ONE segment deep. package.json sets
+   `homepage: "."`, so the bundle is referenced with relative paths; from a
+   nested path like /lab/<token>/zurich the browser resolves those against
+   the wrong directory, nginx's try_files hands back index.html, and the
+   page fails to boot on "Unexpected token '<'".
+
+   Lazy-loaded so the sandbox never weighs down the main bundle.
+══════════════════════════════════════════════════════════════════════ */
+const LAB_TOKEN = 'x490i98i_lRc';
+const ZurichEruvLab = lazy(() => import('./lab/ZurichEruvLab'));
+
 const App = () => {
   // Debug: Log to console so we know the App is actually running
   console.log("App is mounting. Current Path:", window.location.pathname);
@@ -18,7 +37,7 @@ const App = () => {
       <Routes>
         {/* 1. Root URL */}
         <Route path="/" element={<LandingPage />} />
-        
+
         {/* 2. Gematria App */}
         <Route path="/gematria" element={<GematriaApp />} />
 
@@ -33,12 +52,22 @@ const App = () => {
 
         {/* 5. Zurich Eiruv */}
         <Route path="/zurich-eiruv" element={<EruvMap />} />
-        
+
         {/* 6. NW London Eiruvim */}
         <Route path="/nwlondon-eiruv" element={<NWLondonMap />} />
 
         {/* 7. Gibraltar Eruv */}
         <Route path="/gibraltareruv" element={<GibraltarMap />} />
+
+        {/* 8. Lab — sandbox copy of the Zurich page, unlisted */}
+        <Route
+          path={`/lab-${LAB_TOKEN}`}
+          element={(
+            <Suspense fallback={<div style={{ padding: 50 }}>Loading lab…</div>}>
+              <ZurichEruvLab />
+            </Suspense>
+          )}
+        />
 
         {/* 4. DEBUG: Catch-all for 404s */}
         {/* This will show us what URL the router is seeing */}
