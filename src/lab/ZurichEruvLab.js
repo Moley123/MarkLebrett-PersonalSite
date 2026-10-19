@@ -53,7 +53,7 @@ import {
 } from './routeEditing';
 import useRouteDrag from './useRouteDrag';
 import useMapLibre, {
-  featureCollection, fitToPoints, lineFeature, polygonFeature, upsertGeoJson, Marker,
+  BASEMAPS, featureCollection, fitToPoints, lineFeature, polygonFeature, upsertGeoJson, Marker,
 } from './useMapLibre';
 import './ZurichEruvLab.css';
 
@@ -172,7 +172,9 @@ const ZurichEruvLab = () => {
     libraries: LIBRARIES,
   });
 
-  const { containerRef, map, ready, basemapFailed } = useMapLibre({ center: MAP_CENTER, zoom: MAP_ZOOM });
+  const {
+    containerRef, map, ready, basemapFailed, basemap, setBasemap, styleEpoch,
+  } = useMapLibre({ center: MAP_CENTER, zoom: MAP_ZOOM });
 
   const originRef = useRef(null);
   const destRef = useRef(null);
@@ -198,6 +200,17 @@ const ZurichEruvLab = () => {
   const [rerouting, setRerouting] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState('');
   const [showSteps, setShowSteps] = useState(false);
+
+  /* Sidebar collapse. Remembered per browser — a convenience, never anything
+     the page depends on, so a private window or blocked storage just means it
+     starts open. */
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    try {
+      return window.localStorage.getItem('zlab-sidebar') !== 'closed';
+    } catch {
+      return true;
+    }
+  });
   const [undoDepth, setUndoDepth] = useState(0);
 
   // Read by async callbacks that must not close over a stale trip.
@@ -245,6 +258,24 @@ const ZurichEruvLab = () => {
     };
   }, []);
 
+  /* The map canvas is sized in pixels, so MapLibre has to be told the
+     container changed. Once on the next frame and once after the CSS
+     transition, so it is right both during and after the animation. */
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('zlab-sidebar', sidebarOpen ? 'open' : 'closed');
+    } catch {
+      /* storage unavailable — the layout still works, it just won't persist */
+    }
+    if (!map.current) return undefined;
+    const raf = requestAnimationFrame(() => map.current?.resize());
+    const timer = setTimeout(() => map.current?.resize(), 320);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(timer);
+    };
+  }, [sidebarOpen, map]);
+
   /* ── Static boundary layers, drawn once the style is ready ── */
   const boundaryData = useMemo(() => polygonFeature(ERUV_BOUNDARY), []);
   const exclusionData = useMemo(
@@ -273,7 +304,8 @@ const ZurichEruvLab = () => {
     upsertGeoJson(m, 'eruv-segments', segmentData, [
       { type: 'line', paint: { 'line-color': '#111111', 'line-width': 3 } },
     ]);
-  }, [ready, map, boundaryData, exclusionData, segmentData]);
+    // styleEpoch: a basemap change discards these, so they are added again.
+  }, [ready, map, styleEpoch, boundaryData, exclusionData, segmentData]);
 
   /* ── Marker for the checked address ── */
   useEffect(() => {
@@ -330,7 +362,7 @@ const ZurichEruvLab = () => {
         paint: { 'line-width': 26, 'line-opacity': 0 },
       },
     ]);
-  }, [ready, map, routeFeatures, tab]);
+  }, [ready, map, styleEpoch, routeFeatures, tab]);
 
   /* Dim the line while a re-route is in flight, so a slow reply reads as
      "working on it" rather than "nothing happened". */
@@ -338,7 +370,7 @@ const ZurichEruvLab = () => {
     const m = map.current;
     if (!ready || !m || !m.getLayer(ROUTE_LINE_LAYER)) return;
     m.setPaintProperty(ROUTE_LINE_LAYER, 'line-opacity', rerouting ? 0.4 : 1);
-  }, [ready, map, rerouting, routeFeatures]);
+  }, [ready, map, styleEpoch, rerouting, routeFeatures]);
 
   /* ══════════ Routing ══════════ */
 
@@ -451,6 +483,7 @@ const ZurichEruvLab = () => {
     ready,
     active: ready && tab === 'route' && !!trip && !!routePath,
     hitLayerId: ROUTE_HIT_LAYER,
+    styleEpoch,
     trip,
     path: routePath,
     eruv: ERUV,
@@ -618,7 +651,7 @@ const ZurichEruvLab = () => {
       </div>
 
       {/* ── Sidebar + Map ── */}
-      <div className="zlab-container">
+      <div className={`zlab-container ${sidebarOpen ? '' : 'zlab-container--collapsed'}`}>
 
         <div className="zlab-sidebar">
           <div className="zlab-tabs">
@@ -804,6 +837,34 @@ const ZurichEruvLab = () => {
         {/* ── Map ── */}
         <div className="zlab-map-wrap">
           <div ref={containerRef} className="zlab-map" />
+
+          <button
+            type="button"
+            className="zlab-collapse"
+            onClick={() => setSidebarOpen((open) => !open)}
+            aria-expanded={sidebarOpen}
+            title={sidebarOpen ? 'Hide the panel and widen the map' : 'Show the panel'}
+            aria-label={sidebarOpen ? 'Hide the panel and widen the map' : 'Show the panel'}
+          >
+            <span aria-hidden="true">{sidebarOpen ? '\u2039' : '\u203a'}</span>
+          </button>
+
+          {/* Basemap switcher. Sits over the map rather than in the sidebar so
+              it stays reachable when the sidebar is collapsed. */}
+          <div className="zlab-layers" role="group" aria-label="Map style">
+            {BASEMAPS.map((b) => (
+              <button
+                key={b.id}
+                type="button"
+                className={`zlab-layer-btn ${basemap === b.id ? 'is-active' : ''}`}
+                onClick={() => setBasemap(b.id)}
+                aria-pressed={basemap === b.id}
+              >
+                {b.label}
+              </button>
+            ))}
+          </div>
+
           {!ready && (
             <div className="zlab-map-loading">
               <div className="zlab-spinner" />

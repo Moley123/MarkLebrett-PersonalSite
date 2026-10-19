@@ -222,6 +222,30 @@ const EruvMap = () => {
   const originInputRef   = useRef(null);
   const destInputRef     = useRef(null);
 
+  /* Sidebar collapse, so the map can take the full width. Remembered per
+     browser; a private window or blocked storage just starts it open. */
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    try {
+      return window.localStorage.getItem('zurich-sidebar') !== 'closed';
+    } catch {
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('zurich-sidebar', sidebarOpen ? 'open' : 'closed');
+    } catch {
+      /* storage unavailable — the layout still works, it just won't persist */
+    }
+    // Google Maps watches its container, but nudging it after the transition
+    // avoids a stale canvas on browsers where that observer is slow.
+    const timer = setTimeout(() => {
+      if (mapRef.current) window.google?.maps?.event?.trigger(mapRef.current, 'resize');
+    }, 320);
+    return () => clearTimeout(timer);
+  }, [sidebarOpen]);
+
   const [tab,          setTab]          = useState('check');
   const [marker,       setMarker]       = useState(null);
   const [insideStatus, setInsideStatus] = useState(null);
@@ -447,7 +471,7 @@ const EruvMap = () => {
       </div>
 
       {/* ── Sidebar + Map ── */}
-      <div className="eruv-container">
+      <div className={`eruv-container ${sidebarOpen ? '' : 'eruv-container--collapsed'}`}>
 
         {/* ── Left Sidebar ── */}
         <div className="eruv-sidebar">
@@ -521,6 +545,16 @@ const EruvMap = () => {
 
         {/* ── Map ── */}
         <div className="eruv-map-wrap">
+          <button
+            type="button"
+            className="eruv-collapse"
+            onClick={() => setSidebarOpen((open) => !open)}
+            aria-expanded={sidebarOpen}
+            title={sidebarOpen ? 'Hide the panel and widen the map' : 'Show the panel'}
+            aria-label={sidebarOpen ? 'Hide the panel and widen the map' : 'Show the panel'}
+          >
+            <span aria-hidden="true">{sidebarOpen ? '\u2039' : '\u203a'}</span>
+          </button>
           <GoogleMap mapContainerClassName="eruv-map" center={MAP_CENTER} zoom={13} options={MAP_OPTIONS} onLoad={onMapLoad}>
             {/* Invisible polygon — used only for containsLocation() point-in-polygon checks */}
             <Polygon paths={ERUV_BOUNDARY} options={POLYGON_OPTIONS} />

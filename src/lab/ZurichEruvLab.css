@@ -745,3 +745,130 @@
 .zlab-stop-marker--dest {
     color: #fff;
 }
+
+/* ═══════════════════════════════════════════════════════
+   Map framing, layer switcher, collapsible panel
+   ═══════════════════════════════════════════════════════ */
+
+/* The map used to bleed to the right and bottom edges of the window. Inset it
+   and round the corners so it reads as a panel rather than the page itself. */
+.zlab-map-wrap {
+    margin: 0.75rem 0.75rem 0.75rem 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+.zlab-map {
+    border-radius: calc(var(--radius) - 1px);
+}
+
+/* ── Collapsing the sidebar ── */
+.zlab-sidebar {
+    transition: width var(--ease), opacity var(--ease);
+}
+
+.zlab-container--collapsed .zlab-sidebar {
+    width: 0;
+    min-width: 0;
+    padding: 0;
+    opacity: 0;
+    overflow: hidden;
+    border-right: none;
+    pointer-events: none;
+}
+
+.zlab-container--collapsed .zlab-map-wrap {
+    margin-left: 0.75rem;
+}
+
+.zlab-collapse {
+    /* A handle on the left edge, vertically centred. Google puts its map-type
+       control at the map's top-left corner and MapLibre stacks its own at the
+       top-right, so the middle of the edge is the one spot that collides with
+       neither. */
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    z-index: 4;
+    width: 22px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    background: rgba(8, 11, 16, 0.85);
+    backdrop-filter: blur(8px);
+    color: var(--text);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: all var(--ease);
+}
+
+.zlab-collapse:hover {
+    border-color: var(--border-hi);
+    color: var(--blue);
+}
+
+/* ── Basemap switcher ── */
+.zlab-layers {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 4;
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: rgba(8, 11, 16, 0.85);
+    backdrop-filter: blur(8px);
+}
+
+.zlab-layer-btn {
+    padding: 0.3rem 0.6rem;
+    border: none;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--font);
+    font-size: 0.73rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all var(--ease);
+}
+
+.zlab-layer-btn:hover { color: var(--text); }
+
+.zlab-layer-btn.is-active {
+    background: var(--blue);
+    color: #fff;
+}
+
+@media (max-width: 768px) {
+    .zlab-map-wrap {
+        margin: 0.5rem;
+    }
+
+    .zlab-container--collapsed .zlab-sidebar {
+        max-height: 0;
+        border-bottom: none;
+    }
+
+    /* Labels alone are too wide on a phone; the row scrolls instead. */
+    .zlab-layers {
+        left: 0.75rem;
+        right: 0.75rem;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .zlab-layers::-webkit-scrollbar { display: none; }
+}
