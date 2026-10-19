@@ -12,14 +12,14 @@ const kmlSources = [
     isPrototype: false
   },
   {
-    file: 'GGmap_v3.kml',
+    file: 'GGmap_v5.kml',
     hasFolders: false,
     forcedName: 'Golders Green Eruv',
     authority: 'KF',
     isPrototype: true
   },
   {
-    file: 'SHmap_v1.kml',
+    file: 'SHmap_v4.kml',
     hasFolders: false,
     forcedName: 'Stamford Hill Eruv',
     authority: 'UOHC',
