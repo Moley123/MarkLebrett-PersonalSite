@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#111827">
+<meta name="robots" content="noindex">
+<title>Offline · Mark Lebrett</title>
+<!--
+  Shown by the service worker when a page can't be loaded because there is no
+  connection. Everything it needs is inline: when this page is on screen,
+  nothing else can be fetched.
+-->
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    background: radial-gradient(ellipse 70% 60% at 50% 40%, #16243d 0%, #111827 60%, #0b1220 100%);
+    color: #e2e8f0;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    text-align: center;
+  }
+  main { max-width: 380px; }
+  .mark { width: 72px; height: 72px; display: block; margin: 0 auto 28px; }
+  h1 { font-size: 1.4rem; margin: 0 0 10px; letter-spacing: -0.01em; }
+  p { margin: 0 0 26px; color: #94a3b8; line-height: 1.55; font-size: 0.95rem; }
+  button {
+    font: inherit; font-weight: 600; font-size: 0.9rem;
+    padding: 0.65rem 1.4rem; border-radius: 10px; cursor: pointer;
+    border: 1px solid rgba(96, 165, 250, 0.45);
+    background: rgba(59, 130, 246, 0.14); color: #bfdbfe;
+  }
+  button:hover { background: rgba(59, 130, 246, 0.24); }
+  button:focus-visible { outline: 2px solid #60a5fa; outline-offset: 3px; }
+  .hint { margin: 18px 0 0; font-size: 0.78rem; color: #64748b; }
+</style>
+</head>
+<body>
+<main>
+  <svg class="mark" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="ml-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#60a5fa"/><stop offset="100%" stop-color="#34d399"/></linearGradient></defs><rect width="32" height="32" rx="7" fill="#111827"/><path d="M4.90625 22.0H7.671875V16.984375C7.671875 16.1171875 7.6015625 14.2890625 7.5703125 12.7578125C7.96875 14.3984375 8.4453125 16.125 8.71875 16.984375L10.3984375 22.0H12.703125L14.359375 16.984375C14.640625 16.09375 15.1328125 14.2890625 15.515625 12.625C15.484375 14.1953125 15.4140625 16.1015625 15.4140625 16.984375V22.0H18.1875V10.359375H13.8828125L12.421875 14.890625C12.1875 15.6875 11.828125 17.359375 11.5625 18.75C11.2890625 17.359375 10.9296875 15.6875 10.6875 14.890625L9.203125 10.359375H4.90625ZM20.0 22.0H27.625V19.75H22.7578125V10.359375H20.0Z" fill="url(#ml-g)"/></svg>
+  <h1>You&rsquo;re offline</h1>
+  <p>This page needs an internet connection. Check you&rsquo;re connected, then try again.</p>
+  <button type="button" onclick="location.reload()">Try again</button>
+  <p class="hint">It will reload by itself once you&rsquo;re back online.</p>
+</main>
+<script>
+  // Reload as soon as the connection returns, so nobody has to notice.
+  window.addEventListener('online', function () { location.reload(); });
+</script>
+</body>
+</html>

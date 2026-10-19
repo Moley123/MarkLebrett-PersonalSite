@@ -8,6 +8,7 @@ import EruvMap from './components/EruvMap';
 import NWLondonMap from './components/NWLondonMap';
 import GibraltarMap from './components/GibraltarMap';
 import GematriaApp from './gematria/GematriaApp';
+import UpdateToast from './components/UpdateToast';
 
 /* ══════════════════════════════════════════════════════════════════════
    Lab route — a sandbox copy of the Zurich eruv page, used to trial
@@ -79,6 +80,9 @@ const App = () => {
             </div>
         } />
       </Routes>
+
+      {/* "New version available" — outside the routes so it shows on every page. */}
+      <UpdateToast />
     </Router>
   );
 };

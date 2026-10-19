@@ -40,6 +40,9 @@
     <!-- Full-bleed square: iOS applies its own rounded mask. -->
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/apple-touch-icon.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <!-- iOS reads the manifest for most things, but takes the home-screen
+         label from here; without it, it uses the full <title>. -->
+    <meta name="apple-mobile-web-app-title" content="Mark Lebrett" />
 
     <!-- Google Analytics (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-TEL1PZV881"></script>
