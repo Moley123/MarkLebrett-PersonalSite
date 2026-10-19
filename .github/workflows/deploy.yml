@@ -41,6 +41,20 @@ jobs:
           python -m pip install --quiet requests
           python backend_tools/build_race_data.py
 
+      - name: Check the Google Maps key is present
+        # Without it the build still succeeds and the image still deploys — the
+        # live maps just come up as Google's "for development purposes only"
+        # watermark. That is a silent failure the pipeline cannot otherwise
+        # see, so it is turned into a loud one here.
+        env:
+          KEY: ${{ secrets.REACT_APP_GOOGLE_MAPS_API_KEY }}
+        run: |
+          if [ -z "$KEY" ]; then
+            echo "::error::REACT_APP_GOOGLE_MAPS_API_KEY is not set. Add it under Settings → Secrets and variables → Actions. The value is the key from the droplet's .env; it is inlined into the bundle and is protected by a referrer restriction, not by being secret."
+            exit 1
+          fi
+          echo "Maps key present (${#KEY} characters)."
+
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
@@ -56,6 +70,10 @@ jobs:
         with:
           context: .
           push: true
+          # CRA inlines this at build time; see the Dockerfile for why it is a
+          # build arg rather than a runtime variable.
+          build-args: |
+            REACT_APP_GOOGLE_MAPS_API_KEY=${{ secrets.REACT_APP_GOOGLE_MAPS_API_KEY }}
           tags: |
             ${{ env.IMAGE }}:latest
             ${{ env.IMAGE }}:${{ github.sha }}
