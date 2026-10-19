@@ -2,6 +2,5 @@
 User-agent: *
 Disallow: /lab-
 
-# Pages under /lab-* are work-in-progress sandbox copies and must not be
-# indexed. They are also absent from normal builds — craco.config.js stubs
-# them out unless REACT_APP_LAB=1.
+# Pages under /lab-* are work-in-progress sandbox copies of the eruv pages
+# and must not be indexed. They also send noindex themselves.

@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════
-   Zurich Eruv LAB — copy of EruvMap.css, classes renamed zlab-*
-   so nothing here can affect the live /zurich-eiruv page.
+   Eruv LABs — shared by every lab page; classes are zlab-*
+   so nothing here can affect the live eruv pages.
 ═══════════════════════════════════════════════════════ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -901,4 +901,37 @@
         top: 1.9rem;
         right: 3.25rem;
     }
+}
+
+/* ── Eruv notes (Gibraltar) ── */
+.zlab-notes h3 { margin-bottom: 0.75rem; }
+
+.zlab-note {
+    padding: 0.8rem 0.9rem;
+    margin-bottom: 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.02);
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.zlab-note strong {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: var(--text);
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+}
+
+.zlab-note p {
+    margin: 0;
+    color: #94a3b8;
+    white-space: pre-line;
+}
+
+.zlab-note a {
+    display: inline-block;
+    margin: 0.45rem 0.75rem 0 0;
+    color: #93c5fd;
 }
