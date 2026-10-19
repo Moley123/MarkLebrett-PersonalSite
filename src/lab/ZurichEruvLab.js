@@ -56,6 +56,7 @@ import useMapLibre, {
   BASEMAPS, featureCollection, fitToPoints, lineFeature, polygonFeature, upsertGeoJson, Marker,
 } from './useMapLibre';
 import './ZurichEruvLab.css';
+import useEruvFavicon from '../components/useEruvFavicon';
 
 /* Places only — Turf has replaced everything `geometry` was used for. */
 const LIBRARIES = ['places'];
@@ -166,6 +167,7 @@ async function findInBoundaryRoute(origin, dest, service) {
 /* ══════════════════ Component ══════════════════ */
 
 const ZurichEruvLab = () => {
+  useEruvFavicon();
   // Google is still needed for Places Autocomplete and DirectionsService.
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '',
@@ -229,7 +231,7 @@ const ZurichEruvLab = () => {
     return directionsRef.current;
   };
 
-  /* ── Title, favicon, noindex ── */
+  /* ── Title, noindex ── */
   useEffect(() => {
     document.title = 'LAB · Zurich Eruv Route Planner';
 
@@ -238,22 +240,8 @@ const ZurichEruvLab = () => {
     robots.content = 'noindex, nofollow, noarchive';
     document.head.appendChild(robots);
 
-    const svgFavicon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-      <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#10b981"/><stop offset="100%" stop-color="#3b82f6"/>
-      </linearGradient></defs>
-      <rect width="32" height="32" rx="7" fill="#0f172a"/>
-      <path d="M16 6 L6 14 v12 h20 V14 Z" fill="none" stroke="url(#g)" stroke-width="2.5" stroke-linejoin="round"/>
-      <circle cx="16" cy="18" r="3" fill="url(#g)"/>
-    </svg>`;
-    const favicon = document.createElement('link');
-    favicon.rel = 'icon';
-    favicon.type = 'image/svg+xml';
-    favicon.href = `data:image/svg+xml,${encodeURIComponent(svgFavicon)}`;
-    document.head.appendChild(favicon);
 
     return () => {
-      if (document.head.contains(favicon)) document.head.removeChild(favicon);
       if (document.head.contains(robots)) document.head.removeChild(robots);
     };
   }, []);

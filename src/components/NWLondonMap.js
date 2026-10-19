@@ -14,6 +14,7 @@ import { NEW_ERUVIM } from '../data/new_eruvim';
 import { ERUV_NOTES } from '../data/eruv_notes';
 import { membershipMessage } from '../data/eruvMembership';
 import './NWLondonMap.css';
+import useEruvFavicon from './useEruvFavicon';
 
 // Every eruv in new_eruvim.js is a KLBD (London Beis Din) boundary. Listing
 // them explicitly rather than spreading NEW_ERUVIM keeps the order — and so
@@ -203,6 +204,7 @@ async function findRoute(originLoc, destLoc, isCrossing, activePolys, service) {
 
 /* ═══════ Component ═══════ */
 const NWLondonMap = () => {
+  useEruvFavicon();
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '',
     libraries: LIBRARIES,
