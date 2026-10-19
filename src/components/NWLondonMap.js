@@ -12,6 +12,7 @@ import {
 import { NWLONDON_ERUVIM, CROSSING_POINTS } from '../data/nwlondon_data';
 import { NEW_ERUVIM } from '../data/new_eruvim';
 import { ERUV_NOTES } from '../data/eruv_notes';
+import { membershipMessage } from '../data/eruvMembership';
 import './NWLondonMap.css';
 
 // Every eruv in new_eruvim.js is a KLBD (London Beis Din) boundary. Listing
@@ -65,11 +66,33 @@ function buildContainmentPolys(activeNames) {
     }));
 }
 
+/**
+ * The first active eruv containing the point, or null.
+ *
+ * Still first-match-wins, and deliberately so: route validation below treats a
+ * change of eruv as a crossing, and that only works if a given point always
+ * resolves to the same one. The South Hampstead ordering note above is part of
+ * the same arrangement.
+ */
 function whichEruvContains(latLng, activePolys) {
   for (const { name, poly } of activePolys) {
     if (window.google.maps.geometry.poly.containsLocation(latLng, poly)) return name;
   }
   return null;
+}
+
+/**
+ * Every active eruv containing the point.
+ *
+ * The eruvim genuinely overlap, so an address can be in more than one and the
+ * location check should say so. What to do with the list — including the
+ * South Hampstead rule — lives in ../data/eruvMembership, where it can be
+ * tested without a map.
+ */
+function eruvimContaining(latLng, activePolys) {
+  return activePolys
+    .filter(({ poly }) => window.google.maps.geometry.poly.containsLocation(latLng, poly))
+    .map(({ name }) => name);
 }
 
 function decodePath(encoded) {
@@ -198,6 +221,30 @@ const NWLondonMap = () => {
     });
   }, []);
 
+  /* Sidebar collapse, so the map can take the full width. Remembered per
+     browser; a private window or blocked storage just starts it open. */
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    try {
+      return window.localStorage.getItem('nwl-sidebar') !== 'closed';
+    } catch {
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('nwl-sidebar', sidebarOpen ? 'open' : 'closed');
+    } catch {
+      /* storage unavailable — the layout still works, it just won't persist */
+    }
+    // Google Maps watches its container, but nudging it after the transition
+    // avoids a stale canvas on browsers where that observer is slow.
+    const timer = setTimeout(() => {
+      if (mapRef.current) window.google?.maps?.event?.trigger(mapRef.current, 'resize');
+    }, 320);
+    return () => clearTimeout(timer);
+  }, [sidebarOpen]);
+
   const [activeTab, setActiveTab] = useState('check');
   const [activeEruvinNames, setActiveEruvinNames] = useState(ALL_ERUVIM.map(e => e.name));
   const [showCrossingPins, setShowCrossingPins] = useState(true);
@@ -265,10 +312,12 @@ const NWLondonMap = () => {
     mapRef.current.panTo(loc);
     mapRef.current.setZoom(15);
     setDirectionsResult(null);
+    // Only the layers that are switched on are considered, so the answer
+    // always matches what is drawn on the map.
     const polys = buildContainmentPolys(activeEruvinNames);
-    const name = whichEruvContains(loc, polys);
-    setCheckResult(name
-      ? { state: 'inside', msg: `Inside ${name}!` }
+    const msg = membershipMessage(eruvimContaining(loc, polys));
+    setCheckResult(msg
+      ? { state: 'inside', msg }
       : { state: 'outside', msg: 'Outside active Eruvin bounds.' }
     );
   };
@@ -400,7 +449,7 @@ const NWLondonMap = () => {
         </div>
       </div>
 
-      <div className="eruv-container">
+      <div className={`eruv-container ${sidebarOpen ? '' : 'eruv-container--collapsed'}`}>
         <div className="eruv-sidebar">
           <div className="eruv-tabs">
             <button className={`eruv-tab ${activeTab === 'check' ? 'active' : ''}`}
@@ -618,6 +667,16 @@ const NWLondonMap = () => {
         </div>
 
         <div className="eruv-map-wrap">
+          <button
+            type="button"
+            className="eruv-collapse"
+            onClick={() => setSidebarOpen((open) => !open)}
+            aria-expanded={sidebarOpen}
+            title={sidebarOpen ? 'Hide the panel and widen the map' : 'Show the panel'}
+            aria-label={sidebarOpen ? 'Hide the panel and widen the map' : 'Show the panel'}
+          >
+            <span aria-hidden="true">{sidebarOpen ? '\u2039' : '\u203a'}</span>
+          </button>
           <GoogleMap mapContainerClassName="eruv-map" center={MAP_CENTER} zoom={12} options={MAP_OPTIONS} onLoad={onMapLoad}>
 
             {/* Raw segment Polylines for accurate boundary rendering */}

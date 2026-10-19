@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 // MapLibre 6 is named-exports-only — there is no default export. `Map` is
 // aliased so it doesn't shadow the global.
 import {
@@ -33,6 +33,49 @@ setWorkerUrl(`${process.env.PUBLIC_URL || ''}/maplibre-gl-worker.mjs`);
 export const STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty';
 
 /**
+ * Esri's World Imagery, as a minimal raster style.
+ *
+ * OpenFreeMap is vector-only and has no aerial imagery, so satellite needs a
+ * second provider. Note the tile path is {z}/{y}/{x} — row before column,
+ * which is Esri's order and not the {z}/{x}/{y} most providers use.
+ *
+ * Esri permit this for non-commercial use provided the attribution below is
+ * shown. It is a different organisation with different terms from
+ * OpenFreeMap, so if imagery stops loading one day, this is the line to look
+ * at first.
+ */
+const ESRI_SATELLITE_STYLE = {
+  version: 8,
+  sources: {
+    'esri-imagery': {
+      type: 'raster',
+      tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+      tileSize: 256,
+      maxzoom: 19,
+      attribution: 'Imagery © <a href="https://www.esri.com" target="_blank" rel="noreferrer">Esri</a>, Maxar, Earthstar Geographics',
+    },
+  },
+  layers: [{ id: 'esri-imagery', type: 'raster', source: 'esri-imagery' }],
+};
+
+/**
+ * The basemaps offered by the layer switcher.
+ *
+ * Attribution is deliberately NOT set on the map: every style here carries its
+ * own in its source definitions, so MapLibre's AttributionControl shows
+ * whichever is actually on screen. Hard-coding OpenFreeMap's would have
+ * credited them for Esri's imagery.
+ */
+export const BASEMAPS = [
+  { id: 'liberty', label: 'Streets', style: 'https://tiles.openfreemap.org/styles/liberty' },
+  { id: 'bright', label: 'Bright', style: 'https://tiles.openfreemap.org/styles/bright' },
+  { id: 'positron', label: 'Minimal', style: 'https://tiles.openfreemap.org/styles/positron' },
+  { id: 'satellite', label: 'Satellite', style: ESRI_SATELLITE_STYLE },
+];
+
+export const DEFAULT_BASEMAP = 'liberty';
+
+/**
  * Used when the tile style can't be fetched — offline, provider down, or
  * blocked by a network policy. The eruv boundary matters far more than the
  * basemap, so rather than hang on a spinner the map falls back to a plain
@@ -59,6 +102,22 @@ export default function useMapLibre({ center, zoom }) {
   const mapRef = useRef(null);
   const [ready, setReady] = useState(false);
   const [basemapFailed, setBasemapFailed] = useState(false);
+  const [basemap, setBasemapId] = useState(DEFAULT_BASEMAP);
+
+  /**
+   * Bumped every time a new style finishes loading.
+   *
+   * `setStyle` throws away every source and layer that was added on top of the
+   * old one, so the eruv boundaries and the route vanish with it. Callers put
+   * this in the dependency array of whatever draws them, and they are put back
+   * as soon as the new style is ready.
+   */
+  const [styleEpoch, setStyleEpoch] = useState(0);
+
+  // Whether the plain fallback is currently standing in for a style that
+  // wouldn't load. A ref rather than a closure variable so that picking a
+  // different basemap can clear it and a later failure is reported again.
+  const fellBackRef = useRef(false);
 
   useEffect(() => {
     if (mapRef.current || !containerRef.current) return undefined;
@@ -73,28 +132,28 @@ export default function useMapLibre({ center, zoom }) {
 
     map.addControl(new NavigationControl({ showCompass: false }), 'top-right');
     map.addControl(new FullscreenControl(), 'top-right');
-    map.addControl(new AttributionControl({
-      compact: true,
-      // OpenFreeMap and OpenStreetMap both require attribution.
-      customAttribution:
-        '<a href="https://openfreemap.org" target="_blank" rel="noreferrer">OpenFreeMap</a> · '
-        + '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap</a>',
-    }));
+    // No customAttribution: each style carries its own, so the credit follows
+    // whichever basemap is actually being shown.
+    map.addControl(new AttributionControl({ compact: true }));
 
     mapRef.current = map;
     map.on('load', () => setReady(true));
 
     // If the style itself cannot be fetched, `load` never fires. Swap in the
     // plain fallback so the page becomes usable instead of hanging.
-    let fellBack = false;
     map.on('error', (e) => {
-      const failedStyle = !map.isStyleLoaded() && !fellBack;
+      const failedStyle = !map.isStyleLoaded() && !fellBackRef.current;
       if (!failedStyle) return;             // tile-level errors are not fatal
-      fellBack = true;
+      fellBackRef.current = true;
       setBasemapFailed(true);
       try {
         map.setStyle(FALLBACK_STYLE);
-        map.once('styledata', () => setReady(true));
+        // The fallback discards custom layers just as any other style swap
+        // does, so callers need the same nudge to redraw them.
+        map.once('styledata', () => {
+          setReady(true);
+          setStyleEpoch((n) => n + 1);
+        });
       } catch {
         setReady(true);
       }
@@ -117,7 +176,56 @@ export default function useMapLibre({ center, zoom }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { containerRef, map: mapRef, ready, basemapFailed };
+  /**
+   * Swap the basemap, keeping the camera where it is.
+   *
+   * `styledata` fires several times while a style is parsed, so it is only
+   * acted on once `isStyleLoaded()` agrees the new one is in place — at which
+   * point the sources and layers the caller added are gone and need putting
+   * back, which is what bumping styleEpoch asks for.
+   */
+  const setBasemap = useCallback((id) => {
+    const map = mapRef.current;
+    const next = BASEMAPS.find((b) => b.id === id);
+    if (!map || !next) return;
+
+    setBasemapId(id);
+    setBasemapFailed(false);
+    fellBackRef.current = false;
+
+    map.setStyle(next.style);
+
+    // How to tell the NEW style has arrived depends on how it was supplied.
+    //
+    // For a URL, `isStyleLoaded()` is the signal: there is a fetch and a parse
+    // to wait for, and the flag flips when they finish.
+    //
+    // For an object there is nothing to fetch, and `isStyleLoaded()` is no use
+    // at all — it is still false on the single `styledata` the swap emits, and
+    // turns true later with no further event, so waiting on it waits forever.
+    // That is the satellite basemap, and it is why it came up with no eruv
+    // boundaries on it. The presence of a layer only the new style defines is
+    // both sufficient and immediate.
+    const marker = typeof next.style === 'object' ? next.style.layers?.[0]?.id : null;
+    const arrived = marker
+      ? () => !!map.getLayer(marker)
+      : () => map.isStyleLoaded();
+
+    const onStyleData = () => {
+      if (!arrived()) return;
+      map.off('styledata', onStyleData);
+      setStyleEpoch((n) => n + 1);
+    };
+    map.on('styledata', onStyleData);
+
+    // An object style can be fully applied before setStyle returns, firing its
+    // one event with no listener yet attached.
+    if (marker) onStyleData();
+  }, []);
+
+  return {
+    containerRef, map: mapRef, ready, basemapFailed, basemap, setBasemap, styleEpoch,
+  };
 }
 
 /* ══════════════════ GeoJSON helpers ══════════════════ */

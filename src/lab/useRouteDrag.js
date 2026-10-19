@@ -107,6 +107,7 @@ function attachKeyboardDrag(map, marker, { onDrag, onDragEnd }) {
 
 export default function useRouteDrag({
   map, ready, active, hitLayerId, trip, path, eruv, onChange, onRemoveVia,
+  styleEpoch = 0,
 }) {
   // Handlers are bound once per activation but must read the current trip, so
   // the live values go through a ref rather than the closure.
@@ -301,7 +302,9 @@ export default function useRouteDrag({
     // `trip` and `path` are read through liveRef, so changing them must not
     // tear the listeners down and rebind them mid-gesture.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, map, active, hitLayerId, eruv, onChange, bandTo, setPreview, showGhost, hideGhost]);
+    // styleEpoch: changing the basemap destroys the hit layer and rebuilds it,
+    // so the listeners are rebound against the new one.
+  }, [ready, map, active, hitLayerId, styleEpoch, eruv, onChange, bandTo, setPreview, showGhost, hideGhost]);
 
   /* ════════════════ Endpoint and via handles ════════════════ */
 

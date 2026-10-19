@@ -606,3 +606,84 @@
     border-top: 1px dashed rgba(255, 255, 255, 0.1);
     margin: 0.5rem 0;
 }
+/* ═══════════════════════════════════════════════════════
+   Map framing and collapsible panel
+   ═══════════════════════════════════════════════════════ */
+
+/* The map used to run to the right and bottom edges of the window. Inset it
+   and round the corners so it reads as a panel rather than the page itself. */
+.eruv-map-wrap {
+    margin: 0.75rem 0.75rem 0.75rem 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+.eruv-sidebar {
+    transition: width var(--ease), opacity var(--ease);
+}
+
+.eruv-container--collapsed .eruv-sidebar {
+    width: 0;
+    min-width: 0;
+    padding: 0;
+    opacity: 0;
+    overflow: hidden;
+    border-right: none;
+    box-shadow: none;
+    pointer-events: none;
+}
+
+.eruv-container--collapsed .eruv-map-wrap {
+    margin-left: 0.75rem;
+}
+
+/* Sits over the map so it stays reachable when the panel is hidden. */
+.eruv-collapse {
+    /* A handle on the left edge, vertically centred. Google puts its map-type
+       control at the map's top-left corner and MapLibre stacks its own at the
+       top-right, so the middle of the edge is the one spot that collides with
+       neither. */
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    z-index: 6;
+    width: 22px;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    background: rgba(8, 11, 16, 0.85);
+    backdrop-filter: blur(8px);
+    color: var(--text);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: all var(--ease);
+}
+
+.eruv-collapse:hover {
+    border-color: var(--border-hi);
+    color: var(--blue);
+}
+
+@media (max-width: 768px) {
+    .eruv-map-wrap {
+        margin: 0.5rem;
+    }
+
+    .eruv-container--collapsed .eruv-sidebar {
+        max-height: 0;
+        border-bottom: none;
+    }
+
+    .eruv-container--collapsed .eruv-map-wrap {
+        margin: 0.5rem;
+    }
+}
