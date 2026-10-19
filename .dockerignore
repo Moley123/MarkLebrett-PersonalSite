@@ -1,0 +1,40 @@
+# What `COPY . .` must not drag into the build.
+#
+# The droplet builds the image on its own disk, so every megabyte of context
+# is a megabyte of layer it has to store. Nothing here is read by `npm run
+# build`: the React build needs package.json, craco.config.js, src/, public/,
+# scripts/ and nginx.conf, and that is all.
+
+# ── Version control and CI ──
+.git
+.gitignore
+.github
+
+# ── Installed and generated ──
+node_modules
+build
+coverage
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── Source map data for the eruv pages ──
+# Raw exports kept for provenance and re-generation. The parsed output lives
+# in src/data/, which is what the app imports.
+*.kml
+*.geojson
+The Edgware Eruv & Surrounding Eruvin.json
+
+# ── Tooling that runs on the host, not in the image ──
+# build_race_data.py is run by the deploy script before `docker compose build`
+# and writes src/data/race_data.json, which does get copied.
+backend_tools
+
+# ── Docs and scratch ──
+*.md
+*.code-workspace
+__pycache__
+*.pyc
+.DS_Store
+Dockerfile
+.dockerignore
