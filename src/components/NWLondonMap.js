@@ -9,39 +9,15 @@ import {
   Marker,
   DirectionsRenderer,
 } from '@react-google-maps/api';
-import { NWLONDON_ERUVIM, CROSSING_POINTS } from '../data/nwlondon_data';
-import { NEW_ERUVIM } from '../data/new_eruvim';
+import { CROSSING_POINTS } from '../data/nwlondon_data';
+import { ALL_ERUVIM } from '../data/nwlondonEruvim';
 import { ERUV_NOTES } from '../data/eruv_notes';
 import { membershipMessage } from '../data/eruvMembership';
 import './NWLondonMap.css';
 import useEruvFavicon from './useEruvFavicon';
 
-// Every eruv in new_eruvim.js is a KLBD (London Beis Din) boundary. Listing
-// them explicitly rather than spreading NEW_ERUVIM keeps the order — and so
-// the layer list — stable when the data file is regenerated.
-// South Hampstead is listed LAST deliberately. Its boundary cannot be closed
-// from the KLBD KML (its two open ends are 4,530m apart with no connecting
-// coordinates), so the stored ring is unreliable and overlaps its neighbours.
-// whichEruvContains() returns the first match, so keeping it last means the
-// verified boundaries win wherever they disagree.
-const EXTRA_LBD_NAMES = [
-  'Brondesbury Park Eruv',
-  "St John's Wood Eruv",
-  'Chigwell Eruv',
-  'South Hampstead Eruv',
-];
-const EXTRA_LBD_ERUVIM = EXTRA_LBD_NAMES
-  .map(name => NEW_ERUVIM.find(e => e.name === name))
-  .filter(Boolean)
-  .map(e => ({
-    ...e,
-    authority: 'LBD',
-    isPrototype: false,
-    containmentPath: e.containmentPath || [],
-    rawSegments: e.rawSegments || [],
-  }));
-
-const ALL_ERUVIM = [...NWLONDON_ERUVIM, ...EXTRA_LBD_ERUVIM];
+// The eruvim and their order — South Hampstead last, deliberately — live in
+// ../data/nwlondonEruvim, shared with the lab copy of this page.
 
 const LIBRARIES = ['places', 'geometry'];
 

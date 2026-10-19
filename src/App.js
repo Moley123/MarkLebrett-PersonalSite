@@ -32,6 +32,8 @@ const ZurichEruvLab = lazy(() => import('./lab/ZurichEruvLab'));
 // One token per lab, so knowing one path doesn't reveal the others.
 const GIBRALTAR_LAB_TOKEN = '9gUGkgMiK7st';
 const GibraltarEruvLab = lazy(() => import('./lab/GibraltarEruvLab'));
+const NWLONDON_LAB_TOKEN = 'm5B-BoBsnHAm';
+const NWLondonEruvLab = lazy(() => import('./lab/NWLondonEruvLab'));
 
 const App = () => {
   // Debug: Log to console so we know the App is actually running
@@ -78,6 +80,14 @@ const App = () => {
           element={(
             <Suspense fallback={<div style={{ padding: 50 }}>Loading lab…</div>}>
               <GibraltarEruvLab />
+            </Suspense>
+          )}
+        />
+        <Route
+          path={`/lab-${NWLONDON_LAB_TOKEN}`}
+          element={(
+            <Suspense fallback={<div style={{ padding: 50 }}>Loading lab…</div>}>
+              <NWLondonEruvLab />
             </Suspense>
           )}
         />

@@ -115,36 +115,41 @@ function requestRoute(origin, dest, waypoints, service) {
 /**
  * Multi-attempt in-eruv routing.
  *
- * Unchanged in approach from the live page — ask for a route, check whether it
- * strayed, retry with interior waypoints near the first crossing. The checking
- * is now done by Turf rather than Google, so it costs no API calls; only the
- * route requests themselves do.
+ * Unchanged in approach from the live pages — ask for a route, check whether
+ * it is acceptable, retry with interior waypoints near the first place it
+ * strayed. The checking is done by Turf rather than Google, so it costs no API
+ * calls; only the route requests themselves do.
  *
- * It now also reports which waypoints it settled on, so they can be handed to
- * the user as draggable stops rather than hidden inside a renderer.
+ * "Acceptable" comes from the route context (see defaultRouteContext): for a
+ * single eruv, every point inside it; for NW London with crossing allowed,
+ * inside the active eruvim and changing eruv only at a crossing point.
+ *
+ * It reports which waypoints it settled on, so they can be handed to the user
+ * as draggable stops rather than hidden inside a renderer.
  */
-async function findInBoundaryRoute(origin, dest, service, eruv) {
-  const direct = await requestRoute(origin, dest, [], service);
-  if (direct && eruv.containsAll(routePoints(direct))) {
-    return { result: direct, waypoints: [] };
-  }
+async function findInBoundaryRoute(origin, dest, service, ctx) {
+  const accept = (result) => {
+    const pts = routePoints(result);
+    return ctx.validate ? ctx.validate(pts) : ctx.eruv.containsAll(pts);
+  };
 
-  const crossing = direct ? eruv.firstOutside(routePoints(direct)) : null;
+  const direct = await requestRoute(origin, dest, [], service);
+  if (direct && accept(direct)) return { result: direct, waypoints: [] };
+
+  const crossing = direct ? ctx.eruv.firstOutside(routePoints(direct)) : null;
   const ref = crossing || {
     lat: (origin.lat + dest.lat) / 2,
     lng: (origin.lng + dest.lng) / 2,
   };
 
-  const sorted = [...interiorPoints(eruv)].sort((a, b) => (
+  const sorted = [...(ctx.waypoints || interiorPoints(ctx.eruv))].sort((a, b) => (
     Math.hypot(a.lat - ref.lat, a.lng - ref.lng)
     - Math.hypot(b.lat - ref.lat, b.lng - ref.lng)
   ));
 
   for (const wp of sorted.slice(0, 10)) {
     const result = await requestRoute(origin, dest, [wp], service);
-    if (result && eruv.containsAll(routePoints(result))) {
-      return { result, waypoints: [wp] };
-    }
+    if (result && accept(result)) return { result, waypoints: [wp] };
   }
 
   const near6 = sorted.slice(0, 6);
@@ -152,22 +157,68 @@ async function findInBoundaryRoute(origin, dest, service, eruv) {
     for (let j = i + 1; j < near6.length; j += 1) {
       const pair = [near6[i], near6[j]];
       const result = await requestRoute(origin, dest, pair, service);
-      if (result && eruv.containsAll(routePoints(result))) {
-        return { result, waypoints: pair };
-      }
+      if (result && accept(result)) return { result, waypoints: pair };
     }
   }
   return null;
 }
 
+/**
+ * Where a route between two points must stay, for a lab with one eruv.
+ *
+ * A lab with several (NW London) supplies its own `routeContext` instead —
+ * same shape, with the region depending on which eruvim are switched on and
+ * whether crossing between them is allowed.
+ *
+ * @returns {{eruv, validate?, waypoints?, invalidMessage?} | {error: string}}
+ */
+function defaultRouteContext(eruv) {
+  return ({ origin, destination }) => {
+    const oIn = eruv.contains(origin);
+    const dIn = eruv.contains(destination);
+    if (oIn && dIn) return { eruv };
+    return {
+      error: !oIn && !dIn ? 'Both the start and end points are outside the Eruv boundary.'
+        : !oIn ? 'The start point is outside the Eruv boundary.'
+          : 'The destination is outside the Eruv boundary.',
+    };
+  };
+}
+
+/** The location check, for a lab with one eruv. */
+function defaultCheckLocation(eruv) {
+  return (pt) => (eruv.contains(pt)
+    ? { inside: true, message: 'Inside Eruv' }
+    : { inside: false, message: 'Outside Eruv' });
+}
+
 /* ══════════════════ Component ══════════════════ */
 
-const EruvLab = ({ config }) => {
+/**
+ * @param {object}    props.config        the lab's settings (see ./labs.js)
+ * @param {ReactNode} [props.routeOptions] extra controls in the route form
+ * @param {ReactNode} [props.sidebarFooter] extra content under the panel
+ * @param {ReactNode} [props.notesPanel]   a notes tab richer than config.notes
+ */
+const EruvLab = ({
+  config, routeOptions = null, sidebarFooter = null, notesPanel = null,
+}) => {
   const {
     id, eruv, center, zoom, mapLayers, livePath,
     docTitle, heading, subtitle, checkIntro, printTitle,
-    autocompleteOptions = {}, placeholders = {}, notes = null,
+    autocompleteOptions = {}, placeholders = {}, notes = null, mapLabels = null,
   } = config;
+
+  // Labs with one eruv get these from it; a lab with several passes its own.
+  const routeContext = useMemo(
+    () => config.routeContext || defaultRouteContext(eruv),
+    [config.routeContext, eruv],
+  );
+  const checkLocation = useMemo(
+    () => config.checkLocation || defaultCheckLocation(eruv),
+    [config.checkLocation, eruv],
+  );
+  const hasNotes = !!(notesPanel || notes);
 
   useEruvFavicon();
   // Google is still needed for Places Autocomplete and DirectionsService.
@@ -191,11 +242,20 @@ const EruvLab = ({ config }) => {
 
   const [tab, setTab] = useState('check');
   const [marker, setMarker] = useState(null);
-  const [insideStatus, setInsideStatus] = useState(null);
+
+  /* Derived rather than stored, so it follows the map: switch an eruv's layer
+     off and an address's verdict updates without searching again. */
+  const checkResult = useMemo(
+    () => (marker ? checkLocation(marker) : null),
+    [marker, checkLocation],
+  );
+  const insideStatus = checkResult && (checkResult.inside ? 'inside' : 'outside');
 
   /* A trip is the editable thing: two endpoints and an ordered list of stops.
      Everything drawn on the map is derived from it plus Google's answer. */
   const [trip, setTrip] = useState(null);
+  // Which region the current trip is held to; see defaultRouteContext.
+  const [routeCtx, setRouteCtx] = useState(null);
   const [routePath, setRoutePath] = useState(null);
   const [routeInfo, setRouteInfo] = useState(null);
   const [routeStatus, setRouteStatus] = useState(null);
@@ -300,13 +360,13 @@ const EruvLab = ({ config }) => {
      red. DirectionsRenderer draws one colour and leaves you to guess. */
   const routeFeatures = useMemo(() => {
     if (!routePath || routePath.length < 2) return featureCollection([]);
-    const runs = splitByContainment(routePath, eruv);
+    const runs = splitByContainment(routePath, (routeCtx && routeCtx.eruv) || eruv);
     const source = runs.length ? runs : [{ inside: true, points: routePath }];
     return featureCollection(source.map((run) => ({
       ...lineFeature(run.points),
       properties: { inside: run.inside },
     })));
-  }, [routePath, eruv]);
+  }, [routePath, routeCtx, eruv]);
 
   useEffect(() => {
     if (!ready || !map.current) return;
@@ -345,10 +405,32 @@ const EruvLab = ({ config }) => {
     m.setPaintProperty(ROUTE_LINE_LAYER, 'line-opacity', rerouting ? 0.4 : 1);
   }, [ready, map, styleEpoch, rerouting, routeFeatures]);
 
+  /* ── Eruv name labels ──
+     DOM markers rather than a symbol layer: text in a style needs that style
+     to supply fonts, and the satellite basemap supplies none. Markers also
+     survive basemap changes untouched. */
+  const labelMarkersRef = useRef([]);
+  useEffect(() => {
+    labelMarkersRef.current.forEach((mk) => mk.remove());
+    labelMarkersRef.current = [];
+    if (!ready || !map.current || !mapLabels) return undefined;
+    labelMarkersRef.current = mapLabels.map(({ text, color, lat, lng }) => {
+      const el = document.createElement('div');
+      el.className = 'zlab-eruv-label';
+      el.textContent = text;
+      el.style.color = color;
+      return new Marker({ element: el, anchor: 'center' }).setLngLat([lng, lat]).addTo(map.current);
+    });
+    return () => {
+      labelMarkersRef.current.forEach((mk) => mk.remove());
+      labelMarkersRef.current = [];
+    };
+  }, [ready, map, mapLabels]);
+
   /* ══════════ Routing ══════════ */
 
   /** Turn a Directions reply into everything the page shows about it. */
-  const describeRoute = useCallback((result, note) => {
+  const describeRoute = useCallback((result, note, ctx) => {
     const path = routePoints(result);
     const leg = result.routes[0].legs[0];
 
@@ -365,32 +447,39 @@ const EruvLab = ({ config }) => {
       })),
     });
 
-    const strayed = outsideMetres(path, eruv);
-    if (strayed <= STRAY_NOISE_M) {
-      setRouteStatus('inside');
-      setRouteMsg(note || 'Route stays within the Eruv boundary.');
-    } else {
+    const strayed = outsideMetres(path, ctx.eruv);
+    if (strayed > STRAY_NOISE_M) {
       setRouteStatus('strays');
       setRouteMsg(`This route leaves the Eruv for about ${formatMetres(strayed)}. Drag it back inside.`);
+    } else if (ctx.validate && !ctx.validate(path)) {
+      // Inside the region, but breaking a rule beyond it — for NW London,
+      // moving between eruvim away from a crossing point.
+      setRouteStatus('strays');
+      setRouteMsg(ctx.invalidMessage || 'This route breaks the Eruv rules. Drag it to reshape it.');
+    } else {
+      setRouteStatus('inside');
+      setRouteMsg(note || 'Route stays within the Eruv boundary.');
     }
     return path;
-  }, [eruv]);
+  }, []);
 
   /** Route the given trip and adopt the answer. Called after every edit. */
   const applyTrip = useCallback(async (nextTrip) => {
     const token = (tokenRef.current += 1);
     setTrip(nextTrip);
 
-    // A dragged endpoint can land outside the boundary, in which case there is
-    // nothing worth asking Google for.
-    if (!eruv.contains(nextTrip.origin) || !eruv.contains(nextTrip.destination)) {
+    // The region can change with the trip — a dragged endpoint can leave the
+    // eruv, or, in NW London, move into another one — so it is worked out
+    // afresh. If there is no valid region there is nothing worth asking
+    // Google for.
+    const ctx = routeContext(nextTrip);
+    if (ctx.error) {
       setRerouting(false);
       setRouteStatus('outside');
-      setRouteMsg(!eruv.contains(nextTrip.origin)
-        ? 'The start point is now outside the Eruv. Drag it back inside.'
-        : 'The destination is now outside the Eruv. Drag it back inside.');
+      setRouteMsg(`${ctx.error} Drag it back, or undo.`);
       return;
     }
+    setRouteCtx(ctx);
 
     setRerouting(true);
     const result = await requestRoute(
@@ -404,8 +493,21 @@ const EruvLab = ({ config }) => {
       setRouteMsg('No walking route through that point. Try dragging it somewhere else.');
       return;
     }
-    describeRoute(result);
-  }, [describeRoute, eruv]);
+    describeRoute(result, undefined, ctx);
+  }, [describeRoute, routeContext]);
+
+  /* When the rules change under a planned route — an eruv switched off, or
+     crossing allowed or disallowed — the route is re-checked against the new
+     ones rather than left showing a verdict that no longer holds. Skipped on
+     first render and whenever there's no route. */
+  const firstContextRef = useRef(true);
+  useEffect(() => {
+    if (firstContextRef.current) {
+      firstContextRef.current = false;
+      return;
+    }
+    if (tripRef.current) applyTrip(tripRef.current);
+  }, [routeContext, applyTrip]);
 
   /** Record the current trip so the edit can be undone, then apply the new one. */
   const handleTripChange = useCallback((nextTrip) => {
@@ -459,7 +561,7 @@ const EruvLab = ({ config }) => {
     styleEpoch,
     trip,
     path: routePath,
-    eruv: eruv,
+    eruv: (routeCtx && routeCtx.eruv) || eruv,
     onChange: handleTripChange,
     onRemoveVia: handleRemoveVia,
   });
@@ -470,7 +572,6 @@ const EruvLab = ({ config }) => {
     if (!place?.geometry?.location) return;
     const pt = { lat: place.geometry.location.lat(), lng: place.geometry.location.lng() };
     setMarker(pt);
-    setInsideStatus(eruv.contains(pt) ? 'inside' : 'outside');
     map.current?.flyTo({ center: [pt.lng, pt.lat], zoom: 15, duration: 800 });
   };
 
@@ -487,16 +588,12 @@ const EruvLab = ({ config }) => {
     const o = { lat: origin.geometry.location.lat(), lng: origin.geometry.location.lng() };
     const d = { lat: dest.geometry.location.lat(), lng: dest.geometry.location.lng() };
 
-    const oIn = eruv.contains(o);
-    const dIn = eruv.contains(d);
-    if (!oIn || !dIn) {
+    const ctx = routeContext({ origin: o, destination: d });
+    if (ctx.error) {
       setRouteStatus('outside');
-      setRouteMsg(
-        !oIn && !dIn ? 'Both the start and end points are outside the Eruv boundary.'
-          : !oIn ? 'The starting address is outside the Eruv boundary.'
-            : 'The destination is outside the Eruv boundary.',
-      );
+      setRouteMsg(ctx.error);
       setTrip(null);
+      setRouteCtx(null);
       setRoutePath(null);
       setRouteInfo(null);
       return;
@@ -511,7 +608,7 @@ const EruvLab = ({ config }) => {
     historyRef.current = [];
     setUndoDepth(0);
 
-    const found = await findInBoundaryRoute(o, d, getService(), eruv);
+    const found = await findInBoundaryRoute(o, d, getService(), ctx);
 
     setRouteLoading(false);
     setLoadingMsg('');
@@ -525,6 +622,7 @@ const EruvLab = ({ config }) => {
     // Any detour waypoints the search needed become visible, draggable stops
     // rather than something hidden inside the routing call.
     tokenRef.current += 1;
+    setRouteCtx(ctx);
     setTrip({
       origin: o,
       destination: d,
@@ -532,19 +630,19 @@ const EruvLab = ({ config }) => {
     });
     const path = describeRoute(found.result, found.waypoints.length
       ? 'Indirect route — detoured to stay inside the Eruv. Drag the line to reshape it.'
-      : 'Route stays within the Eruv boundary. Drag the line to reshape it.');
+      : 'Route stays within the Eruv boundary. Drag the line to reshape it.', ctx);
     fitToPoints(map.current, path, 60);
   };
 
   const handleLocationReset = () => {
     setMarker(null);
-    setInsideStatus(null);
     if (locationInputRef.current) locationInputRef.current.value = '';
   };
 
   const handleRouteClear = () => {
     tokenRef.current += 1;
     setTrip(null);
+    setRouteCtx(null);
     setRoutePath(null);
     setRouteInfo(null);
     setRouteStatus(null);
@@ -634,14 +732,14 @@ const EruvLab = ({ config }) => {
             </button>
             <button
               className={`zlab-tab ${tab === 'route' ? 'active' : ''}`}
-              onClick={() => { setTab('route'); setMarker(null); setInsideStatus(null); }}
+              onClick={() => { setTab('route'); setMarker(null); }}
             >
               🗺 Route Planner
             </button>
-            {notes && (
+            {hasNotes && (
               <button
                 className={`zlab-tab ${tab === 'notes' ? 'active' : ''}`}
-                onClick={() => { setTab('notes'); setMarker(null); setInsideStatus(null); }}
+                onClick={() => { setTab('notes'); setMarker(null); }}
               >
                 📝 Eruv Notes
               </button>
@@ -667,12 +765,13 @@ const EruvLab = ({ config }) => {
                   )}
                 </div>
                 <button className="zlab-btn zlab-btn--ghost" onClick={handleLocationReset}>Reset</button>
-                {insideStatus === 'inside' && <div className="zlab-alert zlab-alert--success">✓ Inside Eruv</div>}
-                {insideStatus === 'outside' && <div className="zlab-alert zlab-alert--error">✕ Outside Eruv</div>}
+                {insideStatus === 'inside' && <div className="zlab-alert zlab-alert--success">✓ {checkResult.message}</div>}
+                {insideStatus === 'outside' && <div className="zlab-alert zlab-alert--error">✕ {checkResult.message}</div>}
               </div>
             )}
 
-            {tab === 'notes' && notes && (
+            {tab === 'notes' && notesPanel}
+            {tab === 'notes' && !notesPanel && notes && (
               <div className="zlab-notes">
                 <h3>Eruv Information</h3>
                 {notes.map((note) => (
@@ -717,6 +816,7 @@ const EruvLab = ({ config }) => {
                     <input className="zlab-input" type="text" placeholder="Loading…" disabled />
                   )}
                 </div>
+                {routeOptions}
                 <div className="zlab-btn-row">
                   <button className="zlab-btn zlab-btn--primary" onClick={handleRoutePlan} disabled={routeLoading || !isLoaded}>
                     {routeLoading ? <><span className="zlab-btn-spinner" /> Searching…</> : 'Find Safe Route'}
@@ -825,6 +925,8 @@ const EruvLab = ({ config }) => {
                 )}
               </div>
             )}
+
+            {sidebarFooter}
           </div>
         </div>
 
