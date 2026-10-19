@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Users, ArrowRight, Lock, Linkedin, Github, Zap, Shield, Clock } from 'lucide-react';
+import { SITE_TITLE, SITE_DESCRIPTION } from '../siteMeta';
 
 const LandingPage = () => {
   const [location, setLocation] = useState('Earth');
@@ -30,12 +31,12 @@ const LandingPage = () => {
 
     // ── OG / Twitter meta tags (dynamic update for client-side nav) ──
     const metaUpdates = [
-      { sel: 'meta[property="og:title"]',       attr: 'content', val: 'Mark Lebrett | Portal' },
-      { sel: 'meta[property="og:description"]', attr: 'content', val: 'The personal portal of Mark Lebrett — explore tools including the Gematria Explorer, EMEL Solutions, and more.' },
+      { sel: 'meta[property="og:title"]',       attr: 'content', val: SITE_TITLE },
+      { sel: 'meta[property="og:description"]', attr: 'content', val: SITE_DESCRIPTION },
       { sel: 'meta[property="og:url"]',          attr: 'content', val: 'https://marklebrett.co.uk/' },
-      { sel: 'meta[name="description"]',         attr: 'content', val: 'The personal portal of Mark Lebrett — explore tools including the Gematria Explorer, EMEL Solutions, and more.' },
-      { sel: 'meta[name="twitter:title"]',       attr: 'content', val: 'Mark Lebrett | Portal' },
-      { sel: 'meta[name="twitter:description"]', attr: 'content', val: 'The personal portal of Mark Lebrett — explore tools including the Gematria Explorer, EMEL Solutions, and more.' },
+      { sel: 'meta[name="description"]',         attr: 'content', val: SITE_DESCRIPTION },
+      { sel: 'meta[name="twitter:title"]',       attr: 'content', val: SITE_TITLE },
+      { sel: 'meta[name="twitter:description"]', attr: 'content', val: SITE_DESCRIPTION },
     ];
     metaUpdates.forEach(({ sel, attr, val }) => {
       const el = document.querySelector(sel);

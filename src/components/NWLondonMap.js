@@ -44,7 +44,10 @@ const ALL_ERUVIM = [...NWLONDON_ERUVIM, ...EXTRA_LBD_ERUVIM];
 
 const LIBRARIES = ['places', 'geometry'];
 
-const MAP_CENTER = { lat: 51.614, lng: -0.276 };
+// Finchley Central: close to the middle of the network, so the first view
+// shows most of the eruvim rather than just Edgware. (The true midpoint of
+// every boundary is a little east, at 51.598, -0.151, pulled out by Chigwell.)
+const MAP_CENTER = { lat: 51.601, lng: -0.193 };
 const MAP_OPTIONS = {
   mapTypeControl: true,
   mapTypeControlOptions: { style: 2 },

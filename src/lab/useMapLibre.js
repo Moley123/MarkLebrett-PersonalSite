@@ -147,13 +147,14 @@ export default function useMapLibre({ center, zoom }) {
       fellBackRef.current = true;
       setBasemapFailed(true);
       try {
-        map.setStyle(FALLBACK_STYLE);
         // The fallback discards custom layers just as any other style swap
-        // does, so callers need the same nudge to redraw them.
-        map.once('styledata', () => {
+        // does, so callers need the same nudge to redraw them — see
+        // setBasemap below for why it is `style.load` and `diff: false`.
+        map.once('style.load', () => {
           setReady(true);
           setStyleEpoch((n) => n + 1);
         });
+        map.setStyle(FALLBACK_STYLE, { diff: false });
       } catch {
         setReady(true);
       }
@@ -179,10 +180,25 @@ export default function useMapLibre({ center, zoom }) {
   /**
    * Swap the basemap, keeping the camera where it is.
    *
-   * `styledata` fires several times while a style is parsed, so it is only
-   * acted on once `isStyleLoaded()` agrees the new one is in place — at which
-   * point the sources and layers the caller added are gone and need putting
-   * back, which is what bumping styleEpoch asks for.
+   * The new style arrives without the eruv boundaries and the route — they
+   * were added on top of the old one — so callers are told to put them back
+   * by bumping styleEpoch, once and only once the new style is in place.
+   *
+   * Knowing *when* is the whole difficulty, and two earlier attempts got it
+   * wrong. By default MapLibre switches styles by diffing: for a URL it keeps
+   * the OLD style loaded while it fetches the new one, so "is the style
+   * loaded?" answers yes for the outgoing style. Acting on that put the
+   * boundaries back onto the old style, which the incoming one then removed —
+   * intermittently, depending on network timing, which is why the bug was
+   * "boundaries don't always show".
+   *
+   * `diff: false` tears the old style down straight away and builds the new
+   * one from scratch, and `style.load` fires exactly once, when it is ready —
+   * the same for a URL as for the satellite style, which is supplied as an
+   * object. The listener goes on before setStyle, so it can't miss an event
+   * fired during the call. If several switches overlap, only the last style
+   * ever loads and every pending listener fires on it; re-adding is
+   * idempotent, so that is harmless.
    */
   const setBasemap = useCallback((id) => {
     const map = mapRef.current;
@@ -193,34 +209,8 @@ export default function useMapLibre({ center, zoom }) {
     setBasemapFailed(false);
     fellBackRef.current = false;
 
-    map.setStyle(next.style);
-
-    // How to tell the NEW style has arrived depends on how it was supplied.
-    //
-    // For a URL, `isStyleLoaded()` is the signal: there is a fetch and a parse
-    // to wait for, and the flag flips when they finish.
-    //
-    // For an object there is nothing to fetch, and `isStyleLoaded()` is no use
-    // at all — it is still false on the single `styledata` the swap emits, and
-    // turns true later with no further event, so waiting on it waits forever.
-    // That is the satellite basemap, and it is why it came up with no eruv
-    // boundaries on it. The presence of a layer only the new style defines is
-    // both sufficient and immediate.
-    const marker = typeof next.style === 'object' ? next.style.layers?.[0]?.id : null;
-    const arrived = marker
-      ? () => !!map.getLayer(marker)
-      : () => map.isStyleLoaded();
-
-    const onStyleData = () => {
-      if (!arrived()) return;
-      map.off('styledata', onStyleData);
-      setStyleEpoch((n) => n + 1);
-    };
-    map.on('styledata', onStyleData);
-
-    // An object style can be fully applied before setStyle returns, firing its
-    // one event with no listener yet attached.
-    if (marker) onStyleData();
+    map.once('style.load', () => setStyleEpoch((n) => n + 1));
+    map.setStyle(next.style, { diff: false });
   }, []);
 
   return {
