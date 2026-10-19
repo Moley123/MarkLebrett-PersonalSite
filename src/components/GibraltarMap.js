@@ -12,6 +12,7 @@ import {
 import { GIBRALTAR_ERUV } from '../data/gibraltar_data';
 import { GIBRALTAR_ERUV_NOTES } from '../data/gibraltar_notes';
 import './GibraltarMap.css';
+import useEruvFavicon from './useEruvFavicon';
 
 const LIBRARIES = ['places', 'geometry'];
 
@@ -58,6 +59,7 @@ function routeStaysValid(result, activePolys) {
 
 /* ═══════ Component ═══════ */
 const GibraltarMap = () => {
+  useEruvFavicon();
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '',
     libraries: LIBRARIES,

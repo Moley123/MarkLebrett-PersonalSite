@@ -13,6 +13,7 @@ import ERUV_BOUNDARY from '../data/eruv_boundary';
 import ERUV_SEGMENTS from '../data/eruv_segments';
 import ERUV_POLYGONS from '../data/eruv_polygons';
 import './EruvMap.css';
+import useEruvFavicon from './useEruvFavicon';
 
 const LIBRARIES = ['places', 'geometry'];
 
@@ -208,6 +209,7 @@ async function findInBoundaryRoute(originLoc, destLoc, service) {
    Component
 ══════════════════════════════════════════════════════════════ */
 const EruvMap = () => {
+  useEruvFavicon();
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || '',
     libraries: LIBRARIES,
@@ -260,31 +262,6 @@ const EruvMap = () => {
   useEffect(() => {
     // ── Page title ──
     document.title = 'Zurich Eruv Route Planner | Mark Lebrett';
-
-    // ── Favicon: Map Pin / House motif with Emerald-Blue gradient ──
-    const svgFavicon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-      <defs>
-        <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#10b981"/>
-          <stop offset="100%" stop-color="#3b82f6"/>
-        </linearGradient>
-      </defs>
-      <rect width="32" height="32" rx="7" fill="#0f172a"/>
-      <!-- A simple eruv/house shape -->
-      <path d="M16 6 L6 14 v12 h20 V14 Z" fill="none" stroke="url(#g)" stroke-width="2.5" stroke-linejoin="round"/>
-      <circle cx="16" cy="18" r="3" fill="url(#g)"/>
-    </svg>`;
-    const favicon = document.createElement('link');
-    favicon.rel = 'icon';
-    favicon.type = 'image/svg+xml';
-    favicon.href = 'data:image/svg+xml,' + encodeURIComponent(svgFavicon);
-    document.head.appendChild(favicon);
-
-    return () => {
-      if (document.head.contains(favicon)) {
-        document.head.removeChild(favicon);
-      }
-    };
   }, []);
 
   /* ── Location Check ── */

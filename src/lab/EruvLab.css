@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════
-   Zurich Eruv LAB — copy of EruvMap.css, classes renamed zlab-*
-   so nothing here can affect the live /zurich-eiruv page.
+   Eruv LABs — shared by every lab page; classes are zlab-*
+   so nothing here can affect the live eruv pages.
 ═══════════════════════════════════════════════════════ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -902,3 +902,180 @@
         right: 3.25rem;
     }
 }
+
+/* ── Eruv notes (Gibraltar) ── */
+.zlab-notes h3 { margin-bottom: 0.75rem; }
+
+.zlab-note {
+    padding: 0.8rem 0.9rem;
+    margin-bottom: 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: rgba(255, 255, 255, 0.02);
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.zlab-note strong {
+    display: block;
+    margin-bottom: 0.3rem;
+    color: var(--text);
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+}
+
+.zlab-note p {
+    margin: 0;
+    color: #94a3b8;
+    white-space: pre-line;
+}
+
+.zlab-note a {
+    display: inline-block;
+    margin: 0.45rem 0.75rem 0 0;
+    color: #93c5fd;
+}
+
+/* ── Eruv name labels on the map (NW London) ──
+   A white halo keeps the coloured text legible on every basemap. */
+.zlab-eruv-label {
+    font: 700 12px/1 Inter, system-ui, sans-serif;
+    white-space: nowrap;
+    pointer-events: none;
+    text-shadow: 0 0 2px #fff, 0 0 3px #fff, 0 0 5px rgba(255, 255, 255, 0.9);
+}
+
+/* ═══════════════════════════════════════════════════════
+   NW London: crossing option, layer toggles, notes accordion
+   ═══════════════════════════════════════════════════════ */
+.zlab-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: var(--muted);
+    cursor: pointer;
+}
+
+.zlab-option input { margin-top: 0.15rem; accent-color: var(--blue); }
+
+.zlab-swatch {
+    flex-shrink: 0;
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    border-radius: 3px;
+}
+
+.zlab-toggles {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+}
+
+.zlab-toggles-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.zlab-toggles-header span:last-child { color: var(--muted); font-size: 0.75rem; }
+
+.zlab-toggles-body { margin-top: 0.75rem; display: flex; flex-direction: column; gap: 0.9rem; }
+
+.zlab-toggle-group { display: flex; flex-direction: column; gap: 0.35rem; }
+
+.zlab-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-left: 1.4rem;
+    font-size: 0.8rem;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.zlab-toggle input { accent-color: var(--blue); }
+
+.zlab-toggle--master { padding-left: 0; font-size: 0.82rem; }
+
+.zlab-toggle--sep {
+    padding: 0.75rem 0 0;
+    border-top: 1px solid var(--border);
+}
+
+.zlab-badge {
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    background: rgba(245, 158, 11, 0.15);
+    color: #fcd34d;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+}
+
+.zlab-notes-credit {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.45;
+    margin: 0 0 0.9rem;
+}
+
+.zlab-notes-credit a { color: #93c5fd; }
+
+.zlab-acc {
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.zlab-acc[open] { background: rgba(255, 255, 255, 0.02); }
+
+.zlab-acc summary {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.6rem 0.75rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    cursor: pointer;
+    list-style: none;
+}
+
+.zlab-acc summary::-webkit-details-marker { display: none; }
+
+.zlab-acc-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    padding: 0 0.75rem 0.75rem;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: #94a3b8;
+}
+
+.zlab-acc-body a { color: #93c5fd; }
+.zlab-acc-body strong { color: var(--text); }
+
+.zlab-acc-links { display: flex; flex-wrap: wrap; gap: 0.3rem 0.8rem; margin-top: 0.2rem; }
+
+.zlab-acc-warn {
+    padding: 0.6rem 0.7rem;
+    border-radius: 8px;
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.zlab-acc-warn p { margin: 0.35rem 0 0; }

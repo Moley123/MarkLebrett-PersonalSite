@@ -29,6 +29,12 @@ import UpdateToast from './components/UpdateToast';
 const LAB_TOKEN = 'x490i98i_lRc';
 const ZurichEruvLab = lazy(() => import('./lab/ZurichEruvLab'));
 
+// One token per lab, so knowing one path doesn't reveal the others.
+const GIBRALTAR_LAB_TOKEN = '9gUGkgMiK7st';
+const GibraltarEruvLab = lazy(() => import('./lab/GibraltarEruvLab'));
+const NWLONDON_LAB_TOKEN = 'm5B-BoBsnHAm';
+const NWLondonEruvLab = lazy(() => import('./lab/NWLondonEruvLab'));
+
 const App = () => {
   // Debug: Log to console so we know the App is actually running
   console.log("App is mounting. Current Path:", window.location.pathname);
@@ -60,12 +66,28 @@ const App = () => {
         {/* 7. Gibraltar Eruv */}
         <Route path="/gibraltareruv" element={<GibraltarMap />} />
 
-        {/* 8. Lab — sandbox copy of the Zurich page, unlisted */}
+        {/* 8. Labs — sandbox copies of the eruv pages, unlisted */}
         <Route
           path={`/lab-${LAB_TOKEN}`}
           element={(
             <Suspense fallback={<div style={{ padding: 50 }}>Loading lab…</div>}>
               <ZurichEruvLab />
+            </Suspense>
+          )}
+        />
+        <Route
+          path={`/lab-${GIBRALTAR_LAB_TOKEN}`}
+          element={(
+            <Suspense fallback={<div style={{ padding: 50 }}>Loading lab…</div>}>
+              <GibraltarEruvLab />
+            </Suspense>
+          )}
+        />
+        <Route
+          path={`/lab-${NWLONDON_LAB_TOKEN}`}
+          element={(
+            <Suspense fallback={<div style={{ padding: 50 }}>Loading lab…</div>}>
+              <NWLondonEruvLab />
             </Suspense>
           )}
         />
