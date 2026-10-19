@@ -872,3 +872,33 @@
 
     .zlab-layers::-webkit-scrollbar { display: none; }
 }
+
+/* On a phone the panel sits ABOVE the map rather than beside it, so the
+   handle moves to the top edge and its chevron turns to point up (hide the
+   panel) or down (bring it back). */
+@media (max-width: 768px) {
+    .zlab-collapse {
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 58px;
+        height: 22px;
+        border: 1px solid var(--border);
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+    }
+
+    .zlab-collapse span {
+        display: inline-block;
+        transform: rotate(90deg);
+    }
+}
+
+@media (max-width: 768px) {
+    /* Clear of the handle above it, and of MapLibre's zoom buttons to the
+       right, which the full-width row used to run underneath. */
+    .zlab-layers {
+        top: 1.9rem;
+        right: 3.25rem;
+    }
+}
