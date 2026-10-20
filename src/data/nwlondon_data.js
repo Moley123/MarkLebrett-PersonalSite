@@ -59442,7 +59442,7 @@ export const NWLONDON_ERUVIM = [
       }
     ],
     "authority": "KF",
-    "isPrototype": true
+    "isPrototype": false
   },
   {
     "name": "Stamford Hill Eruv",
@@ -60215,7 +60215,7 @@ export const NWLONDON_ERUVIM = [
       }
     ],
     "authority": "UOHC",
-    "isPrototype": true
+    "isPrototype": false
   }
 ];
 export const CROSSING_POINTS = [

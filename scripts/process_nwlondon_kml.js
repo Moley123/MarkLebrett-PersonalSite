@@ -16,14 +16,14 @@ const kmlSources = [
     hasFolders: false,
     forcedName: 'Golders Green Eruv',
     authority: 'KF',
-    isPrototype: true
+    isPrototype: false
   },
   {
     file: 'SHmap_v4.kml',
     hasFolders: false,
     forcedName: 'Stamford Hill Eruv',
     authority: 'UOHC',
-    isPrototype: true
+    isPrototype: false
   }
 ];
 
