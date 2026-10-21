@@ -1122,6 +1122,12 @@
         max-height: 45vh;
     }
 
+    /* The rule above outranks the general collapsed one, so restate it —
+       without this the panel hid its contents but kept its height. */
+    .zlab-page--embedded .zlab-container--collapsed .zlab-sidebar {
+        max-height: 0;
+    }
+
     .zlab-embed-title {
         font-size: 0.8rem;
     }
