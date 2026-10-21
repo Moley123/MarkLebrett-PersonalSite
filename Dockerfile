@@ -1,5 +1,10 @@
 # Stage 1: Build the React App
-FROM node:18-alpine as build
+#
+# Node 24 LTS, supported until April 2028. It was node:18, end of life since
+# April 2025 and older than the packages allow: react-router needs >=20 and a
+# MapLibre dependency >=22. It only built because npm warns about engine
+# requirements rather than enforcing them.
+FROM node:24-alpine AS build
 WORKDIR /app
 
 # 1. Install dependencies
