@@ -35,10 +35,17 @@ const GibraltarEruvLab = lazy(() => import('./lab/GibraltarEruvLab'));
 const NWLONDON_LAB_TOKEN = 'm5B-BoBsnHAm';
 const NWLondonEruvLab = lazy(() => import('./lab/NWLondonEruvLab'));
 
-// The Golders Green Eruv's map, built to be embedded in ggeruv.org. The
-// preview of that page, public/ggeruv-preview-*.html, shows it in an iframe.
+// The Golders Green Eruv's map, embedded in ggeruv.org by iframe. Its
+// permanent address is /ggeruv-map, which their site links to; the original
+// lab path stays working for anything that already points at it. The preview
+// of their page, public/ggeruv-preview-*.html, shows it the same way.
 const GG_EMBED_TOKEN = 'ySNFAd2xhWM1';
 const GGEruvEmbed = lazy(() => import('./lab/GGEruvEmbed'));
+const ggEruvMap = (
+  <Suspense fallback={<div style={{ padding: 50 }}>Loading map…</div>}>
+    <GGEruvEmbed />
+  </Suspense>
+);
 
 const App = () => {
   // Debug: Log to console so we know the App is actually running
@@ -96,14 +103,8 @@ const App = () => {
             </Suspense>
           )}
         />
-        <Route
-          path={`/lab-${GG_EMBED_TOKEN}`}
-          element={(
-            <Suspense fallback={<div style={{ padding: 50 }}>Loading map…</div>}>
-              <GGEruvEmbed />
-            </Suspense>
-          )}
-        />
+        <Route path="/ggeruv-map" element={ggEruvMap} />
+        <Route path={`/lab-${GG_EMBED_TOKEN}`} element={ggEruvMap} />
 
         {/* 4. DEBUG: Catch-all for 404s */}
         {/* This will show us what URL the router is seeing */}
