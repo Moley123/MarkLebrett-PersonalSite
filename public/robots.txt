@@ -2,9 +2,12 @@
 User-agent: *
 Disallow: /lab-
 Disallow: /ggeruv-preview-
+Disallow: /ggeruv-map
 
 # Pages under /lab-* are work-in-progress sandbox copies of the eruv pages
 # and must not be indexed. They also send noindex themselves.
 
 # /ggeruv-preview-* is a mock-up of the Golders Green Eruv's website with its
 # new map in place, for the eruv committee to review. Also noindex itself.
+# /ggeruv-map is that map, made to be embedded on ggeruv.org rather than
+# visited directly; it sends noindex too.
