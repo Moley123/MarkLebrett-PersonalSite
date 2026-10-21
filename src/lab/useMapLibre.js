@@ -95,9 +95,11 @@ const FALLBACK_STYLE = {
  * @param {object} opts
  * @param {{lat:number,lng:number}} opts.center
  * @param {number} opts.zoom
+ * @param {boolean} [opts.cooperativeGestures] ctrl+scroll to zoom and two
+ *   fingers to pan, so a map embedded in a longer page doesn't trap scrolling
  * @returns {{ containerRef, map, ready }}
  */
-export default function useMapLibre({ center, zoom }) {
+export default function useMapLibre({ center, zoom, cooperativeGestures = false }) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const [ready, setReady] = useState(false);
@@ -127,6 +129,7 @@ export default function useMapLibre({ center, zoom }) {
       style: STYLE_URL,
       center: [center.lng, center.lat],
       zoom,
+      cooperativeGestures,
       attributionControl: false,
     });
 

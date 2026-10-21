@@ -58,8 +58,10 @@ import useMapLibre, {
 import './EruvLab.css';
 import useEruvFavicon from '../components/useEruvFavicon';
 
-/* Places only — Turf has replaced everything `geometry` was used for. */
-const LIBRARIES = ['places'];
+/* Places only — Turf has replaced everything `geometry` was used for.
+   Exported so a page that also loads Google's own map (the GG embed) asks for
+   the same libraries; the loader refuses a second call with different ones. */
+export const LIBRARIES = ['places'];
 
 const ROUTE_ID = 'eruv-route';
 const ROUTE_LINE_LAYER = `${ROUTE_ID}-1`;
@@ -85,7 +87,7 @@ function interiorPoints(eruv) {
 /* ══════════════════ Route helpers ══════════════════ */
 
 /** Every point of a Directions result, decoded to `{lat,lng}`. */
-function routePoints(result) {
+export function routePoints(result) {
   const out = [];
   for (const leg of result.routes[0].legs) {
     for (const step of leg.steps) {
@@ -127,7 +129,7 @@ function requestRoute(origin, dest, waypoints, service) {
  * It reports which waypoints it settled on, so they can be handed to the user
  * as draggable stops rather than hidden inside a renderer.
  */
-async function findInBoundaryRoute(origin, dest, service, ctx) {
+export async function findInBoundaryRoute(origin, dest, service, ctx) {
   const accept = (result) => {
     const pts = routePoints(result);
     return ctx.validate ? ctx.validate(pts) : ctx.eruv.containsAll(pts);
@@ -172,7 +174,7 @@ async function findInBoundaryRoute(origin, dest, service, ctx) {
  *
  * @returns {{eruv, validate?, waypoints?, invalidMessage?} | {error: string}}
  */
-function defaultRouteContext(eruv) {
+export function defaultRouteContext(eruv) {
   return ({ origin, destination }) => {
     const oIn = eruv.contains(origin);
     const dIn = eruv.contains(destination);
@@ -199,9 +201,13 @@ function defaultCheckLocation(eruv) {
  * @param {ReactNode} [props.routeOptions] extra controls in the route form
  * @param {ReactNode} [props.sidebarFooter] extra content under the panel
  * @param {ReactNode} [props.notesPanel]   a notes tab richer than config.notes
+ * @param {boolean}   [props.embedded]     drop the lab banner and portal header,
+ *                                         for a page shown inside another site
+ * @param {ReactNode} [props.toolbar]      a bar above the map, in their place
  */
 const EruvLab = ({
   config, routeOptions = null, sidebarFooter = null, notesPanel = null,
+  embedded = false, toolbar = null,
 }) => {
   const {
     id, eruv, center, zoom, mapLayers, livePath,
@@ -229,7 +235,7 @@ const EruvLab = ({
 
   const {
     containerRef, map, ready, basemapFailed, basemap, setBasemap, styleEpoch,
-  } = useMapLibre({ center, zoom });
+  } = useMapLibre({ center, zoom, cooperativeGestures: !!config.cooperativeGestures });
 
   const originRef = useRef(null);
   const destRef = useRef(null);
@@ -673,7 +679,7 @@ const EruvLab = ({
       + `<h1>${printTitle}</h1><h2>${routeInfo.from} → ${routeInfo.to}</h2>`
       + `<div class="meta"><span>${routeInfo.distance}</span><span>${routeInfo.duration}</span></div>`
       + `<hr/><table>${stepsHtml}</table>`
-      + `<div class="footer">Printed from the ${heading} lab</div></body></html>`;
+      + `<div class="footer">Printed from the ${heading}${embedded ? '' : ' lab'}</div></body></html>`;
     const win = window.open('', '_blank', 'width=800,height=600');
     win.document.write(html);
     win.document.close();
@@ -691,33 +697,40 @@ const EruvLab = ({
   const stops = trip ? trip.vias : [];
 
   return (
-    <div className="zlab-page">
+    <div className={`zlab-page ${embedded ? 'zlab-page--embedded' : ''}`}>
 
-      {/* ── Lab banner — this page is a sandbox, never the live one ── */}
-      <div className="zlab-banner" role="status">
-        <strong>LAB</strong>
-        <span>
-          MapLibre + OpenFreeMap tiles, Turf.js geometry, home-built
-          drag-to-modify. Address search and routing still use Google. The live
-          page is <Link to={livePath}>{livePath}</Link> and is unchanged.
-        </span>
-      </div>
+      {toolbar}
 
-      {/* ── Header ── */}
-      <div className="zlab-header">
-        <div className="zlab-header-row">
-          <Link to="/" className="zlab-back-btn" aria-label="Back to portal">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            Portal
-          </Link>
-          <div className="zlab-header-text">
-            <h1 className="zlab-title">{heading}</h1>
-            <p className="zlab-subtitle">{subtitle}</p>
+      {/* Embedded in another site, the host page supplies its own heading. */}
+      {!embedded && (
+        <>
+          {/* ── Lab banner — this page is a sandbox, never the live one ── */}
+          <div className="zlab-banner" role="status">
+            <strong>LAB</strong>
+            <span>
+              MapLibre + OpenFreeMap tiles, Turf.js geometry, home-built
+              drag-to-modify. Address search and routing still use Google. The live
+              page is <Link to={livePath}>{livePath}</Link> and is unchanged.
+            </span>
           </div>
-        </div>
-      </div>
+
+          {/* ── Header ── */}
+          <div className="zlab-header">
+            <div className="zlab-header-row">
+              <Link to="/" className="zlab-back-btn" aria-label="Back to portal">
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <path d="M10 3L5 8L10 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                Portal
+              </Link>
+              <div className="zlab-header-text">
+                <h1 className="zlab-title">{heading}</h1>
+                <p className="zlab-subtitle">{subtitle}</p>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* ── Sidebar + Map ── */}
       <div className={`zlab-container ${sidebarOpen ? '' : 'zlab-container--collapsed'}`}>
