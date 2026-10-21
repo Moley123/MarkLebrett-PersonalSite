@@ -1079,3 +1079,50 @@
 }
 
 .zlab-acc-warn p { margin: 0.35rem 0 0; }
+
+/* ═══════════════════════════════════════════════════════
+   Embedded (the Golders Green map, inside ggeruv.org)
+   ═══════════════════════════════════════════════════════ */
+
+/* Fills the iframe it's shown in; the host page sets the height. */
+.zlab-page--embedded {
+    border-radius: var(--radius);
+}
+
+.zlab-embed-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.55rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8, 11, 16, 0.9);
+    z-index: 10;
+}
+
+.zlab-embed-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.zlab-embed-modes {
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+@media (max-width: 768px) {
+    .zlab-page--embedded .zlab-sidebar {
+        max-height: 45vh;
+    }
+
+    .zlab-embed-title {
+        font-size: 0.8rem;
+    }
+}

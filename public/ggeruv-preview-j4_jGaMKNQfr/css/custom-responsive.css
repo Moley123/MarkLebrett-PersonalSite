@@ -1,0 +1,109 @@
+@media screen and (max-width: 1800px) {}
+@media screen and (max-width: 1680px) {}
+@media screen and (max-width: 1600px) {}
+@media screen and (max-width: 1540px) {}
+@media screen and (max-width: 1440px) {}
+@media screen and (max-width: 1400px) {}
+@media screen and (max-width: 1366px) {}
+@media screen and (max-width: 1280px) {}
+@media screen and (max-width: 1220px) {}
+@media screen and (max-width: 1170px) {}
+@media screen and (max-width: 1130px) {}
+@media screen and (max-width: 1080px) {}
+@media screen and (max-width: 1024px) {
+    h3 {font-size: 50px;}
+
+    .navbar .nav-item a {font-size: 20px;}
+
+    .banner-text h2 {font-size: 65px;}
+    .banner-text h6 {font-size: 35px;}
+    .banner-text ul {padding: 50px 0 0px;}
+    .about-btn {margin-top: 30px;}
+
+    .accordion .card-header .btn-link {font-size: 18px;}
+}
+@media screen and (max-width: 1000px) {}
+@media screen and (max-width: 991px) {
+    button:focus {outline: none;}    
+    .navbar .navbar-toggler span {color: #000;}
+    .banner {padding: 100px 0px 50px;}
+    .banner-text h2 {font-size: 55px;}
+    .banner-text h6 {font-size:30px;}
+    .contact-info {margin-bottom: 20px;}    
+    section.contact .form {width: 100%;}
+
+    .contact-btn {margin: 10px 0 20px;}
+
+    section.contact .section-content .sectioner-header {width: 100%;}
+    section.contact .col-sm-12.col-md-12.col-lg-4 {text-align: center; }
+}
+@media screen and (max-width: 980px) {}
+@media screen and (max-width: 979px) {}
+@media screen and (max-width: 960px) {}
+@media screen and (max-width: 920px) {}
+@media screen and (max-width: 900px) {}
+@media screen and (max-width: 896px) {}
+@media screen and (max-width: 880px) {}
+@media screen and (max-width: 869px) {}
+@media screen and (max-width: 853px) {}
+@media screen and (max-width: 850px) {}
+@media screen and (max-width: 847px) {}
+@media screen and (max-width: 846px) {}
+@media screen and (max-width: 824px) {}
+@media screen and (max-width: 823px) {}
+@media screen and (max-width: 812px) {}
+@media screen and (max-width: 800px) {}
+@media screen and (max-width: 770px) {}
+@media screen and (max-width: 768px) {
+    .bx-wrapper .bx-controls-direction a {width: 50px;height: 50px;}
+    .bx-wrapper .bx-prev {left: 40px;}
+}
+@media screen and (max-width: 767px) {
+    .banner-text h2 {font-size: 40px;padding-top: 70px;}
+    .banner-text h6 {font-size: 20px;}
+    .accordion .card-header .btn-block::after {top: 10px;}
+    .accordion .card-header .btn-link {font-size: 14px;}
+}
+@media screen and (max-width: 740px) {}
+@media screen and (max-width: 736px) {}
+@media screen and (max-width: 732px) {}
+@media screen and (max-width: 731px) {}
+@media screen and (max-width: 720px) {}
+@media screen and (max-width: 700px) {}
+@media screen and (max-width: 685px) {}
+@media screen and (max-width: 667px) {}
+@media screen and (max-width: 640px) {
+    h3 {font-size: 40px;}
+    .navbar-toggler {padding: 0.25rem 1rem;}    
+    .banner-text ul {padding: 20px 0 0px;margin-bottom: 0;}
+    .navbar .nav-item a {font-size: 20px;}
+
+    section.feature .sectioner-header h3 {font-size: 40px;}
+    section.feature .images {padding-bottom: 10px;}
+
+    section.contact .form .row {display: block; }
+
+    .accordion {padding: 0 15px;}
+    .accordion .card-header .btn-link {padding: 15px 60px 15px 15px;}
+    .footer-copy {width: 100%; display: inline-block;}    
+}
+@media screen and (max-width: 600px) {}
+@media screen and (max-width: 580px) {}
+@media screen and (max-width: 568px) {}
+@media screen and (max-width: 500px) {}
+@media screen and (max-width: 480px) {
+    h3 {    font-size: 30px;}
+    .bx-wrapper .bx-controls-direction a {width: 40px;height: 40px;}
+    .bx-wrapper .bx-next {right: 40px;}
+}
+@media screen and (max-width: 479px) {}
+@media screen and (max-width: 420px) {}
+@media screen and (max-width: 414px) {}
+@media screen and (max-width: 412px) {}
+@media screen and (max-width: 411px) {}
+@media screen and (max-width: 400px) {}
+@media screen and (max-width: 375px) {}
+@media screen and (max-width: 370px) {}
+@media screen and (max-width: 360px) {}
+@media screen and (max-width: 340px) {}
+@media screen and (max-width: 320px) {}

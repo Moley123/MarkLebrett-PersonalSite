@@ -15,6 +15,7 @@ import ERUV_SEGMENTS from '../data/eruv_segments';
 import ERUV_POLYGONS from '../data/eruv_polygons';
 import { GIBRALTAR_ERUV } from '../data/gibraltar_data';
 import { GIBRALTAR_ERUV_NOTES } from '../data/gibraltar_notes';
+import { GG_ERUV } from '../data/gg_eruv';
 import { createEruv } from './eruvGeometry';
 import { featureCollection, lineFeature, polygonFeature } from './useMapLibre';
 
@@ -90,4 +91,45 @@ export const GIBRALTAR_LAB = {
     },
   ],
   notes: GIBRALTAR_ERUV_NOTES,
+};
+
+/* ══════════════════ Golders Green (embed) ══════════════════
+   Not a lab copy of a page here: the map for the Golders Green Eruv's own
+   website, shown inside it. The boundary line comes from the KML; the ring is
+   the closed version of it used for containment, drawn only as a faint fill. */
+
+export const GG_EMBED = {
+  id: 'gg-embed',
+  livePath: '/',
+  docTitle: 'Golders Green Eruv Map',
+  heading: 'Golders Green Eruv',
+  printTitle: 'Golders Green Eruv — Walking Route',
+  subtitle: '',
+  checkIntro: 'Enter an address to check whether it is inside the Golders Green Eruv.',
+  placeholders: {
+    check: 'e.g. Golders Green Road, NW11',
+    origin: 'Start address',
+    destination: 'Destination',
+  },
+  autocompleteOptions: { componentRestrictions: { country: 'gb' } },
+
+  // The middle of the eruv's extent. Google zoom 14, one lower here.
+  center: { lat: 51.5757, lng: -0.2053 },
+  zoom: 13,
+  // It sits partway down a long page: scrolling past it mustn't zoom it.
+  cooperativeGestures: true,
+
+  eruv: createEruv(GG_ERUV.containmentPath),
+  mapLayers: [
+    {
+      id: 'eruv-fill',
+      data: polygonFeature(GG_ERUV.containmentPath),
+      layers: [{ type: 'fill', paint: { 'fill-color': GG_ERUV.color, 'fill-opacity': 0.1 } }],
+    },
+    {
+      id: 'eruv-segments',
+      data: featureCollection(GG_ERUV.rawSegments.filter((seg) => seg.length > 1).map((seg) => lineFeature(seg))),
+      layers: [{ type: 'line', paint: { 'line-color': GG_ERUV.color, 'line-width': 3 } }],
+    },
+  ],
 };

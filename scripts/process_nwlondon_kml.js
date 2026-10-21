@@ -362,3 +362,12 @@ export const CROSSING_POINTS = ${JSON.stringify(crossingPoints, null, 2)};
 
 fs.writeFileSync(outputFile, finalCode, 'utf8');
 console.log("-> Wrote", outputFile);
+
+// The Golders Green embed needs only its own eruv, not this whole 1 MB file.
+// src/data/gg_eruv.test.js fails if the two ever disagree.
+const ggFile = path.join(__dirname, '..', 'src', 'data', 'gg_eruv.js');
+const gg = mappedEruvim.find(e => e.name === 'Golders Green Eruv');
+fs.writeFileSync(ggFile, `// AUTO-GENERATED from process_nwlondon_kml.js
+export const GG_ERUV = ${JSON.stringify(gg, null, 2)};
+`, 'utf8');
+console.log("-> Wrote", ggFile);

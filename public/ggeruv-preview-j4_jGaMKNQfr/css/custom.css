@@ -1,0 +1,8 @@
+
+section.feature {background: #000000; padding: 30px 0 0;}
+section.feature .sectioner-header h3 {font-size: 60px;font-weight: 600;color: #fff;}
+section.feature .images {display: inline-block;}
+section.feature .text {display: inline-block;}
+section.feature .bottom-text {padding: 30px 0;}
+section.feature .bottom-text p { font-size: 16px;font-weight: 400;color: #fff;}
+section.feature .text a {color: #fff;text-decoration: underline;}

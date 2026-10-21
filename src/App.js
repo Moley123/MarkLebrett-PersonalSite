@@ -35,6 +35,11 @@ const GibraltarEruvLab = lazy(() => import('./lab/GibraltarEruvLab'));
 const NWLONDON_LAB_TOKEN = 'm5B-BoBsnHAm';
 const NWLondonEruvLab = lazy(() => import('./lab/NWLondonEruvLab'));
 
+// The Golders Green Eruv's map, built to be embedded in ggeruv.org. The
+// preview of that page, public/ggeruv-preview-*.html, shows it in an iframe.
+const GG_EMBED_TOKEN = 'ySNFAd2xhWM1';
+const GGEruvEmbed = lazy(() => import('./lab/GGEruvEmbed'));
+
 const App = () => {
   // Debug: Log to console so we know the App is actually running
   console.log("App is mounting. Current Path:", window.location.pathname);
@@ -88,6 +93,14 @@ const App = () => {
           element={(
             <Suspense fallback={<div style={{ padding: 50 }}>Loading lab…</div>}>
               <NWLondonEruvLab />
+            </Suspense>
+          )}
+        />
+        <Route
+          path={`/lab-${GG_EMBED_TOKEN}`}
+          element={(
+            <Suspense fallback={<div style={{ padding: 50 }}>Loading map…</div>}>
+              <GGEruvEmbed />
             </Suspense>
           )}
         />
