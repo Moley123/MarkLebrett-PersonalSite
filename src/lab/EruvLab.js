@@ -35,10 +35,9 @@
  * measured against the boundary rather than assumed to be fine, the part that
  * strays is drawn in red, and every edit can be undone.
  *
- * Lab routes are not linked from anywhere, set noindex/nofollow/noarchive and
- * are disallowed in robots.txt, so they won't be crawled or stumbled upon.
- * They are unlisted rather than secret — the paths are in src/App.js, in a
- * public repo.
+ * Lab routes are listed on the portal's Beta & Experiments page (paths in
+ * src/experiments.js), but set noindex/nofollow/noarchive and are disallowed
+ * in robots.txt, so they stay out of search results.
  */
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';

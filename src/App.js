@@ -9,14 +9,17 @@ import NWLondonMap from './components/NWLondonMap';
 import GibraltarMap from './components/GibraltarMap';
 import GematriaApp from './gematria/GematriaApp';
 import UpdateToast from './components/UpdateToast';
+import ExperimentsPage from './components/ExperimentsPage';
+import { PATHS } from './experiments';
 
 /* ══════════════════════════════════════════════════════════════════════
    Lab route — a sandbox copy of the Zurich eruv page, used to trial
    open-source mapping without touching the live one.
 
-   It lives on an unguessable path and is noindex/nofollow plus disallowed
-   in robots.txt, so it won't be crawled or stumbled upon. It is not secret:
-   the path is in this file, and this repository is public.
+   It is linked from /experiments (the portal's Beta & Experiments tile),
+   and is noindex/nofollow plus disallowed in robots.txt, so it stays out of
+   search results. The paths are in src/experiments.js, shared with that
+   page.
 
    The path is deliberately ONE segment deep. package.json sets
    `homepage: "."`, so the bundle is referenced with relative paths; from a
@@ -26,20 +29,15 @@ import UpdateToast from './components/UpdateToast';
 
    Lazy-loaded so the sandbox never weighs down the main bundle.
 ══════════════════════════════════════════════════════════════════════ */
-const LAB_TOKEN = 'x490i98i_lRc';
 const ZurichEruvLab = lazy(() => import('./lab/ZurichEruvLab'));
 
-// One token per lab, so knowing one path doesn't reveal the others.
-const GIBRALTAR_LAB_TOKEN = '9gUGkgMiK7st';
 const GibraltarEruvLab = lazy(() => import('./lab/GibraltarEruvLab'));
-const NWLONDON_LAB_TOKEN = 'm5B-BoBsnHAm';
 const NWLondonEruvLab = lazy(() => import('./lab/NWLondonEruvLab'));
 
 // The Golders Green Eruv's map, embedded in ggeruv.org by iframe. Its
 // permanent address is /ggeruv-map, which their site links to; the original
 // lab path stays working for anything that already points at it. The preview
 // of their page, public/ggeruv-preview-*.html, shows it the same way.
-const GG_EMBED_TOKEN = 'ySNFAd2xhWM1';
 const GGEruvEmbed = lazy(() => import('./lab/GGEruvEmbed'));
 const ggEruvMap = (
   <Suspense fallback={<div style={{ padding: 50 }}>Loading map…</div>}>
@@ -78,9 +76,10 @@ const App = () => {
         {/* 7. Gibraltar Eruv */}
         <Route path="/gibraltareruv" element={<GibraltarMap />} />
 
-        {/* 8. Labs — sandbox copies of the eruv pages, unlisted */}
+        {/* 8. Beta & Experiments, and the labs it lists */}
+        <Route path="/experiments" element={<ExperimentsPage />} />
         <Route
-          path={`/lab-${LAB_TOKEN}`}
+          path={PATHS.zurichLab}
           element={(
             <Suspense fallback={<div style={{ padding: 50 }}>Loading lab…</div>}>
               <ZurichEruvLab />
@@ -88,7 +87,7 @@ const App = () => {
           )}
         />
         <Route
-          path={`/lab-${GIBRALTAR_LAB_TOKEN}`}
+          path={PATHS.gibraltarLab}
           element={(
             <Suspense fallback={<div style={{ padding: 50 }}>Loading lab…</div>}>
               <GibraltarEruvLab />
@@ -96,15 +95,15 @@ const App = () => {
           )}
         />
         <Route
-          path={`/lab-${NWLONDON_LAB_TOKEN}`}
+          path={PATHS.nwLondonLab}
           element={(
             <Suspense fallback={<div style={{ padding: 50 }}>Loading lab…</div>}>
               <NWLondonEruvLab />
             </Suspense>
           )}
         />
-        <Route path="/ggeruv-map" element={ggEruvMap} />
-        <Route path={`/lab-${GG_EMBED_TOKEN}`} element={ggEruvMap} />
+        <Route path={PATHS.ggMap} element={ggEruvMap} />
+        <Route path={PATHS.ggMapLegacy} element={ggEruvMap} />
 
         {/* 4. DEBUG: Catch-all for 404s */}
         {/* This will show us what URL the router is seeing */}
