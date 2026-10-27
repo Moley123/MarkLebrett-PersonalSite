@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Users, ArrowRight, Lock, Linkedin, Github, Zap, Shield, Clock } from 'lucide-react';
+import { MapPin, Users, ArrowRight, Lock, Linkedin, Github, Zap, Shield, Clock, FlaskConical } from 'lucide-react';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../siteMeta';
 
 const LandingPage = () => {
@@ -179,7 +179,7 @@ const LandingPage = () => {
       </div>
 
       {/* ═══════════ PROJECTS & TOOLS GRID ═══════════ */}
-      <div className="max-w-6xl mx-auto px-4 pb-20">
+      <div className="max-w-6xl mx-auto px-4 pb-12">
         <div className="flex items-center gap-4 mb-5">
           <p className="text-xs font-semibold tracking-widest uppercase text-gray-500">Projects &amp; Tools</p>
           <div className="flex-1 h-px bg-gray-800"></div>
@@ -307,6 +307,27 @@ const LandingPage = () => {
           </div>
 
         </div>
+      </div>
+
+      {/* ═══════════ IN PROGRESS: BETA & EXPERIMENTS ═══════════ */}
+      <div className="max-w-6xl mx-auto px-4 pb-20">
+        <div className="flex items-center gap-4 mb-5">
+          <p className="text-xs font-semibold tracking-widest uppercase text-gray-500">In Progress</p>
+          <div className="flex-1 h-px bg-gray-800"></div>
+        </div>
+        <Link to="/experiments" className="group relative block md:max-w-md">
+          <div className="absolute -inset-1 bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl blur opacity-15 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+          <div className="relative bg-gray-900 border border-dashed border-gray-700 rounded-2xl p-6 hover:-translate-y-1 transition-transform duration-300 flex items-center gap-5">
+            <div className="flex-shrink-0 w-12 h-12 bg-amber-500/15 rounded-lg flex items-center justify-center text-amber-300 group-hover:text-white group-hover:bg-amber-500 transition-colors">
+              <FlaskConical className="w-6 h-6" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-xl font-bold text-gray-100">Beta &amp; Experiments</h3>
+              <p className="text-sm text-gray-400">Labs, previews and work in progress.</p>
+            </div>
+            <ArrowRight className="w-5 h-5 text-amber-300 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+          </div>
+        </Link>
       </div>
 
       {/* FOOTER */}

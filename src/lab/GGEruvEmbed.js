@@ -1,14 +1,14 @@
 /**
  * Golders Green Eruv — the interactive map for the eruv's own website.
  *
- * Built to sit in an iframe on ggeruv.org, in place of the static map image.
+ * Built to sit in an iframe on ggeruv.org, below the static map image.
  * It opens on the lab engine (MapLibre + OpenStreetMap, ./EruvLab.js) and a
  * toggle switches to the same tools on Google Maps (./GGEruvGoogleMap.js).
  * Both give the same answers: they share the boundary, the containment maths
  * and the route search.
  *
  * Embedded, so no lab banner and no portal link — the host page is the
- * context. Unlisted and noindex like the labs; see src/App.js.
+ * context. Noindex like the labs; see src/experiments.js.
  */
 
 import React, { useEffect, useState } from 'react';
